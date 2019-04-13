@@ -1,0 +1,96 @@
+/* Grid */
+.msyamarket-msyamarket-row-disabled { font-style: italic; opacity: .6; color: #555; }
+.x-grid3-col-actions { padding: 3px 0 3px 5px; }
+
+/* Actions */
+.action-red { color: darkred !important; }
+.action-green { color: darkgreen !important; }
+.action-blue { color: cadetblue !important; }
+.action-yellow { color: goldenrod !important; }
+.action-gray { color: dimgray !important; }
+ul.msyamarket-row-actions { margin: 0; padding: 0; list-style: none; }
+ul.msyamarket-row-actions li { float: left; }
+ul.msyamarket-row-actions .msyamarket-btn { padding: 5px; margin-right: 2px; min-width: 26px; font-size: inherit; }
+
+/* Action menu */
+a.x-menu-item .x-menu-item-text, a.x-menu-item .x-menu-item-text .icon { cursor: pointer; }
+a.x-menu-item .x-menu-item-text .icon { line-height: 16px; top: auto; }
+.x-menu-list .icon { min-width: 1em; text-align: center; }
+.x-menu-list-item:hover .icon { color: inherit !important; }
+ul.msyamarket-row-actions .actions-menu { width: 40px; }
+ul.msyamarket-row-actions .actions-menu:after { content: " \f107"; }
+
+/* Search field */
+.x-field-search-clear,
+.x-field-search-go { border-left: 1px solid #e4e4e4 !important; }
+.x-field-search-clear:hover,
+.x-field-search-go:hover { border-left-color: transparent !important; }
+.x-field-search-clear:before { content: '\f00d' !important; }
+.x-field-search-go { right: 31px !important; border-radius: 0 !important; }
+.x-field-search-go:before { content: '\f002' !important; }
+
+/* Buttons */
+.msyamarket-btn { display: inline-block; margin-bottom: 0; font-weight: normal; text-align: center; vertical-align: middle; -ms-touch-action: manipulation; touch-action: manipulation; cursor: pointer; background-image: none; border: 1px solid transparent; white-space: nowrap; padding: 6px 12px; font-size: 14px; line-height: 1.42857143; border-radius: 4px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none }
+.msyamarket-btn:focus, .msyamarket-btn:active:focus, .msyamarket-btn.active:focus, .msyamarket-btn.focus, .msyamarket-btn:active.focus, .msyamarket-btn.active.focus { outline: thin dotted; outline: 5px auto -webkit-focus-ring-color; outline-offset: -2px }
+.msyamarket-btn:hover, .msyamarket-btn:focus, .msyamarket-btn.focus { color: #333; text-decoration: none }
+.msyamarket-btn:active, .msyamarket-btn.active { outline: 0; background-image: none; -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125) }
+.msyamarket-btn.disabled, .msyamarket-btn[disabled], fieldset[disabled] .msyamarket-btn { cursor: not-allowed; opacity: .65; filter: alpha(opacity=65); -webkit-box-shadow: none; box-shadow: none }
+a.msyamarket-btn.disabled, fieldset[disabled] a.msyamarket-btn { pointer-events: none }
+.msyamarket-btn-default { color: #333; background-color: #fff; border-color: #ccc }
+.msyamarket-btn-default:focus, .msyamarket-btn-default.focus { color: #333; background-color: #e6e6e6; border-color: #8c8c8c }
+.msyamarket-btn-default:hover { color: #333; background-color: #e6e6e6; border-color: #adadad }
+.msyamarket-btn-default:active, .msyamarket-btn-default.active, .open > .dropdown-toggle.msyamarket-btn-default { color: #333; background-color: #e6e6e6; border-color: #adadad }
+.msyamarket-btn-default:active:hover, .msyamarket-btn-default.active:hover, .open > .dropdown-toggle.msyamarket-btn-default:hover, .msyamarket-btn-default:active:focus, .msyamarket-btn-default.active:focus, .open > .dropdown-toggle.msyamarket-btn-default:focus, .msyamarket-btn-default:active.focus, .msyamarket-btn-default.active.focus, .open > .dropdown-toggle.msyamarket-btn-default.focus { color: #333; background-color: #d4d4d4; border-color: #8c8c8c }
+.msyamarket-btn-default:active, .msyamarket-btn-default.active, .open > .dropdown-toggle.msyamarket-btn-default { background-image: none }
+.msyamarket-btn-default.disabled:hover, .msyamarket-btn-default[disabled]:hover, fieldset[disabled] .msyamarket-btn-default:hover, .msyamarket-btn-default.disabled:focus, .msyamarket-btn-default[disabled]:focus, fieldset[disabled] .msyamarket-btn-default:focus, .msyamarket-btn-default.disabled.focus, .msyamarket-btn-default[disabled].focus, fieldset[disabled] .msyamarket-btn-default.focus { background-color: #fff; border-color: #ccc }
+.msyamarket-btn-default .badge { color: #fff; background-color: #333 }
+.msyamarket-btn-primary { color: #fff; background-color: #337ab7; border-color: #2e6da4 }
+.msyamarket-btn-primary:focus, .msyamarket-btn-primary.focus { color: #fff; background-color: #286090; border-color: #122b40 }
+.msyamarket-btn-primary:hover { color: #fff; background-color: #286090; border-color: #204d74 }
+.msyamarket-btn-primary:active, .msyamarket-btn-primary.active, .open > .dropdown-toggle.msyamarket-btn-primary { color: #fff; background-color: #286090; border-color: #204d74 }
+.msyamarket-btn-primary:active:hover, .msyamarket-btn-primary.active:hover, .open > .dropdown-toggle.msyamarket-btn-primary:hover, .msyamarket-btn-primary:active:focus, .msyamarket-btn-primary.active:focus, .open > .dropdown-toggle.msyamarket-btn-primary:focus, .msyamarket-btn-primary:active.focus, .msyamarket-btn-primary.active.focus, .open > .dropdown-toggle.msyamarket-btn-primary.focus { color: #fff; background-color: #204d74; border-color: #122b40 }
+.msyamarket-btn-primary:active, .msyamarket-btn-primary.active, .open > .dropdown-toggle.msyamarket-btn-primary { background-image: none }
+.msyamarket-btn-primary.disabled:hover, .msyamarket-btn-primary[disabled]:hover, fieldset[disabled] .msyamarket-btn-primary:hover, .msyamarket-btn-primary.disabled:focus, .msyamarket-btn-primary[disabled]:focus, fieldset[disabled] .msyamarket-btn-primary:focus, .msyamarket-btn-primary.disabled.focus, .msyamarket-btn-primary[disabled].focus, fieldset[disabled] .msyamarket-btn-primary.focus { background-color: #337ab7; border-color: #2e6da4 }
+.msyamarket-btn-primary .badge { color: #337ab7; background-color: #fff }
+.msyamarket-btn-success { color: #fff; background-color: #5cb85c; border-color: #4cae4c }
+.msyamarket-btn-success:focus, .msyamarket-btn-success.focus { color: #fff; background-color: #449d44; border-color: #255625 }
+.msyamarket-btn-success:hover { color: #fff; background-color: #449d44; border-color: #398439 }
+.msyamarket-btn-success:active, .msyamarket-btn-success.active, .open > .dropdown-toggle.msyamarket-btn-success { color: #fff; background-color: #449d44; border-color: #398439 }
+.msyamarket-btn-success:active:hover, .msyamarket-btn-success.active:hover, .open > .dropdown-toggle.msyamarket-btn-success:hover, .msyamarket-btn-success:active:focus, .msyamarket-btn-success.active:focus, .open > .dropdown-toggle.msyamarket-btn-success:focus, .msyamarket-btn-success:active.focus, .msyamarket-btn-success.active.focus, .open > .dropdown-toggle.msyamarket-btn-success.focus { color: #fff; background-color: #398439; border-color: #255625 }
+.msyamarket-btn-success:active, .msyamarket-btn-success.active, .open > .dropdown-toggle.msyamarket-btn-success { background-image: none }
+.msyamarket-btn-success.disabled:hover, .msyamarket-btn-success[disabled]:hover, fieldset[disabled] .msyamarket-btn-success:hover, .msyamarket-btn-success.disabled:focus, .msyamarket-btn-success[disabled]:focus, fieldset[disabled] .msyamarket-btn-success:focus, .msyamarket-btn-success.disabled.focus, .msyamarket-btn-success[disabled].focus, fieldset[disabled] .msyamarket-btn-success.focus { background-color: #5cb85c; border-color: #4cae4c }
+.msyamarket-btn-success .badge { color: #5cb85c; background-color: #fff }
+.msyamarket-btn-info { color: #fff; background-color: #5bc0de; border-color: #46b8da }
+.msyamarket-btn-info:focus, .msyamarket-btn-info.focus { color: #fff; background-color: #31b0d5; border-color: #1b6d85 }
+.msyamarket-btn-info:hover { color: #fff; background-color: #31b0d5; border-color: #269abc }
+.msyamarket-btn-info:active, .msyamarket-btn-info.active, .open > .dropdown-toggle.msyamarket-btn-info { color: #fff; background-color: #31b0d5; border-color: #269abc }
+.msyamarket-btn-info:active:hover, .msyamarket-btn-info.active:hover, .open > .dropdown-toggle.msyamarket-btn-info:hover, .msyamarket-btn-info:active:focus, .msyamarket-btn-info.active:focus, .open > .dropdown-toggle.msyamarket-btn-info:focus, .msyamarket-btn-info:active.focus, .msyamarket-btn-info.active.focus, .open > .dropdown-toggle.msyamarket-btn-info.focus { color: #fff; background-color: #269abc; border-color: #1b6d85 }
+.msyamarket-btn-info:active, .msyamarket-btn-info.active, .open > .dropdown-toggle.msyamarket-btn-info { background-image: none }
+.msyamarket-btn-info.disabled:hover, .msyamarket-btn-info[disabled]:hover, fieldset[disabled] .msyamarket-btn-info:hover, .msyamarket-btn-info.disabled:focus, .msyamarket-btn-info[disabled]:focus, fieldset[disabled] .msyamarket-btn-info:focus, .msyamarket-btn-info.disabled.focus, .msyamarket-btn-info[disabled].focus, fieldset[disabled] .msyamarket-btn-info.focus { background-color: #5bc0de; border-color: #46b8da }
+.msyamarket-btn-info .badge { color: #5bc0de; background-color: #fff }
+.msyamarket-btn-warning { color: #fff; background-color: #f0ad4e; border-color: #eea236 }
+.msyamarket-btn-warning:focus, .msyamarket-btn-warning.focus { color: #fff; background-color: #ec971f; border-color: #985f0d }
+.msyamarket-btn-warning:hover { color: #fff; background-color: #ec971f; border-color: #d58512 }
+.msyamarket-btn-warning:active, .msyamarket-btn-warning.active, .open > .dropdown-toggle.msyamarket-btn-warning { color: #fff; background-color: #ec971f; border-color: #d58512 }
+.msyamarket-btn-warning:active:hover, .msyamarket-btn-warning.active:hover, .open > .dropdown-toggle.msyamarket-btn-warning:hover, .msyamarket-btn-warning:active:focus, .msyamarket-btn-warning.active:focus, .open > .dropdown-toggle.msyamarket-btn-warning:focus, .msyamarket-btn-warning:active.focus, .msyamarket-btn-warning.active.focus, .open > .dropdown-toggle.msyamarket-btn-warning.focus { color: #fff; background-color: #d58512; border-color: #985f0d }
+.msyamarket-btn-warning:active, .msyamarket-btn-warning.active, .open > .dropdown-toggle.msyamarket-btn-warning { background-image: none }
+.msyamarket-btn-warning.disabled:hover, .msyamarket-btn-warning[disabled]:hover, fieldset[disabled] .msyamarket-btn-warning:hover, .msyamarket-btn-warning.disabled:focus, .msyamarket-btn-warning[disabled]:focus, fieldset[disabled] .msyamarket-btn-warning:focus, .msyamarket-btn-warning.disabled.focus, .msyamarket-btn-warning[disabled].focus, fieldset[disabled] .msyamarket-btn-warning.focus { background-color: #f0ad4e; border-color: #eea236 }
+.msyamarket-btn-warning .badge { color: #f0ad4e; background-color: #fff }
+.msyamarket-btn-danger { color: #fff; background-color: #d9534f; border-color: #d43f3a }
+.msyamarket-btn-danger:focus, .msyamarket-btn-danger.focus { color: #fff; background-color: #c9302c; border-color: #761c19 }
+.msyamarket-btn-danger:hover { color: #fff; background-color: #c9302c; border-color: #ac2925 }
+.msyamarket-btn-danger:active, .msyamarket-btn-danger.active, .open > .dropdown-toggle.msyamarket-btn-danger { color: #fff; background-color: #c9302c; border-color: #ac2925 }
+.msyamarket-btn-danger:active:hover, .msyamarket-btn-danger.active:hover, .open > .dropdown-toggle.msyamarket-btn-danger:hover, .msyamarket-btn-danger:active:focus, .msyamarket-btn-danger.active:focus, .open > .dropdown-toggle.msyamarket-btn-danger:focus, .msyamarket-btn-danger:active.focus, .msyamarket-btn-danger.active.focus, .open > .dropdown-toggle.msyamarket-btn-danger.focus { color: #fff; background-color: #ac2925; border-color: #761c19 }
+.msyamarket-btn-danger:active, .msyamarket-btn-danger.active, .open > .dropdown-toggle.msyamarket-btn-danger { background-image: none }
+.msyamarket-btn-danger.disabled:hover, .msyamarket-btn-danger[disabled]:hover, fieldset[disabled] .msyamarket-btn-danger:hover, .msyamarket-btn-danger.disabled:focus, .msyamarket-btn-danger[disabled]:focus, fieldset[disabled] .msyamarket-btn-danger:focus, .msyamarket-btn-danger.disabled.focus, .msyamarket-btn-danger[disabled].focus, fieldset[disabled] .msyamarket-btn-danger.focus { background-color: #d9534f; border-color: #d43f3a }
+.msyamarket-btn-danger .badge { color: #d9534f; background-color: #fff }
+.msyamarket-btn-link { color: #337ab7; font-weight: normal; border-radius: 0 }
+.msyamarket-btn-link, .msyamarket-btn-link:active, .msyamarket-btn-link.active, .msyamarket-btn-link[disabled], fieldset[disabled] .msyamarket-btn-link { background-color: transparent; -webkit-box-shadow: none; box-shadow: none }
+.msyamarket-btn-link, .msyamarket-btn-link:hover, .msyamarket-btn-link:focus, .msyamarket-btn-link:active { border-color: transparent }
+.msyamarket-btn-link:hover, .msyamarket-btn-link:focus { color: #23527c; text-decoration: underline; background-color: transparent }
+.msyamarket-btn-link[disabled]:hover, fieldset[disabled] .msyamarket-btn-link:hover, .msyamarket-btn-link[disabled]:focus, fieldset[disabled] .msyamarket-btn-link:focus { color: #777; text-decoration: none }
+.msyamarket-btn-lg { padding: 10px 16px; font-size: 18px; line-height: 1.3333333; border-radius: 6px }
+.msyamarket-btn-sm { padding: 5px 10px; font-size: 12px; line-height: 1.5; border-radius: 3px }
+.msyamarket-btn-xs { padding: 1px 5px; font-size: 12px; line-height: 1.5; border-radius: 3px }
+.msyamarket-btn-block { display: block; width: 100% }
+.msyamarket-btn-block + .msyamarket-btn-block { margin-top: 5px }
