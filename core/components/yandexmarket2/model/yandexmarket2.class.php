@@ -1,16 +1,24 @@
 <?php
 
-class YandexMarket2
+// namespace MODX\Components\YandexMarket2;
+
+// use modX;
+
+require __DIR__.'/../vendor/autoload.php';
+
+class yandexmarket2
 {
     /** @var modX $modx */
     public $modx;
+
+    public $config = [];
 
 
     /**
      * @param  modX  $modx
      * @param  array  $config
      */
-    function __construct(modX $modx, array $config = [])
+    public function __construct(modX $modx, array $config = [])
     {
         $this->modx =& $modx;
         $corePath = $modx->getOption('yandexmarket2_core_path', null,

@@ -6,7 +6,7 @@
  */
 class YandexMarket2HomeManagerController extends modExtraManagerController
 {
-    /** @var YandexMarket2 $YandexMarket2 */
+    /** @var yandexmarket2 $YandexMarket2 */
     public $YandexMarket2;
 
 

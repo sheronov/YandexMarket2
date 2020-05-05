@@ -1,15 +1,15 @@
 <?php
-if (file_exists(dirname(dirname(dirname(__DIR__))) . '/config.core.php')) {
+if (file_exists(dirname(__DIR__, 3). '/config.core.php')) {
     /** @noinspection PhpIncludeInspection */
-    require_once dirname(dirname(dirname(__DIR__))) . '/config.core.php';
+    require_once dirname(__DIR__, 3). '/config.core.php';
 } else {
-    require_once dirname(dirname(dirname(dirname(__DIR__)))) . '/config.core.php';
+    require_once dirname(__DIR__, 4). '/config.core.php';
 }
 /** @noinspection PhpIncludeInspection */
 require_once MODX_CORE_PATH . 'config/' . MODX_CONFIG_KEY . '.inc.php';
 /** @noinspection PhpIncludeInspection */
 require_once MODX_CONNECTORS_PATH . 'index.php';
-/** @var YandexMarket2 $YandexMarket2 */
+/** @var yandexmarket2 $YandexMarket2 */
 $YandexMarket2 = $modx->getService('YandexMarket2', 'YandexMarket2', MODX_CORE_PATH . 'components/yandexmarket2/model/');
 $modx->lexicon->load('yandexmarket2:default');
 

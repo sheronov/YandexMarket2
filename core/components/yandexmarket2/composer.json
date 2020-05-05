@@ -1,0 +1,9 @@
+{
+  "name": "sheronov/yandexmarket2",
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^7.1",
+    "ext-xmlwriter": "*",
+    "ext-xmlreader": "*"
+  }
+}
