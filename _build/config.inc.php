@@ -9,9 +9,9 @@ if (!defined('MODX_CORE_PATH')) {
 }
 
 return [
-    'name' => 'msYaMarket',
-    'name_lower' => 'msyamarket',
-    'version' => '0.1.0',
+    'name' => 'YandexMarket2',
+    'name_lower' => 'yandexmarket2',
+    'version' => '1.0.0',
     'release' => 'beta',
     // Install package to site right after build
     'install' => true,

@@ -5,23 +5,23 @@
 if ($transport->xpdo) {
     $modx =& $transport->xpdo;
 
-    $dev = MODX_BASE_PATH . 'Extras/msYaMarket/';
+    $dev = MODX_BASE_PATH . 'Extras/YandexMarket2/';
     /** @var xPDOCacheManager $cache */
     $cache = $modx->getCacheManager();
     if (file_exists($dev) && $cache) {
-        if (!is_link($dev . 'assets/components/msyamarket')) {
+        if (!is_link($dev . 'assets/components/yandexmarket2')) {
             $cache->deleteTree(
-                $dev . 'assets/components/msyamarket/',
+                $dev . 'assets/components/yandexmarket2/',
                 ['deleteTop' => true, 'skipDirs' => false, 'extensions' => []]
             );
-            symlink(MODX_ASSETS_PATH . 'components/msyamarket/', $dev . 'assets/components/msyamarket');
+            symlink(MODX_ASSETS_PATH . 'components/yandexmarket2/', $dev . 'assets/components/yandexmarket2');
         }
-        if (!is_link($dev . 'core/components/msyamarket')) {
+        if (!is_link($dev . 'core/components/yandexmarket2')) {
             $cache->deleteTree(
-                $dev . 'core/components/msyamarket/',
+                $dev . 'core/components/yandexmarket2/',
                 ['deleteTop' => true, 'skipDirs' => false, 'extensions' => []]
             );
-            symlink(MODX_CORE_PATH . 'components/msyamarket/', $dev . 'core/components/msyamarket');
+            symlink(MODX_CORE_PATH . 'components/yandexmarket2/', $dev . 'core/components/yandexmarket2');
         }
     }
 }
