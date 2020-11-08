@@ -2,13 +2,11 @@
 
 /**
  * The home manager controller for YandexMarket2.
- *
  */
 class YandexMarket2HomeManagerController extends modExtraManagerController
 {
     /** @var yandexmarket2 $YandexMarket2 */
     public $YandexMarket2;
-
 
     /**
      *
@@ -17,11 +15,10 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
     {
         $this->YandexMarket2 = $this->modx->getService('YandexMarket2', 'YandexMarket2',
             $this->modx->getOption('yandexmarket2_core_path', null,
-                $this->modx->getOption('core_path') . 'components/yandexmarket2/') . '/model/');
+                $this->modx->getOption('core_path').'components/yandexmarket2/').'/model/');
 
         parent::initialize();
     }
-
 
     /**
      * @return array
@@ -31,7 +28,6 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
         return ['yandexmarket2:default'];
     }
 
-
     /**
      * @return bool
      */
@@ -39,7 +35,6 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
     {
         return true;
     }
-
 
     /**
      * @return null|string
@@ -49,35 +44,32 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
         return $this->modx->lexicon('yandexmarket2');
     }
 
-
     /**
      * @return void
      */
     public function loadCustomCssJs()
     {
-        $this->addCss($this->YandexMarket2->config['cssUrl'] . 'mgr/main.css');
-        $this->addJavascript($this->YandexMarket2->config['jsUrl'] . 'mgr/yandexmarket2.js');
-        $this->addJavascript($this->YandexMarket2->config['jsUrl'] . 'mgr/misc/utils.js');
-        $this->addJavascript($this->YandexMarket2->config['jsUrl'] . 'mgr/misc/combo.js');
-        $this->addJavascript($this->YandexMarket2->config['jsUrl'] . 'mgr/widgets/items.grid.js');
-        $this->addJavascript($this->YandexMarket2->config['jsUrl'] . 'mgr/widgets/items.windows.js');
-        $this->addJavascript($this->YandexMarket2->config['jsUrl'] . 'mgr/widgets/home.panel.js');
-        $this->addJavascript($this->YandexMarket2->config['jsUrl'] . 'mgr/sections/home.js');
+        $this->addCss($this->YandexMarket2->config['mgrAssetsUrl'].'css/index.css');
 
         $this->addHtml('<script type="text/javascript">
-        YandexMarket2.config = ' . json_encode($this->YandexMarket2->config) . ';
-        YandexMarket2.config.connector_url = "' . $this->YandexMarket2->config['connectorUrl'] . '";
-        Ext.onReady(function() {MODx.load({ xtype: "yandexmarket2-page-home"});});
+        window.ym2Config = {
+            // config: '.json_encode($this->YandexMarket2->config).',
+            apiUrl: "'.$this->YandexMarket2->config['connectorUrl'].'",
+            modAuth: "'.$this->modx->user->getUserToken($this->modx->context->key).'",
+            lang: '.json_encode($this->modx->lexicon->fetch('yandexmarket2_', true)).'
+        }
         </script>');
-    }
 
+        $this->addJavascript($this->YandexMarket2->config['mgrAssetsUrl'].'js/chunk-vendors.js');
+        $this->addLastJavascript($this->YandexMarket2->config['mgrAssetsUrl'].'js/index.js');
+    }
 
     /**
      * @return string
      */
     public function getTemplateFile()
     {
-        $this->content .= '<div id="yandexmarket2-panel-home-div"></div>';
+        $this->content .= '<div id="yandexmarket2-app"></div>';
 
         return '';
     }

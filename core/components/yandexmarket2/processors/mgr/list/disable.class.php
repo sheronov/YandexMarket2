@@ -1,9 +1,9 @@
 <?php
 
-class YandexMarket2ItemEnableProcessor extends modObjectProcessor
+class YandexMarket2ListDisableProcessor extends modObjectProcessor
 {
-    public $objectType = 'YandexMarket2Item';
-    public $classKey = 'YandexMarket2Item';
+    public $objectType = 'YandexMarket2List';
+    public $classKey = 'YandexMarket2List';
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 
@@ -23,12 +23,12 @@ class YandexMarket2ItemEnableProcessor extends modObjectProcessor
         }
 
         foreach ($ids as $id) {
-            /** @var YandexMarket2Item $object */
+            /** @var YandexMarket2List $object */
             if (!$object = $this->modx->getObject($this->classKey, $id)) {
                 return $this->failure($this->modx->lexicon('yandexmarket2_item_err_nf'));
             }
 
-            $object->set('active', true);
+            $object->set('active', false);
             $object->save();
         }
 
@@ -37,4 +37,4 @@ class YandexMarket2ItemEnableProcessor extends modObjectProcessor
 
 }
 
-return 'YandexMarket2ItemEnableProcessor';
+return 'YandexMarket2ListDisableProcessor';

@@ -1,9 +1,9 @@
 <?php
 
-class YandexMarket2ItemCreateProcessor extends modObjectCreateProcessor
+class YandexMarket2ListCreateProcessor extends modObjectCreateProcessor
 {
-    public $objectType = 'YandexMarket2Item';
-    public $classKey = 'YandexMarket2Item';
+    public $objectType = 'YandexMarket2List';
+    public $classKey = 'YandexMarket2List';
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'create';
 
@@ -25,4 +25,4 @@ class YandexMarket2ItemCreateProcessor extends modObjectCreateProcessor
 
 }
 
-return 'YandexMarket2ItemCreateProcessor';
+return 'YandexMarket2ListCreateProcessor';

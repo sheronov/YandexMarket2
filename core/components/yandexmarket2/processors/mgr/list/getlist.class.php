@@ -1,9 +1,9 @@
 <?php
 
-class YandexMarket2ItemGetListProcessor extends modObjectGetListProcessor
+class YandexMarket2ListGetListProcessor extends modObjectGetListProcessor
 {
-    public $objectType = 'YandexMarket2Item';
-    public $classKey = 'YandexMarket2Item';
+    public $objectType = 'YandexMarket2List';
+    public $classKey = 'YandexMarket2List';
     public $defaultSortField = 'id';
     public $defaultSortDirection = 'DESC';
     //public $permission = 'list';
@@ -103,4 +103,4 @@ class YandexMarket2ItemGetListProcessor extends modObjectGetListProcessor
 
 }
 
-return 'YandexMarket2ItemGetListProcessor';
+return 'YandexMarket2ListGetListProcessor';

@@ -13,7 +13,6 @@ class yandexmarket2
 
     public $config = [];
 
-
     /**
      * @param  modX  $modx
      * @param  array  $config
@@ -35,6 +34,8 @@ class yandexmarket2
             'assetsUrl'    => $assetsUrl,
             'cssUrl'       => $assetsUrl.'css/',
             'jsUrl'        => $assetsUrl.'js/',
+            'mgrAssetsUrl' => $assetsUrl.'mgr/',
+
         ], $config);
 
         $this->modx->addPackage('yandexmarket2', $this->config['modelPath']);

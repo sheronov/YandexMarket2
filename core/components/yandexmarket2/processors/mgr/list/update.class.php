@@ -1,9 +1,9 @@
 <?php
 
-class YandexMarket2ItemUpdateProcessor extends modObjectUpdateProcessor
+class YandexMarket2ListUpdateProcessor extends modObjectUpdateProcessor
 {
-    public $objectType = 'YandexMarket2Item';
-    public $classKey = 'YandexMarket2Item';
+    public $objectType = 'YandexMarket2List';
+    public $classKey = 'YandexMarket2List';
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 
@@ -45,4 +45,4 @@ class YandexMarket2ItemUpdateProcessor extends modObjectUpdateProcessor
     }
 }
 
-return 'YandexMarket2ItemUpdateProcessor';
+return 'YandexMarket2ListUpdateProcessor';
