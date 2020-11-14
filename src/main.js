@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
-// import axios from 'axios';
+import vuetify from './plugins/vuetify';
 
 const appId = 'yandexmarket2-app';
 
@@ -11,7 +11,9 @@ const appResize = () => {
     }
 
     const app = document.getElementById(appId);
-    app.style.cssText = `height:${windowHeight}px;overflow-y: auto; overflow-x: hidden;`;
+    if(app) {
+        app.style.cssText = `height:${windowHeight}px;overflow-y: auto; overflow-x: hidden;`;
+    }
 }
 
 
@@ -26,9 +28,10 @@ Vue.mixin({
 });
 
 window.onload = function () {
-    Vue.prototype.$_ = (key) => window.ym2Config.lang[key] || key;
+    Vue.prototype.$t = (key) => window.ym2Config && window.ym2Config.lang[key] || key;
 
     new Vue({
-        render: h => h(App),
+        vuetify,
+        render: h => h(App)
     }).$mount(`#${appId}`)
 }

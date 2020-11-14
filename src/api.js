@@ -30,10 +30,12 @@ export default {
                     data.append(key, params[key]);
                 }
             }
-        } else {
+            data.append('action', action);
+        } else if (params instanceof FormData) {
             data = params;
+            data.append('action', action);
         }
-        data.append('action', action);
+
         return data;
     }
 }

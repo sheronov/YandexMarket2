@@ -49,7 +49,8 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
      */
     public function loadCustomCssJs()
     {
-        $this->addCss($this->YandexMarket2->config['mgrAssetsUrl'].'css/index.css');
+        $this->addCss($this->YandexMarket2->config['mgrAssetsUrl'].'css/chunk-vendors.css');
+        $this->addCss($this->YandexMarket2->config['mgrAssetsUrl'].'css/app.css');
 
         $this->addHtml('<script type="text/javascript">
         window.ym2Config = {
@@ -61,7 +62,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
         </script>');
 
         $this->addJavascript($this->YandexMarket2->config['mgrAssetsUrl'].'js/chunk-vendors.js');
-        $this->addLastJavascript($this->YandexMarket2->config['mgrAssetsUrl'].'js/index.js');
+        $this->addLastJavascript($this->YandexMarket2->config['mgrAssetsUrl'].'js/app.js');
     }
 
     /**

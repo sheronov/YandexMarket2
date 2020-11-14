@@ -1,16 +1,20 @@
 <template>
-  <div id="yandexmarket2-app">
-    <br><br>
-    <div class="text-center">
-      This is YandexMarket2
-    </div>
-    <div>
-      Прайс-листов: {{ total }}<br>
-      <pre>
-        {{ lists }}
-      </pre>
-    </div>
-    <br><br>
+  <div id="yandexmarket2-app" data-vuetify>
+    <v-app style="background: transparent;">
+      <v-main>
+        <h4 class="text-h4 mb-3">
+          YandexMarket2
+          <span class="subtitle-1">Прайс-листов: {{ total }}</span>
+        </h4>
+        <v-data-table
+            :items="lists"
+            :headers="headers"
+            :items-per-page="pagination.limit"
+            class="elevation-1"
+        >
+        </v-data-table>
+      </v-main>
+    </v-app>
   </div>
 </template>
 
@@ -22,25 +26,35 @@ export default {
   data() {
     return {
       lists: [],
-      total: 0
+      headers: [
+        {text: 'ID', value: 'id'},
+        {text: this.$t('name'), value: 'name'},
+        {text: 'Описание', value: 'description'},
+      ],
+      total: 0,
+      pagination: {
+        start: 0,
+        limit: 20
+      }
+    }
+  },
+  methods: {
+    loadLists() {
+      api.post('mgr/list/getlist', this.pagination)
+          .then(({data}) => {
+            this.lists = data.results;
+            this.total = data.total;
+          })
     }
   },
   mounted() {
-    api.post('mgr/list/getlist',{start: 0, limit: 20})
-        .then(({data}) => {
-          this.lists = data.results;
-          this.total = data.total;
-        })
-  }
-}
+    this.loadLists();
+  },
+};
 </script>
 
 <style scoped>
 #yandexmarket2-app {
   padding: 0 20px;
-}
-
-.text-center {
-  text-align: center;
 }
 </style>

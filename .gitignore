@@ -12,3 +12,4 @@ vue/node_modules
 
 # Log files
 npm-debug.log*
+/assets/components/yandexmarket2/mgr/
