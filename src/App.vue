@@ -15,7 +15,7 @@
 </template>
 
 <script>
-// import axios from 'axios';
+import api from "./api";
 
 export default {
   name: 'yandexmarket2-app',
@@ -26,39 +26,11 @@ export default {
     }
   },
   mounted() {
-    let data = new FormData();
-    data.append('action', 'mgr/list/getlist');
-    data.append('start', 0);
-    data.append('limit', 20);
-
-    fetch(this.$apiUrl, {
-      headers: this.$httpConfig,
-      method: 'POST',
-      data: data,
-      credentials: 'include'
-    })
-        .then(response => response.json())
-        .then(result => {
-          console.log(result);
+    api.post('mgr/list/getlist',{start: 0, limit: 20})
+        .then(({data}) => {
+          this.lists = data.results;
+          this.total = data.total;
         })
-
-    // axios.request({
-    //   url: this.$apiUrl,
-    //   method: 'post',
-    //   withCredentials: true,
-    //   data: data,
-    //
-    // })
-    //     .then(({data}) => {
-    //       this.lists = data.results;
-    //       this.total = data.total;
-    //     })
-
-    // axios.post(this.$apiUrl, data, this.$httpConfig)
-    //     .then(({data}) => {
-    //       this.lists = data.results;
-    //       this.total = data.total;
-    //     })
   }
 }
 </script>

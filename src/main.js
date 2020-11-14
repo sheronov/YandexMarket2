@@ -2,8 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 // import axios from 'axios';
 
-let appId = 'yandexmarket2-app';
-Vue.config.productionTip = false
+const appId = 'yandexmarket2-app';
 
 const appResize = () => {
     let windowHeight = window.innerHeight;
@@ -27,34 +26,7 @@ Vue.mixin({
 });
 
 window.onload = function () {
-    let ym2Config = window.ym2Config || {
-        modAuth: process.env.VUE_APP_MOD_AUTH || '',
-        apiUrl: process.env.VUE_APP_API_URL || '',
-        lang: {}
-    };
-
-    // axios.defaults.withCredentials = true
-    // axios.defaults.headers.common['modAuth'] = ym2Config.modAuth;
-    let httpConfig = {
-        headers: {
-            modAuth: ym2Config.modAuth,
-        },
-    };
-
-    if (process.env.VUE_APP_COOKIE) {
-        let cookies = process.env.VUE_APP_COOKIE.split(';');
-        cookies.forEach(cookie => {
-            document.cookie = cookie  + '; expires=Sun, 1 Jan 2023 00:00:00 UTC; path=http://s9767.h8.modhost.pro/';
-        })
-        // document.cookie = process.env.VUE_APP_COOKIE + '; expires=Sun, 1 Jan 2023 00:00:00 UTC; path=/';
-        httpConfig.headers['Cookie'] = process.env.VUE_APP_COOKIE;
-    }
-
-    console.log(ym2Config, httpConfig);
-
-    Vue.prototype.$_ = (key) => ym2Config.lang[key] || key;
-    Vue.prototype.$apiUrl = ym2Config.apiUrl;
-    Vue.prototype.$httpConfig = httpConfig.headers;
+    Vue.prototype.$_ = (key) => window.ym2Config.lang[key] || key;
 
     new Vue({
         render: h => h(App),
