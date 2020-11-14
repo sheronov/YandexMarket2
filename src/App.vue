@@ -28,7 +28,7 @@ export default {
       lists: [],
       headers: [
         {text: 'ID', value: 'id'},
-        {text: this.$t('name'), value: 'name'},
+        {text: 'Название', value: 'name'},
         {text: 'Описание', value: 'description'},
       ],
       total: 0,
