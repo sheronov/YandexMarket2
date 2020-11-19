@@ -8,8 +8,9 @@ const appId = 'yandexmarket2-app';
 
 const appResize = () => {
     let windowHeight = window.innerHeight;
-    if (document.getElementById('modx-header')) {
-        windowHeight -= document.getElementById('modx-header').offsetHeight;
+    let header = document.getElementById('modx-header');
+    if (header) {
+        windowHeight -= header.offsetHeight;
     }
 
     const app = document.getElementById(appId);
@@ -18,18 +19,17 @@ const appResize = () => {
     }
 }
 
-
-Vue.mixin({
-    mounted: function () {
-        appResize();
-        window.addEventListener('resize', appResize);
-    },
-    destroyed() {
-        window.removeEventListener('resize', appResize);
-    }
-});
-
 window.onload = function () {
+    Vue.mixin({
+        mounted: function () {
+            appResize();
+            window.addEventListener('resize', appResize);
+        },
+        destroyed() {
+            window.removeEventListener('resize', appResize);
+        }
+    });
+
     let ym2Config = window.ym2Config || (process.env.NODE_ENV !== 'production' ? {
         modAuth: process.env.VUE_APP_MOD_AUTH || '',
         apiUrl: process.env.VUE_APP_API_URL || '',
