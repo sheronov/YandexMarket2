@@ -3,14 +3,39 @@
     <v-row>
       <v-col>
         <v-treeview
-            v-model="tree"
-            :load-children="fetch"
-            :items="items"
+            class="yandexmarket-categories"
+            ref="categoriesTree"
+            :load-children="loadCategories"
+            :items="categories"
+            :open.sync="opened"
             selection-type="independent"
+            item-children="children"
+            item-text="text"
+            item-key="pk"
             open-on-click
-            selectable
-            return-object
-        ></v-treeview>
+            hoverable
+            dense
+        >
+          <template v-slot:prepend="{ item }">
+            <v-simple-checkbox
+                v-if="item.selectable"
+                color="primary"
+                class="ml-1"
+                @click.stop=""
+                @input="selectCategory($event, item)"
+                :value="selected.indexOf(item.pk) !== -1"
+                :ripple="false"
+            ></v-simple-checkbox>
+          </template>
+          <template v-slot:label="{ item }">
+            <div class="v-treeview-node__content">
+              <div class="v-treeview-node__prepend">
+                <v-icon v-if="item.iconCls" class="ma-1">icon {{ item.iconCls }}</v-icon>
+              </div>
+              <div class="v-treeview-node__label" v-html="item.text"></div>
+            </div>
+          </template>
+        </v-treeview>
       </v-col>
       <v-divider vertical></v-divider>
       <v-col
@@ -18,109 +43,99 @@
           md="6"
       >
         <v-card-text>
-          <div
-              v-if="tree.length === 0"
-              class="title font-weight-light grey--text pa-4 text-center"
-          >
-            Select your favorite breweries
+          <div class="title font-weight-light grey--text pa-4 text-center">
+            Выбранные категории
           </div>
 
-          <v-scroll-x-transition
-              group
-              hide-on-leave
-          >
-            <v-chip
-                v-for="(selection, i) in tree"
-                :key="i"
-                color="grey"
-                dark
-                small
-                class="ma-1"
-            >
-              <v-icon
-                  left
-                  small
-              >
-                mdi-beer
-              </v-icon>
-              {{ selection.name }}
-            </v-chip>
-          </v-scroll-x-transition>
+          {{ selected }}
         </v-card-text>
       </v-col>
     </v-row>
+
   </v-container>
 </template>
 
 <script>
+import api from "@/api";
+
 export default {
   name: 'Tree',
   data: () => ({
-    breweries: [],
-    isLoading: false,
-    tree: [],
-    types: [],
+    loading: false,
+    categories: [],
+    selected: [],
+    opened: []
   }),
-
-  computed: {
-    items () {
-      const children = this.types.map(type => ({
-        id: type,
-        name: this.getName(type),
-        children: this.getChildren(type),
-      }))
-
-      return [{
-        id: 1,
-        name: 'All Breweries',
-        children,
-      }]
-    },
-    shouldShowTree () {
-      return this.breweries.length > 0 && !this.isLoading
-    },
-  },
-
-  watch: {
-    breweries (val) {
-      this.types = val.reduce((acc, cur) => {
-        const type = cur.brewery_type
-
-        if (!acc.includes(type)) acc.push(type)
-
-        return acc
-      }, []).sort()
-    },
-  },
-
   methods: {
-    fetch () {
-      if (this.breweries.length) return
-
-      return fetch('https://api.openbrewerydb.org/breweries')
-          .then(res => res.json())
-          .then(data => (this.breweries = data))
-          .catch(err => console.log(err))
-    },
-    getChildren (type) {
-      const breweries = []
-
-      for (const brewery of this.breweries) {
-        if (brewery.brewery_type !== type) continue
-
-        breweries.push({
-          ...brewery,
-          name: this.getName(brewery.name),
-        })
+    selectCategory(value, category) {
+      if (value) {
+        this.selected.push(category.pk);
+      } else {
+        this.selected = this.selected.filter(selected => selected !== category.pk);
       }
-
-      return breweries.sort((a, b) => {
-        return a.name > b.name ? 1 : -1
-      })
     },
-    getName (name) {
-      return `${name.charAt(0).toUpperCase()}${name.slice(1)}`
+    loadCategories(item) {
+      this.loading = true;
+      const parentNode = this.$refs.categoriesTree.nodes[item.pk];
+      console.log(item, parentNode);
+      return api.post('mgr/getcategories', {id: item.id})
+          .then(({data}) => {
+            // if (open) {
+            //   parentNode.isOpen = true;
+            // }
+            item.children = data;
+            data.forEach((node) => {
+              // this.$refs.categoriesTree.nodes[node.pk] = {...parentNode, item: node, vnode: null};
+              if (node.selected) {
+                this.selected.push(node.pk);
+              }
+              if (node.expanded) {
+
+                // console.log('node expanded', JSON.stringify(node));
+                this.$nextTick().then(() => {
+                  parentNode.isOpen = true;
+                  this.loadCategories(node);
+                  // setTimeout(() => {
+                  //   this.opened.push(node.pk)
+                  // }, 100);
+                });
+                // setTimeout(() => {this.opened.push(node.pk)}, 100);
+                // this.$nextTick(() => this.loadCategories(node, true));
+              }
+
+
+            });
+          })
+          .catch(e => console.error(e))
+          .then(() => this.loading = false);
     },
   },
+  mounted() {
+    api.post('mgr/getcategories', {id: 'root'})
+        .then(({data}) => {
+          this.categories = data;
+          data.forEach(node => {
+            if (node.expanded) {
+              // setTimeout(() => {
+              //   this.opened.push(node.pk)
+              // }, 1000);
+              this.$nextTick().then(() => this.opened.push(node.pk));
+              // setTimeout(() => this.loadCategories(node, true), 10);
+              // this.$nextTick(() => this.loadCategories(node, true))
+            }
+          })
+        })
+        .catch(e => console.error(e));
+  }
 }
 </script>
+
+<style scoped>
+.yandexmarket-categories >>> .v-treeview-node__prepend:empty {
+  display: none;
+}
+
+.yandexmarket-categories >>> .v-treeview-node__label .v-treeview-node__content {
+  margin-left: 0;
+}
+</style>

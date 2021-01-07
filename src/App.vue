@@ -30,4 +30,21 @@ export default {
 #yandexmarket2-app >>> .v-application--wrap {
   min-height: auto;
 }
+#yandexmarket2-app >>> .v-icon.icon {
+  font-family: FontAwesome;
+  font-size: 16px;
+  line-height: 1.5;
+}
+#yandexmarket2-app >>> .icon.icon-xs {
+    font-size: 12px;
+}
+#yandexmarket2-app >>> .icon.icon-sm {
+    font-size: 14px;
+}
+#yandexmarket2-app >>> .icon.icon-md {
+    font-size: 20px;
+}
+#yandexmarket2-app >>> .icon.icon-lg {
+    font-size: 24px;
+}
 </style>
