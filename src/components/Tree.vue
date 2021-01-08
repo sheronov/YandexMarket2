@@ -47,7 +47,7 @@
               <template v-slot:label="{ item }">
                 <div class="v-treeview-node__content">
                   <div class="v-treeview-node__prepend">
-                    <v-icon v-if="item.iconCls" class="mx-1">icon {{ item.iconCls }}</v-icon>
+                    <v-icon v-if="item.iconCls" class="mx-1 v-treeview-label__icon">icon {{ item.iconCls }}</v-icon>
                   </div>
                   <div class="v-treeview-node__label" v-html="item.text"></div>
                 </div>
@@ -165,6 +165,10 @@ export default {
 
 <!--suppress CssUnusedSymbol -->
 <style scoped>
+.yandexmarket-categories >>> *, .yandexmarket-categories >>> .v-treeview-label__icon {
+  color: #556C88;
+}
+
 .yandexmarket-categories >>> .v-treeview-node__prepend:empty {
   display: none;
 }

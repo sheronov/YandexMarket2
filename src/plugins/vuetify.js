@@ -16,4 +16,11 @@ export default new Vuetify({
     icons: {
         values: MODX_ICONS
     },
+    theme: {
+        themes: {
+            light: {
+                primary: '#3697cd'
+            }
+        }
+    },
 });
