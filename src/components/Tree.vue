@@ -19,7 +19,7 @@
             </v-btn>
           </v-toolbar>
           <v-divider/>
-          <v-card-text class="pa-0">
+          <v-card-text class="px-0 pt-0 pb-2">
             <v-treeview
                 :items="categories"
                 :load-children="loadCategories"
