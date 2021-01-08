@@ -147,11 +147,11 @@ export default {
     },
     expandTree() {
       this.$refs.categoriesTree.updateAll(true);
-      this.$nextTick().then(() => {
-        if (Object.keys(this.awaitChildren).length) {
+      setTimeout(() => {
+        if (Object.keys(this.awaitChildren).length > 0) {
           this.expandTree();
         }
-      })
+      }, 200); // we can only check after categories loading
     },
     collapseTree() {
       this.$refs.categoriesTree.updateAll(false);
