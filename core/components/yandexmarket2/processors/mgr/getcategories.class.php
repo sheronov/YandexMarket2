@@ -1,11 +1,12 @@
 <?php
 
+/** @noinspection PhpIncludeInspection */
 require_once MODX_CORE_PATH.'model/modx/processors/resource/getnodes.class.php';
 
 class YandexMarket2GetCategoriesProcessor extends modResourceGetNodesProcessor
 {
-
-    protected $categories   = [9, 22, 4, 126];
+    protected $categories   = [];
+    // protected $categories   = [9, 22, 4, 135]; //массив для проверки выбранных категорий
     protected $neededToOpen = [];
 
     public function initialize(): bool
@@ -20,6 +21,7 @@ class YandexMarket2GetCategoriesProcessor extends modResourceGetNodesProcessor
         if (!empty($this->categories) && !empty($this->contextKey) && $this->contextKey !== 'root') {
             foreach ($this->categories as $category) {
                 $parents = $this->modx->getParentIds($category, 10, ['context' => $this->contextKey]);
+                $parents[] = $category;
                 foreach ($parents as $parent) {
                     $this->neededToOpen[$parent] = true;
                 }
@@ -49,7 +51,9 @@ class YandexMarket2GetCategoriesProcessor extends modResourceGetNodesProcessor
         if (!empty($this->categories)) {
             $children = $this->modx->getChildIds(0, 1, ['context' => $node['pk']]);
             foreach ($this->categories as $category) {
-                if (array_intersect($children, $this->modx->getParentIds($category, 10, ['context' => $node['pk']]))) {
+                $parents = $this->modx->getParentIds($category, 10, ['context' => $node['pk']]);
+                $parents[] = $category;
+                if (array_intersect($children, $parents)) {
                     $node['expanded'] = true;
                     break;
                 }
@@ -75,18 +79,8 @@ class YandexMarket2GetCategoriesProcessor extends modResourceGetNodesProcessor
             unset($node['children']);
         }
 
-        if (!empty($this->neededToOpen)) {
-            $this->modx->log(1, 'opened '.print_r($this->neededToOpen, 1));
-            // $parents = $this->modx->getParentIds($node['pk'], 1, ['context' => $node['ctx']]);
-            // foreach ($parents as $parent) {
-            if (isset($this->neededToOpen[$resource->id])) {
-                $node['expanded'] = true;
-                // break;
-            }
-            // }
-            // if (array_intersect($parents, array_keys($this->neededToOpen))) {
-            //     $node['expanded'] = true;
-            // }
+        if (!empty($this->neededToOpen) && isset($this->neededToOpen[$resource->id]) && $node['hasChildren']) {
+            $node['expanded'] = true;
         }
 
         return $node;
