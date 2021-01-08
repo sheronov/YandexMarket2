@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="px-0">
     <v-row no-gutters>
       <v-col>
         <v-card :loading="loading">
@@ -184,6 +184,13 @@ export default {
 .yandexmarket-categories >>> > .v-treeview-node > .v-treeview-node__root {
   min-height: 32px;
   background: #f6f6f6;
+}
+
+.yandexmarket-categories >>> .v-input--selection-controls__ripple {
+  width: 26px;
+  height: 26px;
+  left: -9px;
+  top: -9px;
 }
 
 </style>
