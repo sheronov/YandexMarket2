@@ -186,11 +186,4 @@ export default {
   background: #f6f6f6;
 }
 
-.yandexmarket-categories >>> .v-input--selection-controls__ripple {
-  width: 26px;
-  height: 26px;
-  left: -9px;
-  top: -9px;
-}
-
 </style>
