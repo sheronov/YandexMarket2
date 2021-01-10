@@ -30,11 +30,13 @@ const routes = [
             }, {
                 path: 'categories',
                 component: PriceListCategories,
-                name: 'pricelist.categories'
+                name: 'pricelist.categories',
+                meta: {title: 'Категории'}
             }, {
                 path: 'offers',
                 component: PriceListColumns,
-                name: 'pricelist.offers'
+                name: 'pricelist.offers',
+                meta: {title: 'Данные'}
             }]
         }, {
             path: '404', name: '404', component: HelloWorld, meta: {title: 'Ошибка 404'}
