@@ -1,7 +1,4 @@
 <template>
-  <v-container fluid class="px-0">
-    <v-row no-gutters>
-      <v-col>
         <v-card :loading="loading">
           <v-toolbar flat dense color="grey lighten-3" height="32">
             <span v-if="!selected.length">Выберите категории</span>
@@ -55,23 +52,6 @@
             </v-treeview>
           </v-card-text>
         </v-card>
-      </v-col>
-      <v-col
-          cols="12"
-          md="6"
-      >
-        <v-card-text>
-          <div class="title font-weight-light grey--text pa-4 text-center">
-            Пример выгрузки и другие настройки
-          </div>
-          <code>
-            {{ selected }}
-          </code>
-        </v-card-text>
-      </v-col>
-    </v-row>
-
-  </v-container>
 </template>
 
 <script>
@@ -79,13 +59,18 @@ import api from "@/api";
 import {declension} from "@/helpers";
 
 export default {
-  name: 'Tree',
+  name: 'CategoriesTree',
+  props: {
+    selected: {
+      type: Array,
+      default: () => ([])
+    }
+  },
   data: () => ({
     itemKey: 'pk',
     itemText: 'text',
     loading: false,
     categories: [],
-    selected: [],
     opened: [],
     loaded: [],
     awaitChildren: {}

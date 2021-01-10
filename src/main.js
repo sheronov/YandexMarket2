@@ -4,7 +4,7 @@ import vuetify from './plugins/vuetify';
 import axios from "axios";
 import router from "./router";
 
-const appId = 'yandexmarket2-app';
+const appId = 'yandexmarket-app';
 
 const appResize = () => {
     let windowHeight = window.innerHeight;

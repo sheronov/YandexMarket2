@@ -70,7 +70,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
      */
     public function getTemplateFile()
     {
-        $this->content .= '<div id="yandexmarket2-app"></div>';
+        $this->content .= '<div id="yandexmarket-app"></div>';
 
         return '';
     }
