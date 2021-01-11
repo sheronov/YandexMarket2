@@ -1,57 +1,55 @@
 <template>
-        <v-card :loading="loading">
-          <v-toolbar flat dense color="grey lighten-3" height="32">
-            <span v-if="!selected.length">Выберите категории</span>
-            <span v-else>Выбрано {{ declension(selected.length, ['категория', 'категории', 'категорий']) }}</span>
-            <v-spacer/>
-
-            <v-btn icon title="Раскрыть все категории" @click="expandTree">
-              <v-icon>icon icon-expand</v-icon>
-            </v-btn>
-            <v-btn icon title="Свернуть все категории" @click="collapseTree">
-              <v-icon>icon icon-compress</v-icon>
-            </v-btn>
-            <v-btn icon title="Обновить дерево" @click="reloadTree">
-              <v-icon>icon icon-refresh</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <v-divider/>
-          <v-card-text class="px-0 pt-0 pb-2">
-            <v-treeview
-                :items="categories"
-                :load-children="loadCategories"
-                :item-text="itemText"
-                :item-key="itemKey"
-                class="yandexmarket-categories"
-                ref="categoriesTree"
-                selection-type="independent"
-                item-children="children"
-                open-on-click
-                hoverable
-                dense
-            >
-              <template v-slot:prepend="{ item }">
-                <v-simple-checkbox
-                    title="Выбрать категорию"
-                    v-if="item.selectable"
-                    color="primary"
-                    class="text-center"
-                    @click.stop=""
-                    @input="selectCategory($event, item)"
-                    :value="selected.indexOf(item[itemKey]) !== -1"
-                ></v-simple-checkbox>
-              </template>
-              <template v-slot:label="{ item }">
-                <div class="v-treeview-node__content">
-                  <div class="v-treeview-node__prepend">
-                    <v-icon v-if="item.iconCls" class="mx-1 v-treeview-label__icon">icon {{ item.iconCls }}</v-icon>
-                  </div>
-                  <div class="v-treeview-node__label" v-html="item.text"></div>
-                </div>
-              </template>
-            </v-treeview>
-          </v-card-text>
-        </v-card>
+  <v-card :loading="loading" flat tile>
+    <v-toolbar flat color="grey lighten-2" dense>
+      <span v-if="!selected.length">Выберите категории для выгрузки</span>
+      <span v-else>Выбрано {{ declension(selected.length, ['категория', 'категории', 'категорий']) }}</span>
+      <v-spacer/>
+      <v-btn icon title="Раскрыть все категории" @click="expandTree">
+        <v-icon>icon icon-expand</v-icon>
+      </v-btn>
+      <v-btn icon title="Свернуть все категории" @click="collapseTree">
+        <v-icon>icon icon-compress</v-icon>
+      </v-btn>
+      <v-btn icon title="Обновить дерево" @click="reloadTree">
+        <v-icon>icon icon-refresh</v-icon>
+      </v-btn>
+    </v-toolbar>
+    <v-card-text class="px-0 pt-0 pb-2">
+      <v-treeview
+          :items="categories"
+          :load-children="loadCategories"
+          :item-text="itemText"
+          :item-key="itemKey"
+          class="yandexmarket-categories"
+          ref="categoriesTree"
+          selection-type="independent"
+          item-children="children"
+          open-on-click
+          hoverable
+          dense
+      >
+        <template v-slot:prepend="{ item }">
+          <v-simple-checkbox
+              title="Выбрать категорию"
+              v-if="item.selectable"
+              color="primary"
+              class="text-center"
+              @click.stop=""
+              @input="selectCategory($event, item)"
+              :value="selected.indexOf(item[itemKey]) !== -1"
+          ></v-simple-checkbox>
+        </template>
+        <template v-slot:label="{ item }">
+          <div class="v-treeview-node__content">
+            <div class="v-treeview-node__prepend">
+              <v-icon v-if="item.iconCls" class="mx-1 v-treeview-label__icon">icon {{ item.iconCls }}</v-icon>
+            </div>
+            <div class="v-treeview-node__label" v-html="item.text"></div>
+          </div>
+        </template>
+      </v-treeview>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>

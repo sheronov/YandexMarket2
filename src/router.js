@@ -14,7 +14,7 @@ const routes = [
     {
         path: '/',
         component: Main,
-        meta: {title: 'Прайс-листы'},
+        meta: {title: 'Прайс-листы', to: 'pricelists'},
         children: [{
             path: '',
             component: PriceLists,
@@ -22,7 +22,7 @@ const routes = [
         }, {
             path: ':id',
             component: PriceList,
-            meta: {title: 'Настройки прайс-листа'},
+            meta: {title: 'Настройки прайс-листа', to: 'pricelist'},
             children: [{
                 path: '',
                 component: PriceListSettings,

@@ -1,23 +1,21 @@
 <template>
   <v-main>
-    <h1 class="text-h5 mb-3 mt-2">
-      YandexMarket
-      <span class="subtitle-1"> - выгрузка предложений в XML для Яндекс Маркет и не только</span>
-      <!--   TODO: сюда сделать breadcrumbs   -->
-    </h1>
-    <div class="yandexmarket-view">
-    <router-view></router-view>
+    <component-header/>
+    <div class="yandexmarket-view mb-4">
+      <router-view></router-view>
     </div>
   </v-main>
 </template>
 
 <script>
+import ComponentHeader from "@/components/ComponentHeader";
 export default {
-  name: 'Main'
+  name: 'Main',
+  components: {ComponentHeader}
 }
 </script>
 
-<style>
+<style scoped>
 .yandexmarket-view {
   position: relative;
 }

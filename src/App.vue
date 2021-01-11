@@ -15,7 +15,7 @@ export default {
 <!--suppress CssUnusedSymbol -->
 <style scoped>
 #yandexmarket-app {
-  padding: 0 20px;
+  padding: 0 15px;
 }
 #yandexmarket-app >>> .v-application--wrap {
   min-height: auto;

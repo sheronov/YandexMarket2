@@ -1,9 +1,8 @@
 <template>
   <div class="yandexmarket-pricelist-settings">
-    <h4>Категория и условия по товарам</h4>
-    <v-container fluid class="px-0">
+    <v-container fluid class="px-0 py-1">
       <v-row no-gutters>
-        <v-col>
+        <v-col md="4">
           <CategoriesTree :selected="selected"/>
         </v-col>
         <v-col
