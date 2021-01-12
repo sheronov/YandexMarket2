@@ -1,9 +1,9 @@
 <?php
 
-class YandexMarket2ListGetProcessor extends modObjectGetProcessor
+class ymPricelistGetProcessor extends modObjectGetProcessor
 {
-    public $objectType = 'YandexMarket2List';
-    public $classKey = 'YandexMarket2List';
+    public $objectType = 'ymPricelist';
+    public $classKey = 'ymPricelist';
     public $languageTopics = ['yandexmarket2:default'];
     //public $permission = 'view';
 
@@ -25,4 +25,4 @@ class YandexMarket2ListGetProcessor extends modObjectGetProcessor
 
 }
 
-return 'YandexMarket2ListGetProcessor';
+return ymPricelistGetProcessor::class;

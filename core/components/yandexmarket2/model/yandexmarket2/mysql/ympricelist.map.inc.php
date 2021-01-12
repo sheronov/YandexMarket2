@@ -1,8 +1,8 @@
 <?php
-$xpdo_meta_map['YandexMarket2List']= array (
+$xpdo_meta_map['ymPricelist']= array (
   'package' => 'yandexmarket2',
   'version' => '1.1',
-  'table' => 'yandexmarket2_lists',
+  'table' => 'yandexmarket_pricelists',
   'extends' => 'xPDOSimpleObject',
   'tableMeta' => 
   array (

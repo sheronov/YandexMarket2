@@ -1,9 +1,9 @@
 <?php
 
-class YandexMarket2ListRemoveProcessor extends modObjectProcessor
+class ymPricelistRemoveProcessor extends modObjectProcessor
 {
-    public $objectType = 'YandexMarket2List';
-    public $classKey = 'YandexMarket2List';
+    public $objectType = 'ymPricelist';
+    public $classKey = 'ymPricelist';
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
 
@@ -23,7 +23,7 @@ class YandexMarket2ListRemoveProcessor extends modObjectProcessor
         }
 
         foreach ($ids as $id) {
-            /** @var YandexMarket2List $object */
+            /** @var ymPricelist $object */
             if (!$object = $this->modx->getObject($this->classKey, $id)) {
                 return $this->failure($this->modx->lexicon('yandexmarket2_item_err_nf'));
             }
@@ -36,4 +36,4 @@ class YandexMarket2ListRemoveProcessor extends modObjectProcessor
 
 }
 
-return 'YandexMarket2ListRemoveProcessor';
+return ymPricelistRemoveProcessor::class;

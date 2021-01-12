@@ -3,7 +3,7 @@
 /** @noinspection PhpIncludeInspection */
 require_once MODX_CORE_PATH.'model/modx/processors/resource/getnodes.class.php';
 
-class YandexMarket2GetCategoriesProcessor extends modResourceGetNodesProcessor
+class ymCategoriesGetListProcessor extends modResourceGetNodesProcessor
 {
     protected $categories   = [];
     // protected $categories   = [9, 22, 4, 135]; //массив для проверки выбранных категорий
@@ -88,4 +88,4 @@ class YandexMarket2GetCategoriesProcessor extends modResourceGetNodesProcessor
 
 }
 
-return YandexMarket2GetCategoriesProcessor::class;
+return ymCategoriesGetListProcessor::class;

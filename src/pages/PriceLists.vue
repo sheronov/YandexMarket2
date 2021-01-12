@@ -62,7 +62,7 @@ export default {
     },
     loadLists() {
       this.loading = true;
-      api.post('mgr/list/getlist', this.pagination)
+      api.post('mgr/pricelists/getlist', this.pagination)
           .then(({data}) => {
             this.lists = data.results;
             this.total = data.total;

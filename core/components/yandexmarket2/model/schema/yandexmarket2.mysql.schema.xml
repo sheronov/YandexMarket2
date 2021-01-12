@@ -1,17 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model package="yandexmarket2" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB" phpdoc-package="yandexmarket2"
-       version="1.1">
-
-    <object class="YandexMarket2List" table="yandexmarket2_lists" extends="xPDOSimpleObject">
+<model package="yandexmarket2" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB" version="1.1">
+    <object class="ymPricelist" table="yandexmarket_pricelists" extends="xPDOSimpleObject">
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="false" default=""/>
         <field key="description" dbtype="text" phptype="string" null="true" default=""/>
         <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="true" default="1"/>
 
+        <!--
+        TODO: тут добавить поля крон: последнее обновление, флажок необходимости обновления, периодичность обновлений учесть, галочка cron_only (иначе будет при сохранении связанных товаров), псевдоним прайслиста, чтобы путь корректный был, тип прайслиста (для яндекс маркет, прайс.ру и прочих агрегаторов), условия для товаров.
+
+        TODO: в зависимости от типа листа будут генерироваться колонки с значениями по умолчанию, в которые попадут дефоултные значения (Название магазина, компания, урл, платформа, версия системы, валюты)
+        -->
         <index alias="name" name="name" primary="false" unique="false" type="BTREE">
             <column key="name" length="" collation="A" null="false"/>
         </index>
         <index alias="active" name="active" primary="false" unique="false" type="BTREE">
             <column key="active" length="" collation="A" null="false"/>
+        </index>
+    </object>
+
+    <object class="ymCategory" table="yandexmarket_categories" extends="xPDOSimpleObject">
+        <field key="category_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
+        <field key="pricelist_id" dbtype="int" null="true" attributes="unsigned" phptype="integer"/>
+
+        <aggregate alias="Category" class="modResource" local="category_id" foreign="id" cardintality="one"
+                   owner="foreign"/>
+        <aggregate alias="Pricelist" class="ymPricelist" local="pricelist_id" foreign="id" cardintality="one"
+                   owner="foreign"/>
+
+        <index alias="category_pricelist" name="category_pricelist" primary="false" unique="true" type="BTREE">
+            <column key="category_id" length=""  collation="A" null="false" />
+            <column key="pricelist_id" length="" collation="A" null="true" />
         </index>
     </object>
 

@@ -91,7 +91,7 @@ export default {
       if (this.awaitChildren[item[this.itemKey]]) {
         delete this.awaitChildren[item[this.itemKey]];
       }
-      return api.post('mgr/getcategories', {id: item.id})
+      return api.post('mgr/categories/getlist', {id: item.id})
           .then(({data}) => {
             item.children = data;
             data.forEach((child) => {
@@ -114,7 +114,7 @@ export default {
     },
     loadContexts() {
       this.loading = true;
-      api.post('mgr/getcategories', {id: 'root'})
+      api.post('mgr/categories/getlist', {id: 'root'})
           .then(({data}) => this.categories = data)
           .catch(e => console.error(e))
           .then(() => {
