@@ -2,20 +2,26 @@
 <model package="yandexmarket2" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB" version="1.1">
     <object class="ymPricelist" table="yandexmarket_pricelists" extends="xPDOSimpleObject">
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="false"/>
-        <field key="description" dbtype="text" phptype="string" null="true"/>
-        <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="true" default="1"/>
+        <field key="alias" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="type" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <!-- в зависимости от типа будут формировать поля по умолчанию -->
 
-        <!--
-        TODO: тут добавить поля крон: последнее обновление, флажок необходимости обновления, периодичность обновлений учесть, галочка cron_only (иначе будет при сохранении связанных товаров), псевдоним прайслиста, чтобы путь корректный был, тип прайслиста (для яндекс маркет, прайс.ру и прочих агрегаторов), условия для товаров.
+        <field key="created_on" dbtype="datetime" phptype="datetime" null="false"/>
+        <field key="edited_on" dbtype="datetime" phptype="datetime" null="true"/>
 
-        TODO: в зависимости от типа листа будут генерироваться колонки с значениями по умолчанию, в которые попадут дефоултные значения (Название магазина, компания, урл, платформа, версия системы, валюты)
-        -->
-        <index alias="name" name="name" primary="false" unique="false" type="BTREE">
-            <column key="name" length="" collation="A" null="false"/>
-        </index>
-        <index alias="active" name="active" primary="false" unique="false" type="BTREE">
-            <column key="active" length="" collation="A" null="false"/>
-        </index>
+        <field key="generated_on" dbtype="datetime" phptype="datetime" null="true"/>
+        <field key="generate_mode" dbtype="tinyint" phptype="integer" null="false"/>
+        <field key="generate_interval" dbtype="int" phptype="integer" null="true"/>
+        <field key="need_generate" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0"/>
+
+        <field key="where" dbtype="text" phptype="json" null="true"/>
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
+
+        <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="1"/>
+
+        <composite alias="Categories" class="ymCategory" local="id" foreign="pricelist_id" cardinality="many"
+                   owner="local"/>
+        <composite alias="Fields" class="ymField" local="id" foreign="pricelist_id" cardinality="many" owner="local"/>
     </object>
 
     <object class="ymCategory" table="yandexmarket_categories" extends="xPDOSimpleObject">
@@ -33,4 +39,39 @@
         </index>
     </object>
 
+    <object class="ymField" table="yandexmarket_fields" extends="xPDOSimpleObject">
+        <field key="name" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="parent" dbtype="int" phptype="integer" null="true"/>
+        <field key="type" dbtype="int" phptype="integer" null="false"/>
+        <field key="pricelist_id" dbtype="int" null="true" attributes="unsigned" phptype="integer"/>
+
+        <field key="column" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="handler" dbtype="text" phptype="string" null="true"/>
+        <!--  в handler возможно попадёт какой-либо Fenom обработчик значения, вместо значения из колонки -->
+
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
+        <!-- в properties будет лимит или какие-то прочие настройки по разными типам -->
+        <field key="rank" dbtype="int" phptype="integer" null="false" default="0"/>
+        <field key="created_on" dbtype="datetime" phptype="datetime" null="false"/>
+        <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="1"/>
+
+        <aggregate alias="Pricelist" class="ymPricelist" local="pricelist_id" foreign="id" cardinality="one"
+                   owner="foreign"/>
+        <composite alias="Attributes" class="ymFieldAttribute" local="id" foreign="field_id" cardinality="many"
+                   owner="local"/>
+    </object>
+
+    <object class="ymFieldAttribute" table="yandexmarket_field_attributes" extends="xPDOSimpleObject">
+        <field key="name" dbtype="varchar" phptype="string" precision="255" null="false"/>
+        <field key="field_id" dbtype="int" phptype="integer" null="false"/>
+        <field key="column" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="handler" dbtype="text" phptype="string" null="true"/>
+
+        <aggregate alias="Field" class="ymField" local="field_id" foreign="id" cardinality="one" owner="foreign"/>
+
+        <index alias="name_field_id" name="name_field_id" primary="false" unique="true" type="BTREE">
+            <column key="name" length="" collation="A" null="false"/>
+            <column key="field_id" length="" collation="A" null="false"/>
+        </index>
+    </object>
 </model>

@@ -11,7 +11,16 @@ $xpdo_meta_map['ymPricelist']= array (
   'fields' => 
   array (
     'name' => NULL,
-    'description' => NULL,
+    'alias' => NULL,
+    'type' => NULL,
+    'created_on' => NULL,
+    'edited_on' => NULL,
+    'generated_on' => NULL,
+    'generate_mode' => NULL,
+    'generate_interval' => NULL,
+    'need_generate' => 0,
+    'where' => NULL,
+    'properties' => NULL,
     'active' => 1,
   ),
   'fieldMeta' => 
@@ -23,10 +32,68 @@ $xpdo_meta_map['ymPricelist']= array (
       'phptype' => 'string',
       'null' => false,
     ),
-    'description' => 
+    'alias' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '255',
+      'phptype' => 'string',
+      'null' => false,
+    ),
+    'type' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '255',
+      'phptype' => 'string',
+      'null' => false,
+    ),
+    'created_on' => 
+    array (
+      'dbtype' => 'datetime',
+      'phptype' => 'datetime',
+      'null' => false,
+    ),
+    'edited_on' => 
+    array (
+      'dbtype' => 'datetime',
+      'phptype' => 'datetime',
+      'null' => true,
+    ),
+    'generated_on' => 
+    array (
+      'dbtype' => 'datetime',
+      'phptype' => 'datetime',
+      'null' => true,
+    ),
+    'generate_mode' => 
+    array (
+      'dbtype' => 'tinyint',
+      'phptype' => 'integer',
+      'null' => false,
+    ),
+    'generate_interval' => 
+    array (
+      'dbtype' => 'int',
+      'phptype' => 'integer',
+      'null' => true,
+    ),
+    'need_generate' => 
+    array (
+      'dbtype' => 'tinyint',
+      'precision' => '1',
+      'phptype' => 'boolean',
+      'null' => false,
+      'default' => 0,
+    ),
+    'where' => 
     array (
       'dbtype' => 'text',
-      'phptype' => 'string',
+      'phptype' => 'json',
+      'null' => true,
+    ),
+    'properties' => 
+    array (
+      'dbtype' => 'text',
+      'phptype' => 'json',
       'null' => true,
     ),
     'active' => 
@@ -34,43 +101,27 @@ $xpdo_meta_map['ymPricelist']= array (
       'dbtype' => 'tinyint',
       'precision' => '1',
       'phptype' => 'boolean',
-      'null' => true,
+      'null' => false,
       'default' => 1,
     ),
   ),
-  'indexes' => 
+  'composites' => 
   array (
-    'name' => 
+    'Categories' => 
     array (
-      'alias' => 'name',
-      'primary' => false,
-      'unique' => false,
-      'type' => 'BTREE',
-      'columns' => 
-      array (
-        'name' => 
-        array (
-          'length' => '',
-          'collation' => 'A',
-          'null' => false,
-        ),
-      ),
+      'class' => 'ymCategory',
+      'local' => 'id',
+      'foreign' => 'pricelist_id',
+      'cardinality' => 'many',
+      'owner' => 'local',
     ),
-    'active' => 
+    'Fields' => 
     array (
-      'alias' => 'active',
-      'primary' => false,
-      'unique' => false,
-      'type' => 'BTREE',
-      'columns' => 
-      array (
-        'active' => 
-        array (
-          'length' => '',
-          'collation' => 'A',
-          'null' => false,
-        ),
-      ),
+      'class' => 'ymField',
+      'local' => 'id',
+      'foreign' => 'pricelist_id',
+      'cardinality' => 'many',
+      'owner' => 'local',
     ),
   ),
 );

@@ -1,8 +1,8 @@
 <?php
-$xpdo_meta_map['ymCategory']= array (
+$xpdo_meta_map['ymFieldAttribute']= array (
   'package' => 'yandexmarket2',
   'version' => '1.1',
-  'table' => 'yandexmarket_categories',
+  'table' => 'yandexmarket_field_attributes',
   'extends' => 'xPDOSimpleObject',
   'tableMeta' => 
   array (
@@ -10,65 +10,71 @@ $xpdo_meta_map['ymCategory']= array (
   ),
   'fields' => 
   array (
-    'category_id' => NULL,
-    'pricelist_id' => NULL,
+    'name' => NULL,
+    'field_id' => NULL,
+    'column' => NULL,
+    'handler' => NULL,
   ),
   'fieldMeta' => 
   array (
-    'category_id' => 
+    'name' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'varchar',
+      'phptype' => 'string',
+      'precision' => '255',
       'null' => false,
-      'attributes' => 'unsigned',
-      'phptype' => 'integer',
     ),
-    'pricelist_id' => 
+    'field_id' => 
     array (
       'dbtype' => 'int',
-      'null' => true,
-      'attributes' => 'unsigned',
       'phptype' => 'integer',
+      'null' => false,
+    ),
+    'column' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '255',
+      'phptype' => 'string',
+      'null' => true,
+    ),
+    'handler' => 
+    array (
+      'dbtype' => 'text',
+      'phptype' => 'string',
+      'null' => true,
     ),
   ),
   'indexes' => 
   array (
-    'category_pricelist' => 
+    'name_field_id' => 
     array (
-      'alias' => 'category_pricelist',
+      'alias' => 'name_field_id',
       'primary' => false,
       'unique' => true,
       'type' => 'BTREE',
       'columns' => 
       array (
-        'category_id' => 
+        'name' => 
         array (
           'length' => '',
           'collation' => 'A',
           'null' => false,
         ),
-        'pricelist_id' => 
+        'field_id' => 
         array (
           'length' => '',
           'collation' => 'A',
-          'null' => true,
+          'null' => false,
         ),
       ),
     ),
   ),
   'aggregates' => 
   array (
-    'Category' => 
+    'Field' => 
     array (
-      'class' => 'modResource',
-      'local' => 'category_id',
-      'foreign' => 'id',
-      'cardinality' => 'one',
-      'owner' => 'foreign',
-    ),
-    'Pricelist' => 
-    array (
-      'class' => 'ymPricelist',
-      'local' => 'pricelist_id',
+      'class' => 'ymField',
+      'local' => 'field_id',
       'foreign' => 'id',
       'cardinality' => 'one',
       'owner' => 'foreign',
