@@ -61,14 +61,21 @@ export default {
   props: {
     selected: {
       type: Array,
+      default: () => ([]),
+    },
+    categories: {
+      type: Array,
       default: () => ([])
+    },
+    where: {
+      type: Object,
+      required: true
     }
   },
   data: () => ({
     itemKey: 'pk',
     itemText: 'text',
     loading: false,
-    categories: [],
     opened: [],
     loaded: [],
     awaitChildren: {}
@@ -79,11 +86,9 @@ export default {
     },
     selectCategory(value, category) {
       if (value) {
-        this.selected.push(category[this.itemKey]);
-        //todo: ajax query for add category
+        this.$emit('category:add', category[this.itemKey]);
       } else {
-        this.selected = this.selected.filter(selected => selected !== category[this.itemKey]);
-        //todo: ajax query for remove category
+        this.$emit('category:remove', category[this.itemKey]);
       }
     },
     loadCategories(item) {
@@ -91,12 +96,12 @@ export default {
       if (this.awaitChildren[item[this.itemKey]]) {
         delete this.awaitChildren[item[this.itemKey]];
       }
-      return api.post('mgr/categories/getlist', {id: item.id})
+      return api.post('mgr/categories/getlist', {...this.where, id: item.id})
           .then(({data}) => {
             item.children = data;
             data.forEach((child) => {
               if (child.selected) {
-                this.selected.push(child[this.itemKey]);
+                this.$emit('category:add', child[this.itemKey], false);
               }
               if (child.hasChildren) {
                 this.awaitChildren[child[this.itemKey]] = true;
@@ -114,8 +119,8 @@ export default {
     },
     loadContexts() {
       this.loading = true;
-      api.post('mgr/categories/getlist', {id: 'root'})
-          .then(({data}) => this.categories = data)
+      api.post('mgr/categories/getlist', {...this.where, id: 'root'})
+          .then(({data}) => this.$emit('contexts:loaded', data))
           .catch(e => console.error(e))
           .then(() => {
             this.loading = false
@@ -124,8 +129,7 @@ export default {
           });
     },
     reloadTree() {
-      this.categories = [];
-      this.selected = [];
+      this.$emit('tree:reload');
       this.loadContexts();
     },
     expandTree() {

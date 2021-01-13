@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model package="yandexmarket2" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB" version="1.1">
     <object class="ymPricelist" table="yandexmarket_pricelists" extends="xPDOSimpleObject">
-        <field key="name" dbtype="varchar" precision="255" phptype="string" null="false" default=""/>
-        <field key="description" dbtype="text" phptype="string" null="true" default=""/>
+        <field key="name" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="description" dbtype="text" phptype="string" null="true"/>
         <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="true" default="1"/>
 
         <!--

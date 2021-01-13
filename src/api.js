@@ -2,11 +2,16 @@ import axios from "axios";
 
 export default {
     post(action, params) {
-        let data = this.prepareData(params, action);
         return axios.request({
             method: 'POST',
-            data
+            data: this.prepareData(params, action)
         })
+            .then(response => {
+                if (('success' in response.data) && !response.data.success) {
+                    throw new Error(response.data.message || 'Ошибка');
+                }
+                return response;
+            })
     },
     prepareData(params, action) {
         let data;

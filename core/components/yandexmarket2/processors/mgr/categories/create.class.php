@@ -1,6 +1,6 @@
 <?php
 
-class ymCategoriesCreateProcessor extends modObjectCreateProcessor
+class ymCategoryCreateProcessor extends modObjectCreateProcessor
 {
     public $objectType     = 'ym_category';
     public $classKey       = 'ymCategory';
@@ -10,7 +10,7 @@ class ymCategoriesCreateProcessor extends modObjectCreateProcessor
     /**
      * @return bool
      */
-    public function beforeSet()
+    public function beforeSet(): bool
     {
         $pricelistId = (int)($this->getProperty('pricelist_id', 0)) ?: null;
         $categoryId = (int)($this->getProperty('category_id', 0));
@@ -20,7 +20,7 @@ class ymCategoriesCreateProcessor extends modObjectCreateProcessor
             'category_id'  => $categoryId,
             'pricelist_id' => $pricelistId
         ])) {
-            $this->modx->error->addField('category_id', $this->modx->lexicon('yandexmarket2_item_err_ae'));
+            $this->modx->error->addField('category_id', $this->modx->lexicon('yandexmarket2_category_err_ae'));
         }
 
         return parent::beforeSet();
@@ -28,4 +28,4 @@ class ymCategoriesCreateProcessor extends modObjectCreateProcessor
 
 }
 
-return ymCategoriesCreateProcessor::class;
+return ymCategoryCreateProcessor::class;

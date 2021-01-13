@@ -5,7 +5,10 @@
       <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>Категории и условия</v-tab>
       <v-tab :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>Выгружаемые данные</v-tab>
       <v-spacer/>
-      <v-tab :to="{name: 'pricelists'}" ripple exact><v-icon left>icon icon-undo</v-icon> Ко всем прайс-листам</v-tab>
+      <v-tab :to="{name: 'pricelists'}" ripple exact>
+        <v-icon left>icon icon-undo</v-icon>
+        Ко всем прайс-листам
+      </v-tab>
     </v-tabs>
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
@@ -31,9 +34,14 @@ export default {
   }),
   methods: {
     loadPricelist() {
-      api.post('mgr/list/get', {id: this.id})
+      api.post('mgr/pricelists/get', {id: this.id})
           .then(({data}) => {
             this.pricelist = data.object;
+          })
+          .catch(error => {
+            // TODO: тут может уведомление вспывадющее сделать и возвращать в общий список
+            console.error(error.message);
+            setTimeout(() => this.$router.push({name: 'pricelists'}), 3000);
           })
     }
   },
@@ -51,14 +59,17 @@ export default {
   margin-bottom: 0;
   z-index: 1;
 }
+
 .yandexmarket-pricelist-tabs >>> .v-tab {
   text-transform: none !important;
   letter-spacing: initial;
 }
+
 .yandexmarket-pricelist-tabs >>> .v-tab.v-tab--active {
   background-color: #fff;
-  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),  0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 }
+
 .yandexmarket-pricelist-tabs >>> .v-tab.v-tab--active::after {
   content: '';
   display: block;
@@ -69,14 +80,17 @@ export default {
   right: 0;
   height: 5px;
 }
+
 .yandexmarket-pricelist-tabs >>> .v-slide-group__wrapper {
   overflow: visible;
   contain: none;
 }
+
 .yandexmarket-pricelist-tabs >>> .v-tabs-slider-wrapper {
   bottom: unset;
   top: 0;
 }
+
 .yandexmarket-pricelist-card {
   border-top-left-radius: 0;
 }

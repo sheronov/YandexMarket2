@@ -3,15 +3,16 @@
 /** @noinspection PhpIncludeInspection */
 require_once MODX_CORE_PATH.'model/modx/processors/resource/getnodes.class.php';
 
-class ymCategoriesGetListProcessor extends modResourceGetNodesProcessor
+class ymCategoryGetListProcessor extends modResourceGetNodesProcessor
 {
     protected $categories   = [];
-    // protected $categories   = [9, 22, 4, 135]; //массив для проверки выбранных категорий
     protected $neededToOpen = [];
 
     public function initialize(): bool
     {
-        return parent::initialize();
+        $initialized = parent::initialize();
+        $this->categories = $this->getSelectedCategories();
+        return $initialized;
     }
 
     public function prepare(): void
@@ -86,6 +87,23 @@ class ymCategoriesGetListProcessor extends modResourceGetNodesProcessor
         return $node;
     }
 
+    protected function getSelectedCategories(): array
+    {
+        $categories = [];
+        $q = $this->modx->newQuery('ymCategory')
+            ->where(['pricelist_id' => $this->getProperty('pricelist_id')])
+            ->select($this->modx->getSelectColumns('ymCategory', 'ymCategory', '', ['category_id']));
+        $q->prepare();
+        $this->modx->log(1, 'sql = '.$q->toSQL());
+        if ($q->stmt->execute()) {
+            while ($categoryId = $q->stmt->fetch(PDO::FETCH_COLUMN)) {
+                $categories[] = (int)$categoryId;
+            }
+        }
+
+        return $categories;
+    }
+
 }
 
-return ymCategoriesGetListProcessor::class;
+return ymCategoryGetListProcessor::class;

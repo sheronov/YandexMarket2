@@ -15,7 +15,6 @@ export default {
   methods: {
     updateBreadcrumbs() {
       const params = Object.assign({}, this.$route.params);
-      console.log(this.$route, JSON.stringify(this.$route.params), params);
       this.items = this.$route.matched
           .filter(item => item.meta && item.meta.title && (item.name || item.meta.to))
           .map(item => {
