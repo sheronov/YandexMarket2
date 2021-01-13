@@ -1,5 +1,6 @@
 <?php
 /** @var xPDOTransport $transport */
+
 /** @var array $options */
 /** @var modX $modx */
 if ($transport->xpdo) {
@@ -8,10 +9,10 @@ if ($transport->xpdo) {
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_INSTALL:
         case xPDOTransport::ACTION_UPGRADE:
-            $modx->addPackage('yandexmarket2', MODX_CORE_PATH . 'components/yandexmarket2/model/');
+            $modx->addPackage('yandexmarket2', MODX_CORE_PATH.'components/yandexmarket2/model/');
             $manager = $modx->getManager();
             $objects = [];
-            $schemaFile = MODX_CORE_PATH . 'components/yandexmarket2/model/schema/yandexmarket2.mysql.schema.xml';
+            $schemaFile = MODX_CORE_PATH.'components/yandexmarket2/model/schema/yandexmarket2.mysql.schema.xml';
             if (is_file($schemaFile)) {
                 $schema = new SimpleXMLElement($schemaFile, 0, true);
                 if (isset($schema->object)) {
@@ -23,7 +24,7 @@ if ($transport->xpdo) {
             }
             foreach ($objects as $class) {
                 $table = $modx->getTableName($class);
-                $sql = "SHOW TABLES LIKE '" . trim($table, '`') . "'";
+                $sql = "SHOW TABLES LIKE '".trim($table, '`')."'";
                 $stmt = $modx->prepare($sql);
                 $newTable = true;
                 if ($stmt->execute() && $stmt->fetchAll()) {
@@ -93,8 +94,47 @@ if ($transport->xpdo) {
                         }
                     }
 
-                    // TODO: add here constraints by foreign key
-                    $aggregates = $modx->getAggregates($class);
+                    // 3. Operate with constraints (many shared hosting doesn't give grants for references)
+                    // if ($manager instanceof xPDOManager_mysql && $connect = $manager->xpdo->getConnection([
+                    //         xPDO::OPT_CONN_MUTABLE => true
+                    //     ])) {
+                    //     $modx->log(modX::LOG_LEVEL_INFO, 'config = '.print_r($connect->config, 1));
+                    //
+                    //     // add here get constraints from mysql
+                    //     $constraints = array_filter($modx->getAggregates($class), static function (array $item) {
+                    //         return ($item['cardinality'] ?? null) === 'one';
+                    //     });
+                    //     $modx->log(modX::LOG_LEVEL_INFO, print_r($constraints, 1));
+                    //
+                    //     if ($className = $manager->xpdo->loadClass($class)) {
+                    //         $currentTable = $manager->xpdo->getTableName($className);
+                    //         $grantsSql = "GRANT REFERENCES ON {$connect->config['dbname']}.{$currentTable}
+                    //                     TO '{$connect->config['username']}'@'{$connect->config['host']}';";
+                    //         $modx->log(modX::LOG_LEVEL_INFO, 'grantsSql = '.$grantsSql);
+                    //         foreach ($constraints as $key => $constraint) {
+                    //             if ($foreignClassKey = $manager->xpdo->loadClass($constraint['class'])) {
+                    //                 $modx->log(modX::LOG_LEVEL_INFO, $className.' => '.$foreignClassKey);
+                    //                 $foreignKey = mb_strtolower(implode('_',
+                    //                     [$class, $constraint['local'], $key, $constraint['foreign']]));
+                    //                 $sql = "ALTER TABLE {$manager->xpdo->getTableName($className)}
+                    //                         ADD FOREIGN KEY ({$constraint['local']})
+                    //                         REFERENCES {$manager->xpdo->getTableName($foreignClassKey)} ({$constraint['foreign']})";
+                    //                 switch (mb_strtolower($constraint['on-delete'] ?? '')) {
+                    //                     case 'cascade':
+                    //                         $sql .= " ON DELETE CASCADE";
+                    //                         break;
+                    //                     case 'null':
+                    //                     case 'set null':
+                    //                         $sql .= " ON DELETE SET NULL";
+                    //                         break;
+                    //                 }
+                    //                 $modx->log(modX::LOG_LEVEL_INFO, 'sql = '.$sql);
+                    //             }
+                    //         }
+                    //     }
+                    // } else {
+                    //     $modx->log(modX::LOG_LEVEL_ERROR, 'Could not create constraints keys in table');
+                    // }
                 }
             }
 
