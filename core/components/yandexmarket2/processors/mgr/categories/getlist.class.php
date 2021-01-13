@@ -90,13 +90,13 @@ class ymCategoryGetListProcessor extends modResourceGetNodesProcessor
     protected function getSelectedCategories(): array
     {
         $categories = [];
-        $q = $this->modx->newQuery('ymCategory')
+        $stmt = $this->modx->newQuery('ymCategory')
             ->where(['pricelist_id' => $this->getProperty('pricelist_id')])
-            ->select($this->modx->getSelectColumns('ymCategory', 'ymCategory', '', ['category_id']));
-        $q->prepare();
-        $this->modx->log(1, 'sql = '.$q->toSQL());
-        if ($q->stmt->execute()) {
-            while ($categoryId = $q->stmt->fetch(PDO::FETCH_COLUMN)) {
+            ->select($this->modx->getSelectColumns('ymCategory', 'ymCategory', '', ['category_id']))
+            ->prepare();
+
+        if ($stmt && $stmt->execute()) {
+            while ($categoryId = $stmt->fetch(PDO::FETCH_COLUMN)) {
                 $categories[] = (int)$categoryId;
             }
         }
