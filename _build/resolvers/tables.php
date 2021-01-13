@@ -42,7 +42,7 @@ if ($transport->xpdo) {
                         $tableFields[$cl['Field']] = $cl['Field'];
                     }
                     foreach ($modx->getFields($class) as $field => $v) {
-                        if (in_array($field, $tableFields)) {
+                        if (in_array($field, $tableFields, true)) {
                             unset($tableFields[$field]);
                             $manager->alterField($class, $field);
                         } else {
@@ -68,13 +68,12 @@ if ($transport->xpdo) {
                         sort($values);
                         $indexes[$name] = implode(':', $values);
                     }
+
                     $map = $modx->getIndexMeta($class);
                     // Remove old indexes
                     foreach ($indexes as $key => $index) {
-                        if (!isset($map[$key])) {
-                            if ($manager->removeIndex($class, $key)) {
-                                $modx->log(modX::LOG_LEVEL_INFO, "Removed index \"{$key}\" of the table \"{$class}\"");
-                            }
+                        if (!isset($map[$key]) && $manager->removeIndex($class, $key)) {
+                            $modx->log(modX::LOG_LEVEL_INFO, "Removed index \"{$key}\" of the table \"{$class}\"");
                         }
                     }
                     // Add or alter existing
@@ -85,18 +84,20 @@ if ($transport->xpdo) {
                             if ($manager->addIndex($class, $key)) {
                                 $modx->log(modX::LOG_LEVEL_INFO, "Added index \"{$key}\" in the table \"{$class}\"");
                             }
-                        } else {
-                            if ($index != $indexes[$key]) {
-                                if ($manager->removeIndex($class, $key) && $manager->addIndex($class, $key)) {
-                                    $modx->log(modX::LOG_LEVEL_INFO,
-                                        "Updated index \"{$key}\" of the table \"{$class}\""
-                                    );
-                                }
+                        } elseif ($index != $indexes[$key]) {
+                            if ($manager->removeIndex($class, $key) && $manager->addIndex($class, $key)) {
+                                $modx->log(modX::LOG_LEVEL_INFO,
+                                    "Updated index \"{$key}\" of the table \"{$class}\""
+                                );
                             }
                         }
                     }
+
+                    // TODO: add here constraints by foreign key
+                    $aggregates = $modx->getAggregates($class);
                 }
             }
+
             break;
 
         case xPDOTransport::ACTION_UNINSTALL:
