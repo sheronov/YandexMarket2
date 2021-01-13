@@ -22,7 +22,10 @@
         }"
     >
       <template v-slot:footer.page-text="{pageStart, pageStop, itemsLength}">
-        Показано {{ pageStart }}-{{ pageStop }} из {{ itemsLength }}
+        <span>Показано {{ pageStart }}-{{ pageStop }} из {{ itemsLength }}</span>
+        <v-btn icon class="ml-6 mr-n5" title="Обновить" @click="loadLists">
+          <v-icon>icon icon-refresh</v-icon>
+        </v-btn>
       </template>
       <template v-slot:item.active="{ value }">
         {{ value ? 'Да' : 'Нет' }}
