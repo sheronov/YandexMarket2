@@ -10,8 +10,7 @@ $xpdo_meta_map['ymPricelist']= array (
   ),
   'fields' => 
   array (
-    'name' => NULL,
-    'alias' => NULL,
+    'file' => NULL,
     'type' => NULL,
     'created_on' => NULL,
     'edited_on' => NULL,
@@ -25,14 +24,7 @@ $xpdo_meta_map['ymPricelist']= array (
   ),
   'fieldMeta' => 
   array (
-    'name' => 
-    array (
-      'dbtype' => 'varchar',
-      'precision' => '255',
-      'phptype' => 'string',
-      'null' => false,
-    ),
-    'alias' => 
+    'file' => 
     array (
       'dbtype' => 'varchar',
       'precision' => '255',
@@ -68,7 +60,7 @@ $xpdo_meta_map['ymPricelist']= array (
     array (
       'dbtype' => 'tinyint',
       'phptype' => 'integer',
-      'null' => false,
+      'null' => true,
     ),
     'generate_interval' => 
     array (
@@ -103,6 +95,25 @@ $xpdo_meta_map['ymPricelist']= array (
       'phptype' => 'boolean',
       'null' => false,
       'default' => 1,
+    ),
+  ),
+  'indexes' => 
+  array (
+    'file' => 
+    array (
+      'alias' => 'file',
+      'primary' => false,
+      'unique' => true,
+      'type' => 'BTREE',
+      'columns' => 
+      array (
+        'file' => 
+        array (
+          'length' => '',
+          'collation' => 'A',
+          'null' => false,
+        ),
+      ),
     ),
   ),
   'composites' => 

@@ -25,7 +25,7 @@ $xpdo_meta_map['ymCategory']= array (
     'pricelist_id' => 
     array (
       'dbtype' => 'int',
-      'null' => true,
+      'null' => false,
       'attributes' => 'unsigned',
       'phptype' => 'integer',
     ),
@@ -50,7 +50,7 @@ $xpdo_meta_map['ymCategory']= array (
         array (
           'length' => '',
           'collation' => 'A',
-          'null' => true,
+          'null' => false,
         ),
       ),
     ),

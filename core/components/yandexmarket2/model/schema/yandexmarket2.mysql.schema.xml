@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model package="yandexmarket2" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB" version="1.1">
     <object class="ymPricelist" table="yandexmarket_pricelists" extends="xPDOSimpleObject">
-        <field key="name" dbtype="varchar" precision="255" phptype="string" null="false"/>
-        <field key="alias" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="file" dbtype="varchar" precision="255" phptype="string" null="false"/>
         <field key="type" dbtype="varchar" precision="255" phptype="string" null="false"/>
         <!-- в зависимости от типа будут формировать поля по умолчанию -->
 
@@ -10,14 +9,17 @@
         <field key="edited_on" dbtype="datetime" phptype="datetime" null="true"/>
 
         <field key="generated_on" dbtype="datetime" phptype="datetime" null="true"/>
-        <field key="generate_mode" dbtype="tinyint" phptype="integer" null="false"/>
+        <field key="generate_mode" dbtype="tinyint" phptype="integer" null="true"/>
         <field key="generate_interval" dbtype="int" phptype="integer" null="true"/>
         <field key="need_generate" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0"/>
 
         <field key="where" dbtype="text" phptype="json" null="true"/>
         <field key="properties" dbtype="text" phptype="json" null="true"/>
-
         <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="1"/>
+
+        <index alias="file" name="file" primary="false" unique="true" type="BTREE">
+            <column key="file" length="" collation="A" null="false"/>
+        </index>
 
         <composite alias="Categories" class="ymCategory" local="id" foreign="pricelist_id" cardinality="many"
                    owner="local"/>
@@ -26,7 +28,7 @@
 
     <object class="ymCategory" table="yandexmarket_categories" extends="xPDOSimpleObject">
         <field key="category_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
-        <field key="pricelist_id" dbtype="int" null="true" attributes="unsigned" phptype="integer"/>
+        <field key="pricelist_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
 
         <aggregate alias="Category" class="modResource" local="category_id" foreign="id" cardinality="one"
                    owner="foreign"/>
@@ -35,7 +37,7 @@
 
         <index alias="category_pricelist" name="category_pricelist" primary="false" unique="true" type="BTREE">
             <column key="category_id" length="" collation="A" null="false"/>
-            <column key="pricelist_id" length="" collation="A" null="true"/>
+            <column key="pricelist_id" length="" collation="A" null="false"/>
         </index>
     </object>
 
