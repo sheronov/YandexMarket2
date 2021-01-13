@@ -2,11 +2,10 @@
 
 class ymPricelistRemoveProcessor extends modObjectProcessor
 {
-    public $objectType = 'ymPricelist';
-    public $classKey = 'ymPricelist';
+    public $objectType     = 'ymPricelist';
+    public $classKey       = 'ymPricelist';
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
-
 
     /**
      * @return array|string

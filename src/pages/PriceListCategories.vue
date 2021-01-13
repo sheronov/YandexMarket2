@@ -13,10 +13,7 @@
               @tree:reload="treeReload"
           />
         </v-col>
-        <v-col
-            cols="12"
-            md="6"
-        >
+        <v-col cols="12" md="6">
           <v-card-text>
             <div class="title font-weight-light grey--text pa-4 text-center">
               Пример выгрузки и другие настройки
@@ -27,7 +24,6 @@
           </v-card-text>
         </v-col>
       </v-row>
-
     </v-container>
   </div>
 </template>
@@ -56,21 +52,13 @@ export default {
       this.selected.push(categoryId);
       if (send) {
         api.post('mgr/categories/create', {...this.where, category_id: categoryId})
-            .then(({data}) => {
-              console.log(data);
-            })
-            .catch(() => {
-              this.categoryRemove(categoryId, false);
-            })
+            .catch(() => this.categoryRemove(categoryId, false))
       }
     },
     categoryRemove(categoryId, send = true) {
       this.selected = this.selected.filter(selected => selected !== categoryId);
       if (send) {
         api.post('mgr/categories/remove', {...this.where, category_id: categoryId})
-            .then(({data}) => {
-              console.log(data);
-            })
             .catch(() => {
               // можно добавлять назад, если по какой-то причине не удалился
               // this.categoryAdd(categoryId, false);
