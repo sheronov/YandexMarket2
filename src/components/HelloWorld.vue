@@ -8,7 +8,7 @@
 <!--            contain-->
 <!--            height="200"-->
 <!--        />-->
-        <img :src="require('../assets/logo.png')" alt="Logo" width="200"/>
+<!--        <img :src="require('../assets/logo.png')" alt="Logo" width="200"/>-->
       </v-col>
 
       <v-col class="mb-4">
