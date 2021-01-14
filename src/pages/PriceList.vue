@@ -1,7 +1,7 @@
 <template>
   <div class="yandexmarket-pricelist">
     <v-tabs v-if="id" class="yandexmarket-pricelist-tabs" background-color="transparent" :height="40">
-      <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Магазин</v-tab>
+      <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Настройки</v-tab>
       <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>Категории и условия</v-tab>
       <v-tab :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>Выгружаемые данные</v-tab>
       <v-spacer/>
@@ -39,7 +39,7 @@ export default {
             this.pricelist = data.object;
           })
           .catch(error => {
-            // TODO: тут может уведомление вспывадющее сделать и возвращать в общий список
+            // TODO: тут может уведомление всплывающее сделать и возвращать в общий список
             console.error(error.message);
             setTimeout(() => this.$router.push({name: 'pricelists'}), 3000);
           })
