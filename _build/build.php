@@ -31,7 +31,7 @@ class YandexMarket2Package
         $this->modx->initialize('mgr');
         $this->modx->getService('error', 'error.modError');
 
-        $root = dirname(dirname(__FILE__)) . '/';
+        $root = dirname(__FILE__, 2). '/';
         $assets = $root . 'assets/components/' . $config['name_lower'] . '/';
         $core = $root . 'core/components/' . $config['name_lower'] . '/';
 
@@ -82,7 +82,7 @@ class YandexMarket2Package
      */
     protected function model()
     {
-        $model_file = $this->config['core'] . 'model/schema/' . $this->config['name_lower'] . '.mysql.schema.xml';
+        $model_file = $this->config['core'] . 'model/orm/schema/' . $this->config['name_lower'] . '.mysql.schema.xml';
         $isEmpty = file_get_contents($model_file);
         if (!file_exists($model_file) || empty($isEmpty)) {
             return;
@@ -90,7 +90,7 @@ class YandexMarket2Package
         /** @var xPDOCacheManager $cache */
         if ($cache = $this->modx->getCacheManager()) {
             $cache->deleteTree(
-                $this->config['core'] . 'model/' . $this->config['name_lower'] . '/mysql',
+                $this->config['core'] . 'model/orm/' . $this->config['name_lower'] . '/mysql',
                 ['deleteTop' => true, 'skipDirs' => false, 'extensions' => []]
             );
         }
@@ -100,8 +100,8 @@ class YandexMarket2Package
         /** @var xPDOGenerator $generator */
         $generator = $manager->getGenerator();
         $generator->parseSchema(
-            $this->config['core'] . 'model/schema/' . $this->config['name_lower'] . '.mysql.schema.xml',
-            $this->config['core'] . 'model/'
+            $this->config['core'] . 'model/orm/schema/' . $this->config['name_lower'] . '.mysql.schema.xml',
+            $this->config['core'] . 'model/orm/'
         );
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Model updated');
     }
@@ -269,10 +269,10 @@ class YandexMarket2Package
                 $item['alias'] = $alias;
                 $item['context_key'] = $context;
                 $item['menuindex'] = $menuindex++;
-                $objects = array_merge(
-                    $objects,
-                    $this->_addResource($item, $alias)
-                );
+                $addResources = $this->_addResource($item,$alias);
+                foreach ($addResources as $addResource) {
+                    $objects[] = $addResource;
+                }
             }
         }
 
@@ -516,7 +516,7 @@ class YandexMarket2Package
                 $resource->joinGroup($group);
             }
         }
-        $resources[] = $resource;
+        $resources = [$resource];
 
         if (!empty($data['resources'])) {
             $menuindex = 0;
@@ -527,10 +527,10 @@ class YandexMarket2Package
                 $item['alias'] = $alias;
                 $item['context_key'] = $data['context_key'];
                 $item['menuindex'] = $menuindex++;
-                $resources = array_merge(
-                    $resources,
-                    $this->_addResource($item, $uri . '/' . $alias, $data['id'])
-                );
+                $addedResources = $this->_addResource($item,$uri.'/'.$alias, $data['id']);
+                foreach ($addedResources as $addedResource) {
+                    $resources[] = $addedResource;
+                }
             }
         }
 

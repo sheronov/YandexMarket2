@@ -1,25 +1,17 @@
 <?php
 
-// namespace MODX\Components\YandexMarket2;
+namespace YandexMarket;
 
-// use modX;
+use modX;
 
-require __DIR__.'/../vendor/autoload.php';
-
-class yandexmarket2
+class YandexMarket
 {
-    /** @var modX $modx */
-    public $modx;
+    protected $modx;
+    protected $config = [];
 
-    public $config = [];
-
-    /**
-     * @param  modX  $modx
-     * @param  array  $config
-     */
     public function __construct(modX $modx, array $config = [])
     {
-        $this->modx =& $modx;
+        $this->modx = $modx;
         $corePath = $modx->getOption('yandexmarket2_core_path', null,
             $modx->getOption('core_path').'components/yandexmarket2/');
         $assetsUrl = $modx->getOption('yandexmarket2_assets_url', null,
@@ -27,14 +19,10 @@ class yandexmarket2
 
         $this->config = array_merge([
             'corePath'       => $corePath,
-            'modelPath'      => $corePath.'model/',
+            'modelPath'      => $corePath.'model/orm/',
             'processorsPath' => $corePath.'processors/',
-
-            'connectorUrl' => $assetsUrl.'connector.php',
-            'assetsUrl'    => $assetsUrl,
-            'cssUrl'       => $assetsUrl.'css/',
-            'jsUrl'        => $assetsUrl.'js/',
-            'mgrAssetsUrl' => $assetsUrl.'mgr/',
+            'assetsUrl'      => $assetsUrl,
+            'mgrAssetsUrl'   => $assetsUrl.'mgr/',
 
         ], $config);
 

@@ -84,7 +84,7 @@ export default {
     },
     loadLists() {
       this.loading = true;
-      api.post('mgr/pricelists/getlist', this.pagination)
+      api.post('pricelists/getlist', this.pagination)
           .then(({data}) => {
             this.lists = data.results;
             this.total = data.total;
@@ -94,7 +94,7 @@ export default {
     },
     createPricelist() {
       this.loading = true;
-      api.post('mgr/pricelists/create', {active: false})
+      api.post('pricelists/create', {active: false})
           .then(({data}) => this.$router.push({name: 'pricelist', params: {id: data.object.id}}))
           .catch(error => {
             if (error instanceof ValidationError) {
@@ -109,7 +109,7 @@ export default {
       // TODO: когда-нибудь красивым подтверждение сделать
       if (confirm(`Вы действительно хотите удалить прайс-лист ${pricelist.id} ? Это действие безвозвратное`)) {
         this.loading = true;
-        api.post('mgr/pricelists/remove', {ids: JSON.stringify([pricelist.id])})
+        api.post('pricelists/remove', {ids: JSON.stringify([pricelist.id])})
             .then(() => this.loadLists())
             .catch(error => console.error(error))
             .then(() => this.loading = false);

@@ -51,14 +51,14 @@ export default {
     categoryAdd(categoryId, send = true) {
       this.selected.push(categoryId);
       if (send) {
-        api.post('mgr/categories/create', {...this.where, category_id: categoryId})
+        api.post('categories/create', {...this.where, category_id: categoryId})
             .catch(() => this.categoryRemove(categoryId, false))
       }
     },
     categoryRemove(categoryId, send = true) {
       this.selected = this.selected.filter(selected => selected !== categoryId);
       if (send) {
-        api.post('mgr/categories/remove', {...this.where, category_id: categoryId})
+        api.post('categories/remove', {...this.where, category_id: categoryId})
             .catch(() => {
               // можно добавлять назад, если по какой-то причине не удалился
               // this.categoryAdd(categoryId, false);

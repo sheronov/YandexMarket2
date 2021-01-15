@@ -2,8 +2,18 @@
   "name": "sheronov/yandexmarket2",
   "minimum-stability": "dev",
   "require": {
-    "php": "^7.1",
+    "php": ">=7.1",
     "ext-xmlwriter": "*",
     "ext-xmlreader": "*"
+  },
+  "autoload": {
+    "classmap": [
+      "model/orm/yandexmarket2/"
+    ],
+    "psr-4": {
+      "YandexMarket\\": [
+        "model/"
+      ]
+    }
   }
 }

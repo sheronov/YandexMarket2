@@ -16,7 +16,6 @@
         <loader :status="!pricelist"></loader>
       </v-card-text>
     </v-card>
-
   </div>
 </template>
 
@@ -34,7 +33,7 @@ export default {
   }),
   methods: {
     loadPricelist() {
-      api.post('mgr/pricelists/get', {id: this.id})
+      api.post('pricelists/get', {id: this.id})
           .then(({data}) => {
             this.pricelist = data.object;
           })
