@@ -6,6 +6,8 @@ use ymPricelist;
 
 class Pricelist extends BaseObject
 {
+    /** @var ymPricelist $object */
+
     public const OBJECT_CLASS = ymPricelist::class;
 
     public function toArray(): array
@@ -16,6 +18,11 @@ class Pricelist extends BaseObject
         ];
 
         return $data;
+    }
+
+    public function getCategories(): array
+    {
+        return $this->object->getMany('Categories');
     }
 
 }

@@ -1,30 +1,15 @@
 <template>
   <div class="yandexmarket-pricelist-settings">
-    <v-container fluid class="px-0 py-1">
-      <v-row no-gutters>
-        <v-col md="4">
-          <CategoriesTree
-              :selected="selected"
-              :categories="categories"
-              :where="where"
-              @contexts:loaded="categories = $event"
-              @category:add="categoryAdd"
-              @category:remove="categoryRemove"
-              @tree:reload="treeReload"
-          />
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-card-text>
-            <div class="title font-weight-light grey--text pa-4 text-center">
-              Пример выгрузки и другие настройки
-            </div>
-            <code>
-              {{ selected }}
-            </code>
-          </v-card-text>
-        </v-col>
-      </v-row>
-    </v-container>
+    <CategoriesTree
+        :selected="selected"
+        :categories="categories"
+        :where="where"
+        @contexts:loaded="categories = $event"
+        @category:add="categoryAdd"
+        @category:remove="categoryRemove"
+        @tree:reload="treeReload"
+    />
+    {{ selected }}
   </div>
 </template>
 
@@ -48,10 +33,14 @@ export default {
     }
   },
   methods: {
+    previewXml() {
+      this.$emit('preview:xml', 'categories');
+    },
     categoryAdd(categoryId, send = true) {
       this.selected.push(categoryId);
       if (send) {
         api.post('categories/create', {...this.where, category_id: categoryId})
+            .then(() => this.previewXml())
             .catch(() => this.categoryRemove(categoryId, false))
       }
     },
@@ -59,6 +48,7 @@ export default {
       this.selected = this.selected.filter(selected => selected !== categoryId);
       if (send) {
         api.post('categories/remove', {...this.where, category_id: categoryId})
+            .then(() => this.previewXml())
             .catch(() => {
               // можно добавлять назад, если по какой-то причине не удалился
               // this.categoryAdd(categoryId, false);
@@ -70,5 +60,8 @@ export default {
       this.selected = [];
     }
   },
+  mounted() {
+    this.previewXml()
+  }
 }
 </script>

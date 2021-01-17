@@ -39,17 +39,23 @@ export default {
         let data;
         if ((typeof params === 'object') && !(params instanceof FormData)) {
             data = new FormData();
-            for (const key in params) {
-                if (Object.prototype.hasOwnProperty.call(params, key)) {
-                    data.append(key, params[key]);
-                }
-            }
-            data.append('action', action);
+            this.buildFormData(data, params);
         } else if (params instanceof FormData) {
             data = params;
-            data.append('action', action);
         }
 
+        data.append('action', action);
         return data;
+    },
+    buildFormData(formData, data, parentKey) {
+        if (data && typeof data === 'object' && !(data instanceof Date) && !(data instanceof File)) {
+            Object.keys(data).forEach(key => {
+                this.buildFormData(formData, data[key], parentKey ? `${parentKey}[${key}]` : key);
+            });
+        } else {
+            const value = data == null ? '' : data;
+
+            formData.append(parentKey, value);
+        }
     }
 }

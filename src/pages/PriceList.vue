@@ -1,9 +1,9 @@
 <template>
   <div class="yandexmarket-pricelist">
     <v-tabs v-if="id" class="yandexmarket-pricelist-tabs" background-color="transparent" :height="40">
-      <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Настройки</v-tab>
+      <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Настройки прайс-листа</v-tab>
       <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>Категории и условия</v-tab>
-      <v-tab :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>Выгружаемые данные</v-tab>
+      <v-tab :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>Поля предложений</v-tab>
       <v-spacer/>
       <v-tab :to="{name: 'pricelists'}" ripple exact>
         <v-icon left>icon icon-undo</v-icon>
@@ -12,7 +12,21 @@
     </v-tabs>
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
-        <router-view v-if="pricelist" v-bind="{pricelist}"></router-view>
+        <v-container fluid class="px-0 py-1">
+          <v-row no-gutters>
+            <v-col md="6">
+              <router-view v-if="pricelist" v-bind="{pricelist}" @preview:xml="previewXml"></router-view>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-card-text>
+                <div class="yandexmarket-xml-preview">
+                  <h4><label class="mb-2" for="yandexmarket-preview">Предпросмотр XML для {{ previewType }}</label></h4>
+                  <textarea ref="textarea" id="yandexmarket-preview"></textarea>
+                </div>
+              </v-card-text>
+            </v-col>
+          </v-row>
+        </v-container>
         <loader :status="!pricelist"></loader>
       </v-card-text>
     </v-card>
@@ -22,6 +36,10 @@
 <script>
 import Loader from "@/components/Loader";
 import api from "@/api";
+import CodeMirror from 'codemirror';
+
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/mode/xml/xml';
 
 export default {
   name: 'PriceList',
@@ -29,9 +47,20 @@ export default {
   data: () => ({
     id: null,
     pricelist: null,
-    type: 'yandexmarket'
+    type: 'yandexmarket',
+    previewType: null,
+    coder: null
   }),
   methods: {
+    previewXml(method, data = {test: true}) {
+      this.previewType = method;
+      this.coder.setValue('<!-- Загружается XML пример ' + method + ' -->');
+      api.post('xml/preview', {id: this.pricelist.id, method, data})
+          .then(({data}) => {
+            this.coder.setValue(data.message);
+          })
+          .catch(error => console.log(error));
+    },
     loadPricelist() {
       api.post('pricelists/get', {id: this.id})
           .then(({data}) => {
@@ -42,11 +71,15 @@ export default {
             console.error(error.message);
             setTimeout(() => this.$router.push({name: 'pricelists'}), 3000);
           })
+    },
+    initializeCodeMirror() {
+      this.coder = CodeMirror.fromTextArea(this.$refs.textarea, {line: true, tabSize: 4, mode: 'xml', readOnly: true});
     }
   },
   mounted() {
     this.id = parseInt(this.$route.params.id);
-    this.loadPricelist()
+    this.loadPricelist();
+    this.initializeCodeMirror();
   }
 }
 </script>

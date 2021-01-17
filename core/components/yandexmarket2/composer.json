@@ -13,6 +13,9 @@
     "psr-4": {
       "YandexMarket\\": [
         "model/"
+      ],
+      "YandexMarket\\Processors\\": [
+        "processors/"
       ]
     }
   }
