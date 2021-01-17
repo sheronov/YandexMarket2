@@ -73,7 +73,14 @@ export default {
           })
     },
     initializeCodeMirror() {
-      this.coder = CodeMirror.fromTextArea(this.$refs.textarea, {line: true, tabSize: 4, mode: 'xml', readOnly: true});
+      this.coder = CodeMirror.fromTextArea(this.$refs.textarea, {
+        // line: true,
+        // tabSize: 4,
+        lineNumbers: true,
+        mode: 'xml',
+        cursorBlinkRate: -1,
+        readOnly: true,
+      });
     }
   },
   mounted() {
