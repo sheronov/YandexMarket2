@@ -4,10 +4,50 @@
       <template v-if="total">У вас {{ decl(total, ['прайс-лист', 'прайс-листа', 'прайс-листов']) }}</template>
       <template v-else>Добавьте свой первый прайс-лист</template>
       <v-spacer></v-spacer>
-      <v-btn color="secondary" :disabled="loading" small @click="createPricelist">
-        <v-icon left class="icon-sm">icon icon-plus</v-icon>
-        Добавить прайс-лист
-      </v-btn>
+      <v-dialog
+          v-model="dialog"
+          max-width="400px"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn color="secondary" :disabled="loading" small v-on="on" v-bind="attrs">
+            <v-icon left class="icon-sm">icon icon-plus</v-icon>
+            Добавить прайс-лист
+          </v-btn>
+        </template>
+        <v-card :loading="loading">
+          <v-card-title>
+            <span class="headline">Создание прайс-листа</span>
+          </v-card-title>
+          <v-card-text class="pb-1">
+            <v-select
+                v-model="pricelist.type"
+                hint="Пока только Яндекс Маркет"
+                persistent-hint
+                class="mb-5"
+                readonly
+                :items="types"
+                :error="!!errors['type']"
+                :error-messages="errors['type']"
+                label="Тип прайс-листа"
+            ></v-select>
+            <v-text-field
+                v-model="pricelist.file"
+                :error="!!errors['file']"
+                :error-messages="errors['file']"
+                label="Название файла"
+            ></v-text-field>
+          </v-card-text>
+          <v-card-actions class="pb-4">
+            <v-btn text @click="closeDialog">
+              Отмена
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn color="secondary" @click="createPricelist">
+              Создать
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-card-title>
     <v-data-table
         v-if="total"
@@ -30,6 +70,12 @@
       <template v-slot:item.active="{ value }">
         {{ value ? 'Да' : 'Нет' }}
       </template>
+      <template v-slot:item.generated_on="{ value }">
+        {{ value ? value : 'Файл ещё не сгенерирован' }}
+      </template>
+      <template v-slot:item.type="{ value }">
+        {{ types.filter(type => type['value'] === value)[0]['text'] || value }}
+      </template>
       <template v-slot:item.actions="{ item }">
         <v-spacer/>
         <v-btn
@@ -44,7 +90,7 @@
             title="Удалить прайс-лист"
             icon
         >
-          <v-icon color="red">icon icon-remove</v-icon>
+          <v-icon color="red">icon icon-trash</v-icon>
         </v-btn>
       </template>
     </v-data-table>
@@ -62,15 +108,29 @@ export default {
   name: 'PriceLists',
   data() {
     return {
+      types: [
+        {text: 'Яндекс Маркет', value: 'yandex.market'}
+      ],
+      defaultItem: {
+        file: 'goods.xml',
+        type: 'yandex.market'
+      },
+      pricelist: {
+        file: '',
+        type: '',
+      },
+      dialog: false,
       loading: false,
       lists: [],
       headers: [
         {text: 'ID', value: 'id'},
-        {text: 'Тип', value: 'type'},
+        {text: 'Тип прайс-листа', value: 'type'},
         {text: 'Файл', value: 'file'},
-        {text: 'Активно', value: 'active'},
+        {text: 'Обновлён', value: 'generated_on'},
+        {text: 'Активен', value: 'active'},
         {text: 'Действия', value: 'actions', sortable: false, align: 'end'}
       ],
+      errors: {},
       total: 0,
       pagination: {
         start: 0,
@@ -92,18 +152,32 @@ export default {
           .catch(error => console.error(error))
           .then(() => this.loading = false);
     },
+    closeDialog() {
+      this.errors = {};
+      this.dialog = false;
+      this.pricelist = {...this.defaultItem};
+    },
     createPricelist() {
+      this.errors = {};
       this.loading = true;
-      api.post('pricelists/create', {active: false})
-          .then(({data}) => this.$router.push({name: 'pricelist', params: {id: data.object.id}}))
+      api.post('pricelists/create', {...this.pricelist, active: false})
+          .then(({data}) => {
+            this.$router.push({name: 'pricelist', params: {id: data.object.id}});
+            this.pricelist = {...this.defaultItem};
+          })
           .catch(error => {
             if (error instanceof ValidationError) {
-              console.error(error.getErrors())
+              let errors = new Map(error.getErrors().map(err => {
+                return Object.entries(err).slice(0, 2).map(errArr => errArr[1] || '');
+              }));
+              this.errors = Object.fromEntries(errors);
             } else {
               console.error(error.toString())
             }
           })
-          .then(() => this.loading = false);
+          .then(() => {
+            this.loading = false;
+          });
     },
     removePricelist(pricelist) {
       // TODO: когда-нибудь красивым подтверждение сделать
@@ -118,6 +192,7 @@ export default {
   },
   mounted() {
     this.loadLists();
+    this.pricelist = {...this.defaultItem};
   },
 }
 </script>

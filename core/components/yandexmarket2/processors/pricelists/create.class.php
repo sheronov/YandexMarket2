@@ -13,12 +13,7 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
     public function beforeSet(): bool
     {
         if (!$this->getProperty('file')) {
-            $fileName = 'goods.xml';
-            if ($total = $this->modx->getCount('ymPricelist')) {
-                $total++;
-                $fileName = "goods{$total}.xml";
-            }
-            $this->setProperty('file', $fileName);
+            $this->setProperty('file', 'pricelist-'.date('Y-m-d-H-i-s').'.xml');
         }
         if (!$this->getProperty('type')) {
             $this->setProperty('type', 'yandex.market');
