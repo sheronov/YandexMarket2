@@ -18,6 +18,31 @@ class Writer
         $this->xml = new XMLWriter();
         $this->xml->openMemory();
         $this->xml->setIndent(true);
+        $this->xml->setIndentString("\t");
+    }
+
+    public function writeShopData(): void
+    {
+        $this->xml->startElement('shop');
+        foreach ($this->pricelist->getShopData() as $key => $value) {
+            $this->xml->startElement($key);
+            if ($key === 'currencies') {
+                foreach ($value as $i => $val) {
+                    $this->xml->startElement('currency');
+                    $this->xml->writeAttribute('id', $val);
+                    if (!$i) {
+                        $this->xml->writeAttribute('rate', 1);
+                    }
+                    $this->xml->endElement();
+                }
+            } elseif (is_bool($value)) {
+                $this->xml->text($value ? 'true' : 'false');
+            } else {
+                $this->xml->text($value);
+            }
+            $this->xml->endElement();
+        }
+        $this->xml->endElement();
     }
 
     public function writeCategories(): void

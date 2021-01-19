@@ -8,7 +8,7 @@ class Preview
 {
     public const METHOD_CATEGORIES = 'categories';
     public const METHOD_OFFER      = 'offer';
-    public const METHOD_SETTINGS   = 'settings';
+    public const METHOD_SHOP       = 'shop';
 
     protected $writer;
 
@@ -23,14 +23,10 @@ class Preview
         return $this->writer->getXml();
     }
 
-    public function previewSettings(array $additional = []): string
+    public function previewShop(array $additional = []): string
     {
-        return <<<EOT
-<?xml version = "1.0" encoding = "UTF-8" ?>
-<shop>
-    <!-- todo: implement here -->
-</shop>
-EOT;
+        $this->writer->writeShopData();
+        return $this->writer->getXml();
     }
 
     public function previewOffer(array $additional = []): string
