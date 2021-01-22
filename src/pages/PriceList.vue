@@ -12,21 +12,19 @@
     </v-tabs>
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
-        <v-container fluid class="px-0 py-1">
-          <v-row no-gutters>
+
+          <v-row dense>
             <v-col md="6">
               <router-view v-if="pricelist" v-bind="{pricelist}" @preview:xml="previewXml"></router-view>
             </v-col>
             <v-col cols="12" md="6">
-              <v-card-text>
-                <div class="yandexmarket-xml-preview">
-                  <h4><label class="mb-2" for="yandexmarket-preview">Предпросмотр XML для {{ previewType }}</label></h4>
-                  <textarea ref="textarea" id="yandexmarket-preview"></textarea>
-                </div>
-              </v-card-text>
+              <div class="yandexmarket-xml-preview">
+                <h4 class="mb-2"><label for="yandexmarket-preview">Предпросмотр XML для {{ previewType }}</label></h4>
+                <textarea ref="textarea" id="yandexmarket-preview"></textarea>
+              </div>
             </v-col>
           </v-row>
-        </v-container>
+
         <loader :status="!pricelist"></loader>
       </v-card-text>
     </v-card>
