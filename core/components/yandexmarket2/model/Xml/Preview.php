@@ -2,30 +2,35 @@
 
 namespace YandexMarket\Xml;
 
-use YandexMarket\Pricelist;
+use YandexMarket\Models\Pricelist;
 
 class Preview
 {
-    public const METHOD_CATEGORIES = 'categories';
-    public const METHOD_OFFER      = 'offer';
-    public const METHOD_SHOP       = 'shop';
+    public const PREVIEW_CATEGORIES = 'categories';
+    public const PREVIEW_OFFERS     = 'offers';
+    public const PREVIEW_SHOP       = 'shop';
 
     protected $writer;
+    protected $pricelist;
 
     public function __construct(Pricelist $pricelist)
     {
-        $this->writer = new Writer($pricelist);
+        $this->pricelist = $pricelist;
+        $this->writer = new Writer();
     }
 
-    public function previewCategories(array $additional = []): string
+    public function previewCategories(): string
     {
-        $this->writer->writeCategories();
+        $this->writer->writeCategories($this->pricelist->getCategories());
         return $this->writer->getXml();
     }
 
     public function previewShop(array $additional = []): string
     {
-        $this->writer->writeShopData();
+        $data = array_filter(array_merge($this->pricelist->getShopData(), $additional), function ($item) {
+            return $item !== '' && $item !== null;
+        });
+        $this->writer->writeShopData($data);
         return $this->writer->getXml();
     }
 

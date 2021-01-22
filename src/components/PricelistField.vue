@@ -1,7 +1,40 @@
 <template>
-  <div class="yandexmarket-shop-field">
+  <div class="yandexmarket-shop-field mb-3">
+    <!-- TODO: сделать поддержку разных компонентов -->
+    <v-select
+        v-if="field.component === 'select'"
+        :label="field.title + (field.required ? ' *': '')"
+        :value="value"
+        :items="field.values"
+        filled
+        dense
+        multiple
+        chips
+        deletable-chips
+        small-chips
+        hide-details="auto"
+        item-value="key"
+        @change="inputField($event)"
+    >
+      <template v-slot:selection="{ attrs, index, item, selected }">
+        <v-chip
+            v-bind="attrs"
+            :input-value="selected"
+            text-color="white"
+            :color="!index ? 'primary' : 'grey'"
+            :title="!index ? 'Основная валюта' : 'Выбрать основной'"
+            @click.stop="makeFirst(item)"
+            @click:close="removeChip(item)"
+            close
+            small
+        >
+          <strong>{{ item.key }}</strong>
+          <span class="pl-1">({{ item.text }})</span>
+        </v-chip>
+      </template>
+    </v-select>
     <v-text-field
-        class="mt-2 mb-3"
+        v-else
         :label="field.title + (field.required ? ' *': '')"
         :value="value"
         hide-details="auto"
@@ -9,13 +42,6 @@
         dense
         @change="inputField($event)"
     >
-      <template v-slot:prepend>
-        <v-btn icon small>
-          <v-icon :color="active ? 'primary' : 'grey'" @click="active = !active">
-            {{ active ? 'icon-check-square-o' : 'icon-square-o' }}
-          </v-icon>
-        </v-btn>
-      </template>
       <template v-slot:append v-if="field.help">
         <v-tooltip bottom :max-width="400" :close-delay="500">
           <template v-slot:activator="{ on }">
@@ -43,6 +69,17 @@ export default {
   methods: {
     inputField(value) {
       this.$emit('input', value);
+    },
+    removeChip(item) {
+      let values = [...this.value];
+      values.splice(values.indexOf(item.key), 1)
+      this.inputField(values);
+    },
+    makeFirst(item) {
+      let values = [...this.value];
+      values.splice(values.indexOf(item.key), 1);
+      values.unshift(item.key);
+      this.inputField(values);
     }
   }
 }

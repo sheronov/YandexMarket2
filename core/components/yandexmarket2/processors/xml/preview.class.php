@@ -2,7 +2,7 @@
 
 /** @noinspection PhpIncludeInspection */
 
-use YandexMarket\Pricelist;
+use YandexMarket\Models\Pricelist;
 use YandexMarket\Xml\Preview;
 
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
@@ -29,13 +29,13 @@ class ymXmlPreviewProcessor extends modProcessor
         $additional = $this->getProperty('data', []);
 
         switch ($this->getProperty('method')) {
-            case Preview::METHOD_CATEGORIES:
-                $xml = $this->xml->previewCategories($additional);
+            case Preview::PREVIEW_CATEGORIES:
+                $xml = $this->xml->previewCategories();
                 break;
-            case Preview::METHOD_OFFER:
+            case Preview::PREVIEW_OFFERS:
                 $xml = $this->xml->previewOffer($additional);
                 break;
-            case Preview::METHOD_SHOP:
+            case Preview::PREVIEW_SHOP:
                 $xml = $this->xml->previewShop($additional);
                 break;
             default:

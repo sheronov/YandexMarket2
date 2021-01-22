@@ -3,8 +3,8 @@ import Router from 'vue-router'
 import HelloWorld from './components/HelloWorld'
 import PriceLists from './pages/PriceLists'
 import PriceList from './pages/PriceList'
-import PriceListColumns from './pages/PriceListColumns'
-import PriceListSettings from './pages/PriceListSettings'
+import PriceListOffers from './pages/PriceListOffers'
+import PriceListShop from './pages/PriceListShop'
 import PriceListCategories from './pages/PriceListCategories'
 import Main from './pages/Main'
 
@@ -25,7 +25,7 @@ const routes = [
             meta: {title: 'Настройки прайс-листа', to: 'pricelist'},
             children: [{
                 path: '',
-                component: PriceListSettings,
+                component: PriceListShop,
                 name: 'pricelist',
             }, {
                 path: 'categories',
@@ -34,7 +34,7 @@ const routes = [
                 meta: {title: 'Категории'}
             }, {
                 path: 'offers',
-                component: PriceListColumns,
+                component: PriceListOffers,
                 name: 'pricelist.offers',
                 meta: {title: 'Данные'}
             }]

@@ -1,6 +1,6 @@
 <?php
 
-namespace YandexMarket;
+namespace YandexMarket\Models;
 
 use InvalidArgumentException;
 use xPDO;

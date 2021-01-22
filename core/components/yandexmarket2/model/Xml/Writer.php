@@ -4,27 +4,24 @@ namespace YandexMarket\Xml;
 
 use modResource;
 use XMLWriter;
-use YandexMarket\Pricelist;
 use ymCategory;
 
 class Writer
 {
-    protected $pricelist;
     protected $xml;
 
-    public function __construct(Pricelist $pricelist)
+    public function __construct()
     {
-        $this->pricelist = $pricelist;
         $this->xml = new XMLWriter();
         $this->xml->openMemory();
         $this->xml->setIndent(true);
         $this->xml->setIndentString("\t");
     }
 
-    public function writeShopData(): void
+    public function writeShopData(array $data): void
     {
         $this->xml->startElement('shop');
-        foreach ($this->pricelist->getShopData() as $key => $value) {
+        foreach ($data as $key => $value) {
             $this->xml->startElement($key);
             if ($key === 'currencies') {
                 foreach ($value as $i => $val) {
@@ -45,9 +42,9 @@ class Writer
         $this->xml->endElement();
     }
 
-    public function writeCategories(): void
+    public function writeCategories(array $categories): void
     {
-        if ($categories = $this->pricelist->getCategories()) {
+        if (count($categories)) {
             $this->xml->startElement('categories');
             /** @var ymCategory $category */
             foreach ($categories as $category) {
@@ -66,6 +63,14 @@ class Writer
         $this->xml->writeAttribute('id', $category->get('id'));
         $this->xml->text($category->get('pagetitle'));
         $this->xml->endElement();
+    }
+
+    public function writeOffers(array $offers): void
+    {
+    }
+
+    public function writeOffer($offer): void
+    {
     }
 
     public function getXml(): string

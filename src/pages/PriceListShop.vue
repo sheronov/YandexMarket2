@@ -1,6 +1,7 @@
 <template>
   <div class="yandexmarket-pricelist-settings">
     <h4>Настройки магазина</h4>
+    <p class="mb-2">Обязательные поля отмечены звёздочкой. Пустые поля не попадут в выгрузку.</p>
     <pricelist-field
         v-for="field in fields"
         :key="field.key"
@@ -19,7 +20,7 @@
 import PricelistField from "@/components/PricelistField";
 
 export default {
-  name: 'PricelistSettings',
+  name: 'PriceListShop',
   components: {PricelistField},
   props: {
     pricelist: {type: Object, required: true}
@@ -40,7 +41,8 @@ export default {
       this.form = {...this.pricelist.shop || {}};
     },
     changedValue(field, value) {
-      console.log(field, value);
+      this.$set(this.form, field.key, value);
+      this.previewXml();
     }
   },
   mounted() {

@@ -12,19 +12,18 @@
     </v-tabs>
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
-
-          <v-row dense>
-            <v-col md="6">
-              <router-view v-if="pricelist" v-bind="{pricelist}" @preview:xml="previewXml"></router-view>
-            </v-col>
-            <v-col cols="12" md="6">
-              <div class="yandexmarket-xml-preview">
-                <h4 class="mb-2"><label for="yandexmarket-preview">Предпросмотр XML для {{ previewType }}</label></h4>
-                <textarea ref="textarea" id="yandexmarket-preview"></textarea>
-              </div>
-            </v-col>
-          </v-row>
-
+        <v-row dense>
+          <v-col md="6">
+            <router-view v-if="pricelist" v-bind="{pricelist}" @preview:xml="previewXml"></router-view>
+          </v-col>
+          <v-col cols="12" md="6">
+            <div class="yandexmarket-xml-preview">
+              <h4><label for="yandexmarket-preview">Предпросмотр XML элемента &lt;{{ previewType }}&gt;</label></h4>
+              <p class="mb-2">Автоматически обновляется для каждой вкладки при любом изменении</p>
+              <textarea ref="textarea" id="yandexmarket-preview"></textarea>
+            </div>
+          </v-col>
+        </v-row>
         <loader :status="!pricelist"></loader>
       </v-card-text>
     </v-card>
@@ -50,9 +49,9 @@ export default {
     coder: null
   }),
   methods: {
-    previewXml(method, data = {test: true}) {
+    previewXml(method, data = {}) {
       this.previewType = method;
-      this.coder.setValue('<!-- Загружается XML пример ' + method + ' -->');
+      this.coder.setValue('<!-- Загружается XML элемент ' + method + ' -->');
       api.post('xml/preview', {id: this.pricelist.id, method, data})
           .then(({data}) => {
             this.coder.setValue(data.message);
@@ -128,5 +127,9 @@ export default {
 
 .yandexmarket-pricelist-card {
   border-top-left-radius: 0;
+}
+
+.yandexmarket-xml-preview >>> .CodeMirror {
+  height: auto;
 }
 </style>
