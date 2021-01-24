@@ -31,10 +31,16 @@
                 label="Тип прайс-листа"
             ></v-select>
             <v-text-field
+                v-model="pricelist.name"
+                :error="!!errors['name']"
+                :error-messages="errors['name']"
+                label="Название прайс-листа"
+            ></v-text-field>
+            <v-text-field
                 v-model="pricelist.file"
                 :error="!!errors['file']"
                 :error-messages="errors['file']"
-                label="Название файла"
+                label="Имя файла"
             ></v-text-field>
           </v-card-text>
           <v-card-actions class="pb-4">
@@ -113,10 +119,12 @@ export default {
       ],
       defaultItem: {
         file: 'goods.xml',
+        name: 'Все товары',
         type: 'yandex.market'
       },
       pricelist: {
         file: '',
+        name: '',
         type: '',
       },
       dialog: false,
@@ -124,6 +132,7 @@ export default {
       lists: [],
       headers: [
         {text: 'ID', value: 'id'},
+        {text: 'Название', value: 'name'},
         {text: 'Тип прайс-листа', value: 'type'},
         {text: 'Файл', value: 'file'},
         {text: 'Обновлён', value: 'generated_on'},

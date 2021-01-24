@@ -34,7 +34,8 @@ class ymCategoryGetListProcessor extends modResourceGetNodesProcessor
     {
         $c = parent::getResourceQuery();
         $c->select([
-            'childrenCount' => "(SELECT COUNT(*) FROM {$this->modx->getTableName('modResource')} WHERE parent = modResource.id and isfolder = 1)",
+            'childrenCount' => "(SELECT COUNT(*) FROM {$this->modx->getTableName('modResource')}"
+                                    ." WHERE parent = modResource.id and isfolder = 1)",
         ]);
         $c->where(['isfolder' => true]);
 
@@ -92,12 +93,12 @@ class ymCategoryGetListProcessor extends modResourceGetNodesProcessor
         $categories = [];
         $stmt = $this->modx->newQuery('ymCategory')
             ->where(['pricelist_id' => $this->getProperty('pricelist_id')])
-            ->select($this->modx->getSelectColumns('ymCategory', 'ymCategory', '', ['category_id']))
+            ->select($this->modx->getSelectColumns('ymCategory', 'ymCategory', '', ['resource_id']))
             ->prepare();
 
         if ($stmt && $stmt->execute()) {
-            while ($categoryId = $stmt->fetch(PDO::FETCH_COLUMN)) {
-                $categories[] = (int)$categoryId;
+            while ($resourceId = $stmt->fetch(PDO::FETCH_COLUMN)) {
+                $categories[] = (int)$resourceId;
             }
         }
 

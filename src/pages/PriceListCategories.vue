@@ -37,18 +37,18 @@ export default {
     previewXml() {
       this.$emit('preview:xml', 'categories');
     },
-    categoryAdd(categoryId, send = true) {
-      this.selected.push(categoryId);
+    categoryAdd(resourceId, send = true) {
+      this.selected.push(resourceId);
       if (send) {
-        api.post('categories/create', {...this.where, category_id: categoryId})
+        api.post('categories/create', {...this.where, resource_id: resourceId})
             .then(() => this.previewXml())
-            .catch(() => this.categoryRemove(categoryId, false))
+            .catch(() => this.categoryRemove(resourceId, false))
       }
     },
-    categoryRemove(categoryId, send = true) {
-      this.selected = this.selected.filter(selected => selected !== categoryId);
+    categoryRemove(resourceId, send = true) {
+      this.selected = this.selected.filter(selected => selected !== resourceId);
       if (send) {
-        api.post('categories/remove', {...this.where, category_id: categoryId})
+        api.post('categories/remove', {...this.where, resource_id: resourceId})
             .then(() => this.previewXml())
             .catch(() => {
               // можно добавлять назад, если по какой-то причине не удалился

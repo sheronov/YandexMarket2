@@ -18,16 +18,16 @@ class ymCategoryRemoveProcessor extends modObjectProcessor
 
         $pricelistId = (int)$this->getProperty('pricelist_id') ?: null;
 
-        if (!$categoryId = (int)$this->getProperty('category_id')) {
-            return $this->failure($this->modx->lexicon('yandexmarket2_category_err_ns'));
+        if (!$resourceId = (int)$this->getProperty('resource_id')) {
+            return $this->failure($this->modx->lexicon('ym_category_err_ns'));
         }
 
         /** @var ymCategory $object */
         if (!$object = $this->modx->getObject($this->classKey, [
-            'category_id'  => $categoryId,
+            'resource_id'  => $resourceId,
             'pricelist_id' => $pricelistId
         ])) {
-            return $this->failure($this->modx->lexicon('yandexmarket2_category_err_nf'));
+            return $this->failure($this->modx->lexicon('ym_category_err_nf'));
         }
 
         $object->remove();

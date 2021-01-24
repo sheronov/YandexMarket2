@@ -45,7 +45,7 @@ $xpdo_meta_map['ymField']= array (
     'pricelist_id' => 
     array (
       'dbtype' => 'int',
-      'null' => true,
+      'null' => false,
       'attributes' => 'unsigned',
       'phptype' => 'integer',
     ),

@@ -13,15 +13,15 @@ class ymCategoryCreateProcessor extends modObjectCreateProcessor
     public function beforeSet(): bool
     {
         $pricelistId = (int)($this->getProperty('pricelist_id', 0)) ?: null;
-        $categoryId = (int)($this->getProperty('category_id', 0));
+        $resourceId = (int)($this->getProperty('resource_id', 0));
 
-        if (!$categoryId) {
-            $this->modx->error->addField('category_id', $this->modx->lexicon('yandexmarket2_category_err_id'));
+        if (!$resourceId) {
+            $this->modx->error->addField('resource_id', $this->modx->lexicon('ym_category_err_id'));
         } elseif ($this->modx->getCount($this->classKey, [
-            'category_id'  => $categoryId,
+            'resource_id'  => $resourceId,
             'pricelist_id' => $pricelistId
         ])) {
-            $this->modx->error->addField('category_id', $this->modx->lexicon('yandexmarket2_category_err_ae'));
+            $this->modx->error->addField('resource_id', $this->modx->lexicon('ym_category_err_ae'));
         }
 
         return parent::beforeSet();

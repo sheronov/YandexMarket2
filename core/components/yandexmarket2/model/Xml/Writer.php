@@ -4,7 +4,7 @@ namespace YandexMarket\Xml;
 
 use modResource;
 use XMLWriter;
-use ymCategory;
+use YandexMarket\Models\Category;
 
 class Writer
 {
@@ -46,10 +46,9 @@ class Writer
     {
         if (count($categories)) {
             $this->xml->startElement('categories');
-            /** @var ymCategory $category */
+            /** @var Category $category */
             foreach ($categories as $category) {
-                /** @var modResource $resource */
-                if ($resource = $category->getOne('Category')) {
+                if ($resource = $category->getResource()) {
                     $this->writeCategory($resource);
                 }
             }

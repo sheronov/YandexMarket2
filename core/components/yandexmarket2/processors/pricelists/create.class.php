@@ -2,7 +2,7 @@
 
 class ymPricelistCreateProcessor extends modObjectCreateProcessor
 {
-    public $objectType     = 'ymPricelist';
+    public $objectType     = 'ym_pricelist';
     public $classKey       = 'ymPricelist';
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'create';
@@ -12,6 +12,9 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
      */
     public function beforeSet(): bool
     {
+        if (empty($this->getProperty('name',''))) {
+            $this->modx->error->addField('name', $this->modx->lexicon('ym_pricelist_name_err_ns'));
+        }
         if (!$this->getProperty('file')) {
             $this->setProperty('file', 'pricelist-'.date('Y-m-d-H-i-s').'.xml');
         }
@@ -21,7 +24,7 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
         $this->object->set('created_on', date('Y-m-d H:i:s'));
 
         if ($this->modx->getCount($this->classKey, ['file' => $this->getProperty('file')])) {
-            $this->modx->error->addField('file', $this->modx->lexicon('yandexmarket2_file_err_ae'));
+            $this->modx->error->addField('file', $this->modx->lexicon('ym_pricelist_file_err_ae'));
         }
 
         return parent::beforeSet();

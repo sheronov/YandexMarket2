@@ -2,8 +2,22 @@
 
 namespace YandexMarket\Models;
 
+use DateTimeImmutable;
 use ymField;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property null|int $parent
+ * @property int $type
+ * @property int $pricelist_id
+ * @property null|string $column
+ * @property null|string $handler
+ * @property null|array $properties
+ * @property int $rank
+ * @property DateTimeImmutable $created_on
+ * @property bool $active
+ */
 class Field extends BaseObject
 {
     public const TYPE_PARENT     = 0; //обёртка без своего собственного значения
@@ -19,6 +33,11 @@ class Field extends BaseObject
     public static function getObjectClass(): string
     {
         return ymField::class;
+    }
+
+    public function getPricelist(): Pricelist
+    {
+        return new Pricelist($this->xpdo, $this->object->getOne('Pricelist'));
     }
 
 }

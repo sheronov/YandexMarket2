@@ -10,6 +10,7 @@ $xpdo_meta_map['ymPricelist']= array (
   ),
   'fields' => 
   array (
+    'name' => NULL,
     'file' => NULL,
     'type' => NULL,
     'created_on' => NULL,
@@ -24,6 +25,13 @@ $xpdo_meta_map['ymPricelist']= array (
   ),
   'fieldMeta' => 
   array (
+    'name' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '255',
+      'phptype' => 'string',
+      'null' => false,
+    ),
     'file' => 
     array (
       'dbtype' => 'varchar',

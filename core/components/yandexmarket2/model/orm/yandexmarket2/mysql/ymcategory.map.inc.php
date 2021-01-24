@@ -10,12 +10,13 @@ $xpdo_meta_map['ymCategory']= array (
   ),
   'fields' => 
   array (
-    'category_id' => NULL,
+    'resource_id' => NULL,
     'pricelist_id' => NULL,
+    'name' => NULL,
   ),
   'fieldMeta' => 
   array (
-    'category_id' => 
+    'resource_id' => 
     array (
       'dbtype' => 'int',
       'null' => false,
@@ -29,18 +30,25 @@ $xpdo_meta_map['ymCategory']= array (
       'attributes' => 'unsigned',
       'phptype' => 'integer',
     ),
+    'name' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '255',
+      'phptype' => 'string',
+      'null' => true,
+    ),
   ),
   'indexes' => 
   array (
-    'category_pricelist' => 
+    'resource_pricelist' => 
     array (
-      'alias' => 'category_pricelist',
+      'alias' => 'resource_pricelist',
       'primary' => false,
       'unique' => true,
       'type' => 'BTREE',
       'columns' => 
       array (
-        'category_id' => 
+        'resource_id' => 
         array (
           'length' => '',
           'collation' => 'A',
@@ -57,10 +65,10 @@ $xpdo_meta_map['ymCategory']= array (
   ),
   'aggregates' => 
   array (
-    'Category' => 
+    'Resource' => 
     array (
       'class' => 'modResource',
-      'local' => 'category_id',
+      'local' => 'resource_id',
       'foreign' => 'id',
       'cardinality' => 'one',
       'owner' => 'foreign',

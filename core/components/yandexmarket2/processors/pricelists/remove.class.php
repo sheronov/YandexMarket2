@@ -2,7 +2,7 @@
 
 class ymPricelistRemoveProcessor extends modObjectProcessor
 {
-    public $objectType     = 'ymPricelist';
+    public $objectType     = 'ym_pricelist';
     public $classKey       = 'ymPricelist';
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
@@ -18,13 +18,13 @@ class ymPricelistRemoveProcessor extends modObjectProcessor
 
         $ids = $this->modx->fromJSON($this->getProperty('ids'));
         if (empty($ids)) {
-            return $this->failure($this->modx->lexicon('yandexmarket2_item_err_ns'));
+            return $this->failure($this->modx->lexicon('ym_pricelist_err_ns'));
         }
 
         foreach ($ids as $id) {
             /** @var ymPricelist $object */
             if (!$object = $this->modx->getObject($this->classKey, $id)) {
-                return $this->failure($this->modx->lexicon('yandexmarket2_item_err_nf'));
+                return $this->failure($this->modx->lexicon('ym_pricelist_err_nf'));
             }
 
             $object->remove();
