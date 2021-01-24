@@ -74,7 +74,7 @@ abstract class BaseObject
         $data = $this->object->toArray();
         foreach ($data as $key => $value) {
             if ($value) {
-                if (in_array($key, self::ARRAY_FIELDS, true)) {
+                if (!is_array($value)  && in_array($key, self::ARRAY_FIELDS, true)) {
                     $data[$key] = json_decode($value, true);
                 } elseif (in_array($key, self::DATETIME_FIELDS, true)) {
                     $data[$key] = new DateTimeImmutable($value);

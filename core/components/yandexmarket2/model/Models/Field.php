@@ -4,6 +4,7 @@ namespace YandexMarket\Models;
 
 use DateTimeImmutable;
 use ymField;
+use ymFieldAttribute;
 
 /**
  * @property int $id
@@ -25,7 +26,13 @@ class Field extends BaseObject
     public const TYPE_CURRENCIES = 2; //тип валюты для яндекс маркета TODO: лучше убрать, КМК
     public const TYPE_CATEGORIES = 3; // дерево категорий
 
-    // TODO: подумать над обработчиками типов
+    protected $parentField;
+    protected $children = [];
+
+    protected $attributes;
+    protected $pricelist;
+
+    // TODO: подумать над обработчиками типов (каждый тип сам решает, как он будет писаться в XML
     public const TYPES_HANDLER = [
         self::TYPE_PARENT => [__CLASS__, 'handlerParent']
     ];
@@ -37,7 +44,51 @@ class Field extends BaseObject
 
     public function getPricelist(): Pricelist
     {
-        return new Pricelist($this->xpdo, $this->object->getOne('Pricelist'));
+        if (!isset($this->pricelist)) {
+            $this->pricelist = new Pricelist($this->xpdo, $this->object->getOne('Pricelist'));
+        }
+        return $this->pricelist;
+    }
+
+    public function getAttributes(): array
+    {
+        if (!isset($this->attributes)) {
+            $this->attributes = array_map(function (ymFieldAttribute $attribute) {
+                return new Attribute($this->xpdo, $attribute);
+            }, $this->object->getMany('Attributes'));
+        }
+        return $this->attributes;
+    }
+
+    public function addAttribute(Attribute $attribute): Field
+    {
+        if (!isset($this->attributes)) {
+            $this->attributes = [];
+        }
+        $this->attributes[] = $attribute->setField($this);
+
+        return $this;
+    }
+
+    public function setParent(Field $parent): Field
+    {
+        $this->parentField = $parent;
+        return $this;
+    }
+
+    public function getParent(): ?Field
+    {
+        return $this->parentField;
+    }
+
+    public function addChildren(Field $child): void
+    {
+        $this->children[] = $child->setParent($this);
+    }
+
+    public function getChildren(): array
+    {
+        return $this->children;
     }
 
 }

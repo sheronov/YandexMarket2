@@ -13,21 +13,43 @@ use ymCategory;
  */
 class Category extends BaseObject
 {
+    /** @var null|modResource $resource */
+    protected $resource;
+
+    protected $pricelist;
 
     public static function getObjectClass(): string
     {
         return ymCategory::class;
     }
 
+    public function setPricelist(Pricelist $pricelist): Category
+    {
+        $this->pricelist = $pricelist;
+        return $this;
+    }
+
     public function getPricelist(): Pricelist
     {
-        return new Pricelist($this->xpdo, $this->object->getOne('Pricelist'));
+        if (!isset($this->pricelist)) {
+            $this->pricelist = new Pricelist($this->xpdo, $this->object->getOne('Pricelist'));
+        }
+
+        return $this->pricelist;
+    }
+
+    public function setResource(modResource $resource): Category
+    {
+        $this->resource = $resource;
+        return $this;
     }
 
     public function getResource(): ?modResource
     {
-        /** @var null|modResource $resource */
-        $resource = $this->object->getOne('Resource');
-        return $resource;
+        if (!isset($this->resource)) {
+            $this->resource = $this->object->getOne('Resource');
+        }
+
+        return $this->resource;
     }
 }

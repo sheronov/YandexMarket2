@@ -6,7 +6,7 @@ use modResource;
 use XMLWriter;
 use YandexMarket\Models\Category;
 
-class Writer
+class PricelistWriter
 {
     protected $xml;
 
@@ -77,7 +77,7 @@ class Writer
         return $this->xml->outputMemory(true);
     }
 
-    public function setIndent(bool $indent = true): Writer
+    public function setIndent(bool $indent = true): PricelistWriter
     {
         $this->xml->setIndent($indent);
         return $this;

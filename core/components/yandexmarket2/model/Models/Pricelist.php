@@ -6,8 +6,7 @@ use DateTimeImmutable;
 use Exception;
 use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Marketplaces\YandexMarket;
-use ymCategory;
-use ymField;
+use ymFieldAttribute;
 use ymPricelist;
 
 /**
@@ -27,30 +26,131 @@ use ymPricelist;
  */
 class Pricelist extends BaseObject
 {
+    /** @var Category[] */
+    protected $categories;
+    /** @var Field[] */
+    protected $fields;
+    /** @var Attribute[] */
+    protected $fieldsAttributes;
 
     public static function getObjectClass(): string
     {
         return ymPricelist::class;
     }
 
-    /**
-     * @return Field[]|array
-     */
-    public function getFields(): array
+    public function getFields(bool $withAttributes = true): array
     {
-        return array_map(function (ymField $field) {
-            return new Field($this->xpdo, $field);
-        }, $this->object->getMany('Fields'));
+        if (!isset($this->fields)) {
+            $this->fields = [];
+            foreach ($this->object->getMany('Fields') as $ymField) {
+                $field = new Field($this->xpdo, $ymField);
+                $this->fields[$field->id] = $field;
+            }
+
+            if ($withAttributes && $attributes = $this->getFieldsAttributes(array_keys($this->fields))) {
+                foreach ($attributes as $attribute) {
+                    if ($field = $this->fields[$attribute->field_id] ?? null) {
+                        $field->addAttribute($attribute);
+                    }
+                }
+            }
+
+            uasort($this->fields, static function (Field $a, Field $b) {
+                if ($a->rank === $b->rank) {
+                    return 0;
+                }
+                return ($a->rank < $b->rank) ? -1 : 1;
+            });
+
+            foreach ($this->fields as $field) {
+                if ($field->parent && $parent = $this->fields[$field->parent] ?? null) {
+                    $parent->addChildren($field);
+                }
+            }
+        }
+
+        return $this->fields;
     }
 
-    /**
-     * @return Category[]|array
-     */
+    protected function getFieldsAttributes(array $fieldIds): array
+    {
+        if (!isset($this->fieldsAttributes)) {
+            $this->fieldsAttributes = [];
+
+            $q = $this->xpdo->newQuery(ymFieldAttribute::class);
+            $q->where(['field_id:IN' => $fieldIds]);
+
+            $this->fieldsAttributes = array_map(function (ymFieldAttribute $attribute) {
+                return new Attribute($this->xpdo, $attribute);
+            }, $this->xpdo->getCollection(ymFieldAttribute::class, $q) ?? []);
+        }
+
+        return $this->fieldsAttributes;
+    }
+
+    public function getRootNode(): ?Field
+    {
+        foreach ($this->getFields(true) as $field) {
+            if (!$field->parent) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    public function getFieldByName(string $name): ?Field
+    {
+        foreach ($this->getFields(true) as $field) {
+            if ($field->name === $name) {
+                return $field;
+            }
+        }
+        return null;
+    }
+
     public function getCategories(): array
     {
-        return array_map(function (ymCategory $category) {
-            return new Category($this->xpdo, $category);
-        }, $this->object->getMany('Categories'));
+        if (!isset($this->categories)) {
+            $this->categories = [];
+            foreach ($this->object->getMany('Categories') as $ymCategory) {
+                $category = new Category($this->xpdo, $ymCategory);
+                $this->categories[$category->id] = $category;
+            }
+        }
+
+        return $this->categories;
+    }
+
+    protected function prepareField(Field $field): array
+    {
+        return [
+            'name'       => $field->name,
+            'type'       => $field->type,
+            'parent'     => $field->parent,
+            'column'     => $field->column,
+            'handler'    => $field->handler,
+            'properties' => $field->properties,
+            'rank'       => $field->rank,
+            'active'     => $field->active
+        ];
+    }
+
+    public function makeFieldsTree(?int $parentId): array
+    {
+        $branch = [];
+
+        foreach ($this->getFields() as $field) {
+            if ($field->parent === $parentId) {
+                $preparedField = $this->prepareField($field);
+                if ($children = $this->makeFieldsTree($field->id)) {
+                    $preparedField['children'] = $children;
+                }
+                $branch[] = $preparedField;
+            }
+        }
+
+        return $branch;
     }
 
     /**
@@ -60,6 +160,10 @@ class Pricelist extends BaseObject
     public function toArray(): array
     {
         $data = parent::toArray();
+
+        if ($shopField = $this->getFieldByName('shop')) {
+            $data['tree'] = $this->makeFieldsTree($shopField->id);
+        }
 
         // TODO: может сделать группы для полей [shop, categories, offer] (чтобы на фронте легче разбивать по группам)
         $data['fields'] = $this->getFieldsData(); // fields[ 'shop' => getFieldsData(), 'categories' => (), 'offer' => getOfferFields()]
@@ -82,7 +186,6 @@ class Pricelist extends BaseObject
 
         return $data;
     }
-
 
     public function getShopData(): array
     {
@@ -129,7 +232,6 @@ class Pricelist extends BaseObject
     {
         return YandexMarket::getOfferFields();
     }
-
 
     protected function getFieldsData(): array
     {

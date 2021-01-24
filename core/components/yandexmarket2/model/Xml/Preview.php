@@ -16,7 +16,8 @@ class Preview
     public function __construct(Pricelist $pricelist)
     {
         $this->pricelist = $pricelist;
-        $this->writer = new Writer();
+        $this->writer = new PricelistWriter();
+        // TODO: здесь дёрнуть ROOT элемент из прайс-листа и пусть отрисовка идёт от него.
     }
 
     public function previewCategories(): string
@@ -27,7 +28,7 @@ class Preview
 
     public function previewShop(array $additional = []): string
     {
-        $data = array_filter(array_merge($this->pricelist->getShopData(), $additional), function ($item) {
+        $data = array_filter(array_merge($this->pricelist->getShopData(), $additional), static function ($item) {
             return $item !== '' && $item !== null;
         });
         $this->writer->writeShopData($data);

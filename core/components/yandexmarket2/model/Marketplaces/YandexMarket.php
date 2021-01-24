@@ -148,7 +148,7 @@ class YandexMarket extends Marketplace
                 'title'     => 'Подарки, которые не размещаются на Маркете (для акции «Подарок при покупке»)',
                 'component' => 'feature',
                 'disabled'  => true,
-                'comment'   => 'Пока неактивно. Обратитесь к webrush@bk.ru'//TODO: modx@sheronov.ru seofilter@webrush.ru
+                'comment'   => 'Пока неактивно. Обратитесь к webrush@bk.ru'
             ],
             [
                 'key'       => 'promos',
