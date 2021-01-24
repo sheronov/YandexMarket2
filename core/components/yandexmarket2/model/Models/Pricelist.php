@@ -9,9 +9,11 @@ use ymPricelist;
 
 class Pricelist extends BaseObject
 {
-    /** @var ymPricelist $object */
 
-    public const OBJECT_CLASS = ymPricelist::class;
+    public static function getObjectClass(): string
+    {
+        return ymPricelist::class;
+    }
 
     /**
      * @return array
@@ -57,6 +59,7 @@ class Pricelist extends BaseObject
 
     public function getOfferData(): array
     {
+        // TODO: тут нужно сделать иначе, по ID из БД например, чтобы избежать множественных значений внутри одного
         return [
             'offer' => [
                 'attributes' => [
@@ -99,5 +102,4 @@ class Pricelist extends BaseObject
         }
         return [];
     }
-
 }

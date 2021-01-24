@@ -1,13 +1,15 @@
 <template>
   <div class="yandexmarket-pricelist-offers-fields">
     <h4>Настройка полей предложений</h4>
-    <pricelist-offer-fields
-        v-for="(field,key) in pricelist.offer_fields"
-        :field="field"
-        :tag="key"
-        :values="pricelist.offer"
-        :key="key"
-    />
+    <div class="ml-n3">
+      <pricelist-offer-fields
+          v-for="(field,key) in pricelist.offer_fields"
+          :field="field"
+          :tag="key"
+          :values="pricelist.offer"
+          :key="key"
+      />
+    </div>
     <pre>{{ pricelist.offer }}</pre>
     <pre>{{ pricelist.offer_fields }}</pre>
   </div>

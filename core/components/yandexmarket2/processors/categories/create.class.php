@@ -14,6 +14,7 @@ class ymCategoryCreateProcessor extends modObjectCreateProcessor
     {
         $pricelistId = (int)($this->getProperty('pricelist_id', 0)) ?: null;
         $categoryId = (int)($this->getProperty('category_id', 0));
+
         if (!$categoryId) {
             $this->modx->error->addField('category_id', $this->modx->lexicon('yandexmarket2_category_err_id'));
         } elseif ($this->modx->getCount($this->classKey, [

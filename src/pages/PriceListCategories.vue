@@ -14,6 +14,7 @@
 </template>
 
 <script>
+// TODO: add here save or cancel changes
 import CategoriesTree from "@/components/CategoriesTree";
 import api from "@/api";
 

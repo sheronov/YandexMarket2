@@ -8,23 +8,24 @@ use xPDOObject;
 
 abstract class BaseObject
 {
-    public const OBJECT_CLASS = xPDOObject::class;
-
     protected $xpdo;
     protected $object;
 
     public function __construct(xPDO $xpdo, xPDOObject $object = null)
     {
+        $objectClass = static::getObjectClass();
         /** @var xPDOObject $newObj */
-        if (!$object && $newObj = $xpdo->newObject(static::OBJECT_CLASS)) {
+        if (!$object && $newObj = $xpdo->newObject($objectClass)) {
             $object = $newObj;
         }
-        if (!$object || !is_a($object, static::OBJECT_CLASS)) {
-            throw new InvalidArgumentException("You should provide ".static::OBJECT_CLASS.' entity');
+        if (!$object || !is_a($object, $objectClass)) {
+            throw new InvalidArgumentException("You should provide ".$objectClass.' entity');
         }
         $this->object = $object;
         $this->xpdo = $xpdo;
     }
+
+    abstract public static function getObjectClass(): string;
 
     public function getObject(): ?xPDOObject
     {

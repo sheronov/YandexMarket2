@@ -27,6 +27,17 @@ class YandexMarket extends Marketplace
         self::TYPE_TOURS         => 'Туры'
     ];
 
+    public static function getFields(): array
+    {
+        // title or help we can add after (from MODX lexicons by this mask "ym_yandex.market_{$field}_title"
+        return [];
+    }
+
+    public static function getKey(): string
+    {
+        return 'yandex.market';
+    }
+
     public static function getShopFields(): array
     {
         return [
@@ -193,4 +204,6 @@ class YandexMarket extends Marketplace
             ]
         ];
     }
+
+
 }
