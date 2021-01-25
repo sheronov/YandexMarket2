@@ -10,6 +10,7 @@ use ymCategory;
  * @property int $resource_id
  * @property int $pricelist_id
  * @property null|string $name
+ * @property null|array $properties
  */
 class Category extends BaseObject
 {

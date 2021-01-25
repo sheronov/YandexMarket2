@@ -13,6 +13,7 @@ $xpdo_meta_map['ymCategory']= array (
     'resource_id' => NULL,
     'pricelist_id' => NULL,
     'name' => NULL,
+    'properties' => NULL,
   ),
   'fieldMeta' => 
   array (
@@ -35,6 +36,12 @@ $xpdo_meta_map['ymCategory']= array (
       'dbtype' => 'varchar',
       'precision' => '255',
       'phptype' => 'string',
+      'null' => true,
+    ),
+    'properties' => 
+    array (
+      'dbtype' => 'text',
+      'phptype' => 'json',
       'null' => true,
     ),
   ),

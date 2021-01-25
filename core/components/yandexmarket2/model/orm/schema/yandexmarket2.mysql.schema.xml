@@ -31,6 +31,7 @@
         <field key="resource_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
         <field key="pricelist_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
 
         <aggregate alias="Resource" class="modResource" local="resource_id" foreign="id" cardinality="one"
                    owner="foreign"/>
