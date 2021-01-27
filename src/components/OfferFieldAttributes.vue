@@ -1,6 +1,5 @@
 <template>
   <v-row>
-    <v-col>Атрибуты:</v-col>
     <v-col v-for="(attribute,param) in attributes" :key="param">
         {{param}}="{{attribute.title}}"
     </v-col>
