@@ -1,7 +1,7 @@
 <template>
   <div class="yandexmarket-pricelist-offers-fields">
     <h4>Настройка полей предложений</h4>
-    <div class="ml-n3">
+    <div class="ml-n3 pb-5">
       <pricelist-offer-fields
           v-for="(field,key) in pricelist.offer_fields"
           :field="field"
@@ -10,8 +10,6 @@
           :key="key"
       />
     </div>
-    <pre>{{ pricelist.offer }}</pre>
-    <pre>{{ pricelist.offer_fields }}</pre>
   </div>
 </template>
 

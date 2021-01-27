@@ -13,10 +13,10 @@
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
         <v-row dense>
-          <v-col md="6">
+          <v-col md="7">
             <router-view v-if="pricelist" v-bind="{pricelist}" @preview:xml="previewXml"></router-view>
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="12" md="5">
             <div class="yandexmarket-xml-preview">
               <h4><label for="yandexmarket-preview">Предпросмотр XML элемента &lt;{{ previewType }}&gt;</label></h4>
               <p class="mb-2">Автоматически обновляется для каждой вкладки при любом изменении</p>
