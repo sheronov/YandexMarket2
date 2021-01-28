@@ -1,52 +1,28 @@
 <template>
-  <div class="yandexmarket-offer-field">
+  <v-expansion-panel class="yandexmarket-offer-field">
     <!--    <v-card outlined  tile >-->
-    <fieldset class="yandexmarket-field-fieldset">
-      <legend class="pl-1 pr-1">
+    <!--    <fieldset class="yandexmarket-field-fieldset">-->
+    <v-expansion-panel-header color="grey lighten-4">
        <span style="padding-left: 1px; padding-right: 4px;" @click="toggleEdit">
          &lt;{{ tag }}&gt;
       </span>
-        <v-btn x-small depressed @click="addAttribute" title="Добавить атрибут" color="grey lighten-3">
-          <v-icon class="icon-xs mr-1">icon-plus</v-icon>
-          <v-icon class="icon-xs">icon-font</v-icon>
-        </v-btn>
-        <span class="pl-1 grey--text text-caption" @click="toggleEdit">
+      <v-btn x-small depressed @click="addAttribute" title="Добавить атрибут" color="grey lighten-3">
+        <v-icon class="icon-xs mr-1">icon-plus</v-icon>
+        <v-icon class="icon-xs">icon-font</v-icon>
+      </v-btn>
+      <span class="pl-1 grey--text text-caption" @click="toggleEdit">
           (тип: {{ field.type }})
         </span>
-      </legend>
-      <div class="yandexmarket-fieldset-actions">
-        <v-btn small icon title="Отредактировать название и тип поля" @click="toggleEdit">
-          <v-icon>icon-pencil</v-icon>
-        </v-btn>
-        <v-btn small icon title="Удалить поле">
-          <v-icon>icon-trash</v-icon>
-        </v-btn>
-      </div>
-      <!--        <legend>-->
-      <!--          <v-combobox-->
-      <!--              :value="tag"-->
-      <!--              :items="items"-->
-      <!--              @input="changedTag"-->
-      <!--              class="flex-grow-0 yandexmarket-offer-field-tag text-center"-->
-      <!--              label="Укажите элемент"-->
-      <!--              placeholder="Введите или выберите из списка"-->
-      <!--              background-color="grey lighten-3"-->
-      <!--              hide-details-->
-      <!--              solo-->
-      <!--              flat-->
-      <!--              dense-->
-      <!--          >-->
-      <!--            <template v-slot:prepend-inner>-->
-      <!--              <v-icon>icon-angle-left</v-icon>-->
-      <!--            </template>-->
-      <!--            <template v-slot:append>-->
-      <!--              <v-icon>icon-angle-right</v-icon>-->
-      <!--            </template>-->
-      <!--          </v-combobox>-->
-      <!--        </legend>-->
-      <v-card-title class="pa-0">
-        <offer-field-attributes v-if="field.attributes" :attributes="field.attributes"/>
-      </v-card-title>
+      <v-spacer/>
+      <v-btn small icon title="Отредактировать название и тип поля" @click="toggleEdit">
+        <v-icon>icon-pencil</v-icon>
+      </v-btn>
+      <v-btn small icon title="Удалить поле">
+        <v-icon>icon-trash</v-icon>
+      </v-btn>
+    </v-expansion-panel-header>
+    <v-expansion-panel-content class="pt-3">
+      <offer-field-attributes v-if="field.attributes" :attributes="field.attributes"/>
       <v-row class="pl-0" v-if="edit" dense>
         <v-col>
           <v-combobox
@@ -99,7 +75,7 @@
           </v-select>
         </v-col>
       </v-row>
-      <v-card-title v-if="field.type !== 'parent'" class="pl-0 py-2">
+      <v-card-title v-if="field.type !== 'parent'" class="pa-0">
         <v-combobox
             label="Выберите поле товара"
             placeholder='Или введите в формате "Class.key"'
@@ -127,25 +103,30 @@
           <v-icon>icon-code</v-icon>
         </v-btn>
       </v-card-title>
-      <!--   TODO: сделать здесь expansion panel или скрытие вместо fieldset   -->
-      <v-card-text class="pl-0 pr-0" style="margin-right: -1px;">
-        <div v-if="field.fields" class="yandexmarket-offer-field-children">
+      <v-card-text class="pl-0 pr-0" v-if="field.fields || field.type==='parent'">
+        <b>Дочерние узлы:</b>
+        <v-expansion-panels
+            v-if="field.fields" class="yandexmarket-offer-field-children" multiple v-model="opened"
+            accordion>
           <pricelist-offer-fields
               v-for="(child,childTag) in field.fields"
               :key="childTag"
               :field="child"
               :tag="childTag"
               :values="values"/>
-        </div>
-        <v-btn small v-if="field.type === 'parent'" class="mb-3 mt-2">
-          <v-icon class="icon-sm" left>icon-plus</v-icon>
-          Добавить дочерний узел
-        </v-btn>
+        </v-expansion-panels>
+        <v-flex class="flex-row text-right">
+          <v-btn small v-if="field.type === 'parent'" class="mt-5">
+            <v-icon class="icon-sm" left>icon-plus</v-icon>
+            Добавить дочерний узел
+          </v-btn>
+        </v-flex>
       </v-card-text>
-<!--      <legend class="yandexmarket-fieldset-legend-bottom">&lt;/{{ tag }}&gt;</legend>-->
-    </fieldset>
+    </v-expansion-panel-content>
+    <!--      <legend class="yandexmarket-fieldset-legend-bottom">&lt;/{{ tag }}&gt;</legend>-->
+    <!--    </fieldset>-->
     <!--    </v-card>-->
-  </div>
+  </v-expansion-panel>
 </template>
 
 <script>
@@ -163,6 +144,7 @@ export default {
     hovered: false,
     edit: false,
     code: false,
+    opened: [],
     columns: [
       {header: 'Поля ресурса'},
       {key: 'modResource.pagetitle', text: 'Заголовок ресурса'},
@@ -233,6 +215,9 @@ export default {
       // })
       return key;
     }
+  },
+  mounted() {
+    this.opened = Object.keys(this.field.fields).map((field, index) => index);
   }
 }
 </script>

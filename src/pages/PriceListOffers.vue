@@ -2,7 +2,8 @@
   <div class="yandexmarket-pricelist-offers-fields">
     <h4>Настройка полей предложений</h4>
     <p class="mb-2">Интерактивный режим добавления и редактирования полей</p>
-    <div class="pb-2">
+    <!--  TODO: первичные foreach тоже перенести в pricelist-offer-fields  -->
+    <v-expansion-panels class="pb-2" v-model="opened" multiple accordion>
       <pricelist-offer-fields
           v-for="(field,key) in pricelist.offer_fields"
           :field="field"
@@ -10,7 +11,7 @@
           :values="pricelist.offer"
           :key="key"
       />
-    </div>
+    </v-expansion-panels>
   </div>
 </template>
 
@@ -28,7 +29,8 @@ export default {
   },
   data: () => ({
     nodes: [],
-    fields: []
+    fields: [],
+    opened: [],
   }),
   computed: {
     rootFields() {
@@ -52,6 +54,7 @@ export default {
   },
   mounted() {
     this.previewXml();
+    this.opened = Object.keys(this.pricelist.offer_fields).map((field, index) => index);
   }
 }
 </script>
