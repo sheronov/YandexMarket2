@@ -1,7 +1,8 @@
 <template>
   <div class="yandexmarket-pricelist-offers-fields">
     <h4>Настройка полей предложений</h4>
-    <div class="py-2">
+    <p class="mb-2">Интерактивный режим добавления и редактирования полей</p>
+    <div class="pb-2">
       <pricelist-offer-fields
           v-for="(field,key) in pricelist.offer_fields"
           :field="field"

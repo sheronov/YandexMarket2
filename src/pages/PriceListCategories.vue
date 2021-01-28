@@ -1,5 +1,7 @@
 <template>
   <div class="yandexmarket-pricelist-settings">
+    <h4>Категории, используемые в выгрузке</h4>
+    <p class="mb-2">Категориям можно указать название для лучшего сопоставления в агрегаторе</p>
     <CategoriesTree
         :selected="selected"
         :categories="categories"

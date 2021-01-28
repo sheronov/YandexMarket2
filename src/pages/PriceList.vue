@@ -1,25 +1,44 @@
 <template>
   <div class="yandexmarket-pricelist">
-    <v-tabs v-if="id" class="yandexmarket-pricelist-tabs" background-color="transparent" :height="40">
+    <v-tabs v-if="id" class="yandexmarket-pricelist-tabs pr-15" background-color="transparent" :height="40">
       <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Настройки прайс-листа</v-tab>
       <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>Категории и условия</v-tab>
       <v-tab :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>Поля предложений</v-tab>
-      <v-spacer/>
-      <v-tab :to="{name: 'pricelists'}" ripple exact>
-        <v-icon left>icon icon-undo</v-icon>
-        Ко всем прайс-листам
-      </v-tab>
+      <!--      <v-spacer/>-->
+      <!--      <v-tab :to="{name: 'pricelists'}" ripple exact title="Вернуться назад ко всем прайс-листам">-->
+      <!--        <v-icon left>icon icon-undo</v-icon>-->
+      <!--        Вернуться-->
+      <!--      </v-tab>-->
     </v-tabs>
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
+        <v-btn @click="togglePreview" fab absolute top right small elevation="1" color="white"
+               :title="preview ? 'Отключить предпросмотр' : 'Включить предпросмотр'">
+          <v-icon :color="preview ? 'primary' : 'default'">icon-file-code-o</v-icon>
+        </v-btn>
         <v-row dense>
-          <v-col md="7">
-            <router-view v-if="pricelist" v-bind="{pricelist}" @preview:xml="previewXml"></router-view>
+          <v-col :md="preview ? 7 : 12">
+            <router-view v-if="pricelist" v-bind="{pricelist:pricelist}" @preview:xml="previewXml"></router-view>
+            <v-card-actions class="px-0">
+              <v-btn v-if="!hasChanges" :to="{name: 'pricelists'}" exact title="Ко всем прайс-листам">
+                <v-icon left>icon-arrow-left</v-icon>
+                Вернуться
+              </v-btn>
+              <v-btn v-else @click="cancelChanges" title="Отменить все изменения">
+                <v-icon left>icon-undo</v-icon>
+                Отменить
+              </v-btn>
+              <v-spacer/>
+              <v-btn :disabled="!hasChanges" @click="saveChanges" color="secondary">
+                <v-icon left>icon-save</v-icon>
+                Сохранить
+              </v-btn>
+            </v-card-actions>
           </v-col>
-          <v-col cols="12" md="5">
+          <v-col cols="12" md="5" v-if="preview">
             <div class="yandexmarket-xml-preview">
               <h4><label for="yandexmarket-preview">Предпросмотр XML элемента &lt;{{ previewType }}&gt;</label></h4>
-              <p class="mb-2">Автоматически обновляется для каждой вкладки при любом изменении</p>
+              <p class="mb-2">Автоматически обновляется при любом изменении</p>
               <textarea ref="textarea" id="yandexmarket-preview"></textarea>
             </div>
           </v-col>
@@ -45,16 +64,40 @@ export default {
     id: null,
     pricelist: null,
     type: 'yandexmarket',
+    codemirror: null,
+    preview: true,
     previewType: null,
-    coder: null
+    previewData: {},
+    hasChanges: true
   }),
   methods: {
+    cancelChanges() {
+
+    },
+    saveChanges() {
+
+    },
+    togglePreview() {
+      this.preview = !this.preview;
+      if (this.preview) {
+        this.$nextTick().then(() => {
+          this.initializeCodeMirror();
+          this.getXmlPreview();
+        });
+      }
+    },
     previewXml(method, data = {}) {
       this.previewType = method;
-      this.coder.setValue('<!-- Загружается XML элемент ' + method + ' -->');
-      api.post('xml/preview', {id: this.pricelist.id, method, data})
+      this.previewData = data;
+      if (this.preview) {
+        this.getXmlPreview();
+      }
+    },
+    getXmlPreview() {
+      this.codemirror.setValue('<!-- Загружается XML элемент ' + this.previewType + ' -->');
+      api.post('xml/preview', {id: this.pricelist.id, method: this.previewType, data: this.previewData})
           .then(({data}) => {
-            this.coder.setValue(data.message);
+            this.codemirror.setValue(data.message);
           })
           .catch(error => console.log(error));
     },
@@ -70,7 +113,7 @@ export default {
           })
     },
     initializeCodeMirror() {
-      this.coder = CodeMirror.fromTextArea(this.$refs.textarea, {
+      this.codemirror = CodeMirror.fromTextArea(this.$refs.textarea, {
         lineNumbers: true,
         mode: 'xml',
         cursorBlinkRate: -1,
@@ -96,7 +139,6 @@ export default {
 
 .yandexmarket-pricelist-tabs >>> .v-tab {
   text-transform: none !important;
-  letter-spacing: initial;
 }
 
 .yandexmarket-pricelist-tabs >>> .v-tab.v-tab--active {

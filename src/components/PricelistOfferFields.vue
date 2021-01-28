@@ -127,7 +127,7 @@
           <v-icon>icon-code</v-icon>
         </v-btn>
       </v-card-title>
-      <!--   TODO: сделать здесь expansion panel   -->
+      <!--   TODO: сделать здесь expansion panel или скрытие вместо fieldset   -->
       <v-card-text class="pl-0 pr-0" style="margin-right: -1px;">
         <div v-if="field.fields" class="yandexmarket-offer-field-children">
           <pricelist-offer-fields
@@ -142,7 +142,7 @@
           Добавить дочерний узел
         </v-btn>
       </v-card-text>
-      <legend class="yandexmarket-fieldset-legend-bottom">&lt;/{{ tag }}&gt;</legend>
+<!--      <legend class="yandexmarket-fieldset-legend-bottom">&lt;/{{ tag }}&gt;</legend>-->
     </fieldset>
     <!--    </v-card>-->
   </div>
@@ -175,12 +175,10 @@ export default {
       'test',
       'offer'
     ],
-    types() {
-      return [
-        {value: 0, text: 'родитель'},
-        {value: 1, text: 'текстовый'},
-      ]
-    }
+    types: [
+      {value: 0, text: 'родитель'},
+      {value: 1, text: 'текстовый'}
+    ]
   }),
   computed: {
     value() {
@@ -270,9 +268,10 @@ export default {
 
 .yandexmarket-fieldset-legend-bottom {
   position: absolute;
+  font-size: 14px !important;
   bottom: 0;
   background: #fff;
-  left: 20px;
+  right: 10px;
   transform: translateY(50%);
   padding: 0 5px;
   line-height: 1;
