@@ -70,19 +70,20 @@ abstract class BaseObject
 
     abstract public static function getObjectClass(): string;
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     public function toArray(): array
     {
         $data = $this->object->toArray();
         foreach ($data as $key => $value) {
             if ($value) {
-                if (!is_array($value)  && in_array($key, self::ARRAY_FIELDS, true)) {
+                if (!is_array($value) && in_array($key, self::ARRAY_FIELDS, true)) {
                     $data[$key] = json_decode($value, true);
                 } elseif (in_array($key, self::DATETIME_FIELDS, true)) {
-                    $data[$key] = new DateTimeImmutable($value);
+                    try {
+                        $data[$key] = new DateTimeImmutable($value);
+                    } catch (Exception $exception) {
+                        $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "[YandexMarket] wrong datetime {$key} = {$value}");
+                        $data[$key] = $value;
+                    }
                 }
             }
         }

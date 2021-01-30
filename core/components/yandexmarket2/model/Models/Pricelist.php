@@ -3,10 +3,10 @@
 namespace YandexMarket\Models;
 
 use DateTimeImmutable;
-use Exception;
 use Iterator;
+use xPDO;
+use xPDOObject;
 use YandexMarket\Marketplaces\Marketplace;
-use YandexMarket\Marketplaces\YandexMarket;
 use ymFieldAttribute;
 use ymPricelist;
 
@@ -33,6 +33,15 @@ class Pricelist extends BaseObject
     protected $fields;
     /** @var Attribute[] */
     protected $fieldsAttributes;
+
+    /** @var Marketplace */
+    protected $marketplace;
+
+    public function __construct(xPDO $xpdo, xPDOObject $object = null)
+    {
+        parent::__construct($xpdo, $object);
+        $this->marketplace = Marketplace::getMarketPlace($this->type);
+    }
 
     public static function getObjectClass(): string
     {
@@ -141,7 +150,7 @@ class Pricelist extends BaseObject
     {
         $branch = [];
 
-        foreach ($this->getFields() as $field) {
+        foreach ($this->getFields(true) as $field) {
             if ($field->parent === $parentId) {
                 $preparedField = $this->prepareField($field);
                 if ($children = $this->makeFieldsTree($field->id)) {
@@ -154,10 +163,6 @@ class Pricelist extends BaseObject
         return $branch;
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     public function toArray(): array
     {
         $data = parent::toArray();
@@ -167,30 +172,25 @@ class Pricelist extends BaseObject
         }
 
         // TODO: может сделать группы для полей [shop, categories, offer] (чтобы на фронте легче разбивать по группам)
-        $data['fields'] = $this->getFieldsData(); // fields[ 'shop' => getFieldsData(), 'categories' => (), 'offer' => getOfferFields()]
+        $data['fields'] = [
+            'shop'  => $this->marketplace::getShopFields($this->xpdo),
+            'offer' => $this->marketplace::getOfferFields($this->xpdo)
+        ];
 
         $data['values'] = [
-            'shop'       => $this->getShopData(),
+            'shop'       => $this->getShopValues(),
             'categories' => array_values(array_map(static function (Category $categoryObject) {
                 return $categoryObject->resource_id;
             }, $this->getCategories())),
-            'offer'      => $this->getOfferData()
+            'offer'      => $this->getOfferValues()
         ];
-
-        $data['offer_fields'] = $this->getOfferFields();
-
-        $data['shop'] = $this->getShopData();
-        $data['categories'] = array_values(array_map(static function (Category $categoryObject) {
-            return $categoryObject->resource_id;
-        }, $this->getCategories()));
-        $data['offer'] = $this->getOfferData();
-
 
         return $data;
     }
 
-    public function getShopData(): array
+    public function getShopValues(): array
     {
+        // TODO: тут дёрнуть объекты fields из БД
         return [
             'name'                  => $this->xpdo->getOption('site_name', 'Test'),
             'company'               => 'Рога и копыта',
@@ -202,7 +202,7 @@ class Pricelist extends BaseObject
         ];
     }
 
-    public function getOfferData(): array
+    public function getOfferValues(): array
     {
         // TODO: тут нужно сделать иначе, по ID из БД например, чтобы избежать множественных значений внутри одного
         return [
@@ -230,27 +230,18 @@ class Pricelist extends BaseObject
         ];
     }
 
-    public function getOfferFields(): array
-    {
-        return YandexMarket::getOfferFields();
-    }
-
-    protected function getFieldsData(): array
-    {
-        if ($marketplace = Marketplace::getMarketPlace($this->object->get('type'))) {
-            return $marketplace::getShopFields();
-        }
-        return [];
-    }
 
     public function getPricelistOffers(array $where = []): Iterator
     {
+        //TODO: переделать полностью
         $q = $this->xpdo->newQuery('msProduct');
         $q->where(array_merge($where, ['class_key' => 'msProduct']));
         $q->sortby('RAND()');
-        // if($q->prepare() && $q->stmt->execute()){
-        //     // $q->stmt->fetchObject()
-        // }
         return $this->xpdo->getIterator('msProduct', $q);
+    }
+
+    public function createDefaultFields()
+    {
+        //TODO: здесь при создании создавать первичную структуру полей в БД
     }
 }

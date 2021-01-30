@@ -21,21 +21,33 @@ use ymFieldAttribute;
  */
 class Field extends BaseObject
 {
-    public const TYPE_PARENT     = 0; //обёртка без своего собственного значения
-    public const TYPE_OPTION     = 1; //чисто текстовое значение из column
-    public const TYPE_CURRENCIES = 2; //тип валюты для яндекс маркета TODO: лучше убрать, КМК
-    public const TYPE_CATEGORIES = 3; // дерево категорий
+    //любое значение может быть записано в column и дополнительно обработано в handler
+    public const TYPE_PARENT = 0; //обёртка без своего собственного значения
+    public const TYPE_TEXT   = 1; //чисто текстовое значение (не будет как-либо заменяться)
 
+    public const TYPE_BOOLEAN = 2; //выбор да/нет (игнорировать null - intermediate)
+    public const TYPE_NUMBER  = 3; //числовое предложения
+    public const TYPE_CDATA   = 4; //большой текст, обернуть в CDATA
+    public const TYPE_DEFAULT = 5; //просто боле текстовое (подходит всегда)
+
+    //специальные типы
+    public const TYPE_CURRENCIES = 7; // валюта
+    public const TYPE_CATEGORIES = 8; // категории
+    public const TYPE_OFFER      = 10; // предложение
+
+    public const TYPE_OFFER_PARAM    = 11; // параметр предложения
+    public const TYPE_OFFER_PICTURES = 12; // изображения предложения
+
+    public const TYPE_FEATURE = 20; // ещё не реализовано
+
+    /** @var null|Field */
     protected $parentField;
-    protected $children = [];
-
+    /** @var null|Field[] */
+    protected $children;
+    /** @var null|Attribute[]*/
     protected $attributes;
+    /** @var Pricelist */
     protected $pricelist;
-
-    // TODO: подумать над обработчиками типов (каждый тип сам решает, как он будет писаться в XML
-    public const TYPES_HANDLER = [
-        self::TYPE_PARENT => [__CLASS__, 'handlerParent']
-    ];
 
     public static function getObjectClass(): string
     {
@@ -83,10 +95,13 @@ class Field extends BaseObject
 
     public function addChildren(Field $child): void
     {
+        if(!isset($this->children)) {
+            $this->children = [];
+        }
         $this->children[] = $child->setParent($this);
     }
 
-    public function getChildren(): array
+    public function getChildren(): ?array
     {
         return $this->children;
     }

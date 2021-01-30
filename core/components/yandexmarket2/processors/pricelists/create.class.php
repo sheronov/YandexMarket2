@@ -1,5 +1,11 @@
 <?php
 
+/** @noinspection PhpIncludeInspection */
+
+use YandexMarket\Models\Pricelist;
+
+require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
+
 class ymPricelistCreateProcessor extends modObjectCreateProcessor
 {
     public $objectType     = 'ym_pricelist';
@@ -12,7 +18,7 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
      */
     public function beforeSet(): bool
     {
-        if (empty($this->getProperty('name',''))) {
+        if (empty($this->getProperty('name', ''))) {
             $this->modx->error->addField('name', $this->modx->lexicon('ym_pricelist_name_err_ns'));
         }
         if (!$this->getProperty('file')) {
@@ -28,6 +34,21 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
         }
 
         return parent::beforeSet();
+    }
+
+    public function afterSave(): bool
+    {
+        $pricelist = new Pricelist($this->modx, $this->object);
+        $pricelist->createDefaultFields();
+
+        $this->object = $pricelist;
+
+        return parent::afterSave();
+    }
+
+    public function cleanup(): array
+    {
+        return $this->success('', $this->object->toArray());
     }
 
 }

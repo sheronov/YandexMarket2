@@ -5,7 +5,7 @@ namespace YandexMarket;
 use modX;
 use xPDO;
 
-class YandexMarket
+class Service
 {
     protected $modx;
     protected $config = [];

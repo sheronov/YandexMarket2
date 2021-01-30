@@ -2,6 +2,7 @@
 
 namespace YandexMarket\Marketplaces;
 
+use xPDO;
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Field;
 
@@ -23,7 +24,7 @@ class YandexMarket extends Marketplace
         return 'yandex.market';
     }
 
-    public static function getDefaultFields(): array
+    public static function getDefaultFields(xPDO $xpdo): array
     {
         return [
             'yml_catalog' => [
@@ -39,19 +40,20 @@ class YandexMarket extends Marketplace
                     'shop' => [
                         'type'     => Field::TYPE_PARENT,
                         'editable' => false,
-                        'fields'   => self::getShopFields()
+                        'fields'   => self::getShopFields($xpdo)
                     ]
                 ]
             ]
         ];
     }
 
-    public static function getShopFields(): array
+    public static function getShopFields(xPDO $xpdo): array
     {
         return [
             'name'                  => [
                 'required' => true,
-                'type'     => Field::TYPE_TEXT
+                'type'     => Field::TYPE_TEXT,
+                'default'  => $xpdo->getOption('site_name')
             ],
             'company'               => [
                 'required' => true,
@@ -60,43 +62,41 @@ class YandexMarket extends Marketplace
             'url'                   => [
                 'required' => true,
                 'type'     => Field::TYPE_TEXT,
+                'default'  => $xpdo->getOption('site_url')
             ],
             'platform'              => [
-                'required' => false,
-                'type'     => Field::TYPE_TEXT,
+                'type'    => Field::TYPE_TEXT,
+                'default' => 'MODX Revolution',
             ],
             'version'               => [
-                'required' => false,
-                'type'     => Field::TYPE_TEXT
+                'type'    => Field::TYPE_TEXT,
+                'default' => $xpdo->getOption('settings_version')
             ],
             'agency'                => [
-                'required' => false,
-                'type'     => Field::TYPE_TEXT
+                'type' => Field::TYPE_TEXT,
             ],
             'email'                 => [
-                'required' => false,
-                'type'     => Field::TYPE_TEXT
+                'type' => Field::TYPE_TEXT,
             ],
             'currencies'            => [
                 'type'     => Field::TYPE_CURRENCIES,
                 'required' => true,
-                'values'   => ['RUB', 'UAH', 'BYN', 'KZT', 'USD', 'EUR'],
+                'values'   => ['RUR', 'UAH', 'BYN', 'KZT', 'USD', 'EUR'],
+                'default'  => ['RUR']
             ],
             'categories'            => [
                 'type'     => Field::TYPE_CATEGORIES,
                 'required' => true,
             ],
             'delivery_options'      => [
-                'required' => false,
-                'type'     => Field::TYPE_FEATURE,
+                'type' => Field::TYPE_FEATURE,
             ],
             'pickup-options'        => [
-                'required' => false,
-                'type'     => Field::TYPE_FEATURE
+                'type' => Field::TYPE_FEATURE
             ],
             'enable_auto_discounts' => [
-                'type'     => Field::TYPE_BOOLEAN,
-                'required' => false
+                'type'    => Field::TYPE_BOOLEAN,
+                'default' => null
             ],
             'offers'                => [
                 'type'     => Field::TYPE_PARENT,
@@ -107,7 +107,8 @@ class YandexMarket extends Marketplace
                         'attributes' => [
                             'id'   => [
                                 'required' => true,
-                                'type'     => Attribute::TYPE_VALUE
+                                'type'     => Attribute::TYPE_VALUE,
+                                'default'  => 'modResource.id'
                             ],
                             'type' => [
                                 'type'     => Attribute::TYPE_SELECT,
@@ -122,51 +123,189 @@ class YandexMarket extends Marketplace
                                     self::TYPE_DRUGS,
                                     self::TYPE_MUSIC_VIDEO,
                                     self::TYPE_TOURS
-                                ]
+                                ],
+                                'default'  => self::TYPE_SIMPLE
                             ],
                             'bid'  => [
-                                'type' => Attribute::TYPE_VALUE
+                                'type'     => Attribute::TYPE_VALUE,
+                                'optional' => true,
                             ]
                         ],
-                        'fields'     => self::getOfferFields()
+                        'fields'     => self::getOfferFields($xpdo)
                     ]
                 ]
             ],
             'gifts'                 => [
                 'component' => Field::TYPE_FEATURE,
-                'disabled'  => true,
             ],
             'promos'                => [
                 'component' => Field::TYPE_FEATURE,
-                'disabled'  => true,
             ]
         ];
     }
 
-    public static function getOfferFields(): array
+    public static function getOfferFields(xPDO $xpdo): array
     {
         return [
-            'name'  => [
-                'url'      => 'https://yandex.ru/support/partnermarket/elements/name.html#vendor-name-model',
-                'type'     => Field::TYPE_OFFER_FIELD,
-                'required' => true
+            'name'                  => [
+                'type'    => Field::TYPE_DEFAULT,
+                'default' => 'modResource.pagetitle',
+                //'required' => true //при vendor.model необязательно
             ],
-            'url'   => [
-                'type'     => Field::TYPE_OFFER_FIELD,
+            'model'                 => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true,
+            ],
+            'vendor'                => [
+                'type' => Field::TYPE_DEFAULT,
+            ],
+            'typePrefix'            => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true
+            ],
+            'vendorCode'            => [
+                'type' => Field::TYPE_DEFAULT,
+            ],
+            'url'                   => [
+                'type'     => Field::TYPE_DEFAULT,
+                'required' => true,
+                'default'  => 'offer.url',
+            ],
+            'price'                 => [
+                'type'     => Field::TYPE_NUMBER,
                 'required' => true,
             ],
-            'param' => [
+            'param'                 => [
                 'type'       => Field::TYPE_OFFER_PARAM,
+                'multiple'   => true,
                 'attributes' => [
                     'name' => [
-                        'type'     => Attribute::TYPE_TEXT,
-                        'required' => true,
+                        'type'       => Attribute::TYPE_TEXT,
+                        'required'   => true,
+                        'attributes' => [
+                            'from' => [
+                                'type'     => Attribute::TYPE_BOOLEAN,
+                                'default'  => true,
+                                'optional' => true,
+                            ]
+                        ],
                     ],
                     'unit' => [
                         'type' => Attribute::TYPE_TEXT
                     ]
                 ]
-            ]
+            ],
+            'oldprice'              => [
+                'type'     => Field::TYPE_NUMBER,
+                'optional' => true,
+            ],
+            'purchase_price'        => [
+                'type'     => Field::TYPE_NUMBER,
+                'optional' => true
+            ],
+            'enable_auto_discount'  => [
+                'type'     => Field::TYPE_BOOLEAN,
+                'optional' => true
+            ],
+            'currencyId'            => [
+                'type'     => Field::TYPE_DEFAULT,
+                'required' => true,
+                'default'  => 'RUR'
+            ],
+            'categoryId'            => [
+                'type'     => Field::TYPE_NUMBER,
+                'required' => true,
+            ],
+            'picture'               => [
+                'type' => Field::TYPE_OFFER_PICTURES,
+            ],
+            'supplier'              => [
+                'type'       => Field::TYPE_DEFAULT,
+                'optional'   => true,
+                'attributes' => [
+                    'ogrn' => [
+                        'required' => true,
+                        'type'     => Attribute::TYPE_VALUE
+                    ]
+                ]
+            ],
+            'delivery'              => [
+                'type'    => Field::TYPE_BOOLEAN,
+                'default' => true,
+            ],
+            'pickup'                => [
+                'type'    => Field::TYPE_BOOLEAN,
+                'default' => true,
+            ],
+            'delivery-options'      => [
+                'type'     => Field::TYPE_FEATURE,
+                'optional' => true
+            ],
+            'pickup-options'        => [
+                'type'     => Field::TYPE_FEATURE,
+                'optional' => true
+            ],
+            'store'                 => [
+                'type'     => Field::TYPE_BOOLEAN,
+                'optional' => true
+            ],
+            'description'           => [
+                'type'    => Field::TYPE_CDATA,
+                'default' => 'modResource.introtext',
+                'length'  => 3000
+            ],
+            'sales_notes'           => [
+                'type'   => Field::TYPE_DEFAULT,
+                'length' => 50
+            ],
+            'min-quantity'          => [
+                'type'     => Field::TYPE_NUMBER,
+                'optional' => true
+            ],
+            'manufacturer_warranty' => [
+                'type'     => Field::TYPE_BOOLEAN,
+                'optional' => true
+            ],
+            'country_of_origin'     => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true
+            ],
+            'adult'                 => [
+                'type'     => Field::TYPE_BOOLEAN,
+                'optional' => true
+            ],
+            'barcode'               => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true
+            ],
+            'condition'             => [
+                'type'     => Field::TYPE_FEATURE,
+                'optional' => true
+            ],
+            'credit-template'       => [
+                'type'     => Field::TYPE_FEATURE,
+                'optional' => true
+            ],
+            'expiry'                => [
+                'type'     => Field::TYPE_FEATURE,
+                'optional' => true
+            ],
+            'weight'                => [
+                'type'     => Field::TYPE_NUMBER,
+                'optional' => true
+            ],
+            'dimensions'            => [
+                'type'     => Field::TYPE_FEATURE,
+                'optional' => true
+            ],
+            'downloadable'          => [
+                'type'     => Field::TYPE_BOOLEAN,
+                'optional' => true
+            ],
+            'age'                   => [
+                'type'     => Field::TYPE_FEATURE,
+                'optional' => true
+            ],
         ];
     }
 

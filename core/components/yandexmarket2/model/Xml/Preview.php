@@ -29,7 +29,7 @@ class Preview
 
     public function previewShop(array $additional = []): string
     {
-        $data = array_filter(array_merge($this->pricelist->getShopData(), $additional), static function ($item) {
+        $data = array_filter(array_merge($this->pricelist->getShopValues(), $additional), static function ($item) {
             return $item !== '' && $item !== null;
         });
         $this->writer->writeShopData($data);

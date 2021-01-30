@@ -13,6 +13,12 @@ use ymFieldAttribute;
  */
 class Attribute extends BaseObject
 {
+    public const TYPE_VALUE   = 0;
+    public const TYPE_DATE    = 1;
+    public const TYPE_BOOLEAN = 2;
+    public const TYPE_TEXT    = 3;
+    public const TYPE_SELECT  = 4;
+
     protected $field;
 
     public static function getObjectClass(): string
