@@ -1,5 +1,4 @@
 <?php
-include_once 'setting.inc.php';
 
 $_lang['yandexmarket2'] = 'YandexMarket2';
 $_lang['yandexmarket2_menu_desc'] = 'A sample Extra to develop from.';
