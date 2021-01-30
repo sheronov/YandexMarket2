@@ -31,5 +31,61 @@ $_lang = array_merge($_lang ?? [], [
 
     'yandexmarket2_grid_search'  => 'Поиск',
     'yandexmarket2_grid_actions' => 'Действия',
-    'yandexmarket_test_lang'     => 'Тест лексиконов'
+    'yandexmarket_test_lang'     => 'Тест лексиконов',
+
+    'ym_yandex.market_name_title'                  => 'Короткое название магазина',
+    'ym_yandex.market_name_help'                   => "В названии нельзя использовать слова, которые не относятся к наименованию магазина (например «лучший», «дешевый»), указывать номер телефона и т. п.\n\nНазвание магазина должно совпадать с фактическим названием, которое публикуется на сайте. Если требование не соблюдается, Яндекс.Маркет может самостоятельно изменить название без уведомления магазина.",
+    'ym_yandex.market_company_title'               => 'Полное наименование компании',
+    'ym_yandex.market_company_help'                => 'Полное наименование компании, владеющей магазином. Не публикуется.',
+    'ym_yandex.market_url_title'                   => 'URL главной страницы магазина',
+    'ym_yandex.market_url_help'                    => 'Максимальная длина ссылки — 2048 символов. Допускаются кириллические ссылки. URL‑адрес формируется на основе стандарта RFC 3986',
+    'ym_yandex.market_platform_title'              => 'CMS магазина',
+    'ym_yandex.market_version_title'               => 'Версия CMS',
+    'ym_yandex.market_agency_title'                => 'Агентство, оказывающее техническую поддержку',
+    'ym_yandex.market_email_title'                 => 'Контактный адрес разработчиков',
+    'ym_yandex.market_currencies_title'            => 'Список курсов валют магазина (первая - основная валюта)',
+    'ym_yandex.market_currencies_help'             => 'Первая по порядку в списке будет считаться основной валютой, в которой указаны цены',
+    'ym_yandex.market_categories_title'            => 'Список категорий магазина',
+    'ym_yandex.market_categories_help'             => 'Выбираются на специальной вкладке',
+    'ym_yandex.market_delivery-options_title'      => 'Стоимость и сроки курьерской доставки по региону, в котором находится магазин.',
+    'ym_yandex.market_delivery-options_help'       => 'Обязательно, если все данные по доставке передаются в прайс-листе.',
+    'ym_yandex.market_pickup-options_title'        => 'Стоимость и сроки самовывоза по региону, в котором находится магазин.',
+    'ym_yandex.market_enable_auto_discounts_title' => 'Автоматический расчет и показ скидок (для всего прайс-листа)',
+    'ym_yandex.market_offers_title'                => 'Список предложений магазина',
+    'ym_yandex.market_offers_help'                 => 'Настраиваются на специальной вкладке',
+    'ym_yandex.market_gifts_title'                 => 'Подарки, которые не размещаются на Маркете (для акции «Подарок при покупке»)',
+    'ym_yandex.market_promos_title'                => 'Информация об акциях магазина',
+
+    'ym_yandex.market_currencies_value_RUB' => 'рубли',
+    'ym_yandex.market_currencies_value_UAH' => 'гривны',
+    'ym_yandex.market_currencies_value_BYN' => 'белорусские рубли',
+    'ym_yandex.market_currencies_value_KZT' => 'тенге',
+    'ym_yandex.market_currencies_value_USD' => 'доллары',
+    'ym_yandex.market_currencies_value_EUR' => 'евро',
+
+    'ym_yandex.market_offer_attr_id'   => 'ID предложения',
+    'ym_yandex.market_offer_attr_type' => 'Тип предложений',
+    'ym_yandex.market_offer_attr_bid'  => 'Ставка в у.е.',
+
+    'ym_yandex.market_offer_attr_type_value_'             => 'Упрощённый тип',
+    'ym_yandex.market_offer_attr_type_value_vendor.model' => 'Произвольный тип',
+    'ym_yandex.market_offer_attr_type_value_alco'         => 'Алкоголь',
+    'ym_yandex.market_offer_attr_type_value_audiobook'    => 'Аудиокниги',
+    'ym_yandex.market_offer_attr_type_value_event-ticket' => 'Билеты на мероприятие',
+    'ym_yandex.market_offer_attr_type_value_book'         => 'Книги',
+    'ym_yandex.market_offer_attr_type_value_medicine'     => 'Лекарства',
+    'ym_yandex.market_offer_attr_type_value_artist.title' => 'Музыкальная и видеопродукция',
+    'ym_yandex.market_offer_attr_type_value_tour'         => 'Туры',
+
+    'ym_yandex.market_offer_name_title'  => 'Полное название предложения',
+    'ym_yandex.market_offer_name_help'   => "Полное название предложения, в которое входит: тип товара, производитель, модель и название товара, важные характеристики. \nСоставляйте по схеме: что (тип товара) + кто (производитель) + товар (модель, название) + важные характеристики. \n\nДанные в name влияют на привязку к карточке товара.",
+    'ym_yandex.market_offer_url_title'   => 'URL страницы товара на сайте магазина.',
+    'ym_yandex.market_offer_url_help'    => 'Максимальная длина ссылки — 2048 символов',
+    'ym_yandex.market_offer_param_title' => 'Все важные характеристики товара',
+    'ym_yandex.market_offer_param_help'  => "Цвет, размер, объем, материал, вес, возраст, пол, и т. д. Элемент не должен быть пустым.\n\nВ YML элемент offer может содержать несколько элементов param (один элемент param — одна характеристика).",
+
+    'ym_yandex.market_offer_param_attr_name' => 'Название параметра',
+    'ym_yandex.market_offer_param_attr_unit' => 'Единица измерения (для числовых)',
+
+
 ]);
