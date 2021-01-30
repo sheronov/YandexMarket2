@@ -3,15 +3,13 @@
     <h4>Настройка полей предложений</h4>
     <p class="mb-2">Интерактивный режим добавления и редактирования полей</p>
     <!--  TODO: первичные foreach тоже перенести в pricelist-offer-fields  -->
-    <v-expansion-panels class="pb-2" v-model="opened" multiple accordion>
+    <div class="pb-2">
       <pricelist-offer-fields
-          v-for="(field,key) in pricelist.offer_fields"
-          :field="field"
-          :tag="key"
+          :fields="pricelist.offer_fields"
           :values="pricelist.offer"
-          :key="key"
-      />
-    </v-expansion-panels>
+      >
+      </pricelist-offer-fields>
+    </div>
   </div>
 </template>
 
