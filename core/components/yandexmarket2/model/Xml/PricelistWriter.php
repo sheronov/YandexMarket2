@@ -5,6 +5,8 @@ namespace YandexMarket\Xml;
 use modResource;
 use XMLWriter;
 use YandexMarket\Models\Category;
+use YandexMarket\Models\Offer;
+use YandexMarket\Models\Pricelist;
 
 class PricelistWriter
 {
@@ -68,8 +70,18 @@ class PricelistWriter
     {
     }
 
-    public function writeOffer($offer): void
+    public function writeOffer(Offer $offer, Pricelist $pricelist): void
     {
+        $this->xml->startElement('offer');
+        $this->xml->writeAttribute('id',$offer->get('id'));
+        $this->xml->writeAttribute('availability','true');
+            $this->xml->startElement('name');
+            $this->xml->text($offer->get('pagetitle'));
+            $this->xml->endElement();
+            $this->xml->startElement('url');
+            $this->xml->text('base_url');
+            $this->xml->endElement();
+        $this->xml->endElement();
     }
 
     public function getXml(): string

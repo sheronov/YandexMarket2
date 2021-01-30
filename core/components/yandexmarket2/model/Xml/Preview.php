@@ -2,6 +2,7 @@
 
 namespace YandexMarket\Xml;
 
+use YandexMarket\Models\Offer;
 use YandexMarket\Models\Pricelist;
 
 class Preview
@@ -37,13 +38,12 @@ class Preview
 
     public function previewOffer(array $additional = []): string
     {
-        return <<<EOT
-<offers>
-    <offer id="10" availability="true">
-        <!-- todo: implement here -->
-    </offer>
-</offers>
-EOT;
+        $resources = $this->pricelist->getPricelistOffers();
+        foreach ($resources as $resource) {
+            $this->writer->writeOffer(new Offer($this->pricelist->getXpdo(), $resource), $this->pricelist);
+            break;
+        }
+        return $this->writer->getXml();
     }
 
 }

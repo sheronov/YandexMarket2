@@ -63,6 +63,11 @@ abstract class BaseObject
         return isset($this->object->$name);
     }
 
+    public function get(string $field)
+    {
+        return $this->object->get($field);
+    }
+
     abstract public static function getObjectClass(): string;
 
     /**
@@ -87,6 +92,11 @@ abstract class BaseObject
     public function getObject(): xPDOObject
     {
         return $this->object;
+    }
+
+    public function getXpdo(): xPDO
+    {
+        return $this->xpdo;
     }
 
 }

@@ -4,6 +4,7 @@ namespace YandexMarket\Models;
 
 use DateTimeImmutable;
 use Exception;
+use Iterator;
 use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Marketplaces\YandexMarket;
 use ymFieldAttribute;
@@ -184,6 +185,7 @@ class Pricelist extends BaseObject
         }, $this->getCategories()));
         $data['offer'] = $this->getOfferData();
 
+
         return $data;
     }
 
@@ -239,5 +241,16 @@ class Pricelist extends BaseObject
             return $marketplace::getShopFields();
         }
         return [];
+    }
+
+    public function getPricelistOffers(array $where = []): Iterator
+    {
+        $q = $this->xpdo->newQuery('msProduct');
+        $q->where(array_merge($where, ['class_key' => 'msProduct']));
+        $q->sortby('RAND()');
+        // if($q->prepare() && $q->stmt->execute()){
+        //     // $q->stmt->fetchObject()
+        // }
+        return $this->xpdo->getIterator('msProduct', $q);
     }
 }
