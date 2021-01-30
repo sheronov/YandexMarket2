@@ -10,6 +10,8 @@ abstract class Marketplace
 
     abstract public static function getOfferFields(): array;
 
+    abstract public static function getDefaultFields(): array;
+
     /**
      * @TODO Сделать тут автозагрузку всех маркетплейсов из этой папки method listMarketplaces()
      *
