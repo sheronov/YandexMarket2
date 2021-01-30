@@ -41,6 +41,7 @@
               <p class="mb-2">Автоматически обновляется при любом изменении</p>
               <textarea ref="textarea" id="yandexmarket-preview"></textarea>
             </div>
+            <pre v-if="debug && Object.keys(debug).length">{{debug}}</pre>
           </v-col>
         </v-row>
         <loader :status="!pricelist"></loader>
@@ -68,9 +69,11 @@ export default {
     preview: true,
     previewType: null,
     previewData: {},
-    hasChanges: true
+    hasChanges: true,
+    debug: null
   }),
   methods: {
+    // TODO: сделать предупреждение при переходе по вкладкам при неотправленных изменениях
     cancelChanges() {
 
     },
@@ -98,6 +101,7 @@ export default {
       api.post('xml/preview', {id: this.pricelist.id, method: this.previewType, data: this.previewData})
           .then(({data}) => {
             this.codemirror.setValue(data.message);
+            this.debug = data.object;
           })
           .catch(error => console.log(error));
     },

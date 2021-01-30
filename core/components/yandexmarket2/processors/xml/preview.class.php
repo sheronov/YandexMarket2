@@ -4,6 +4,7 @@
 
 use YandexMarket\Models\Pricelist;
 use YandexMarket\Xml\Preview;
+use YandexMarket\YandexMarket;
 
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
@@ -42,7 +43,7 @@ class ymXmlPreviewProcessor extends modProcessor
                 return $this->failure($this->modx->lexicon('yandexmarket2_pricelist_err_method'));
         }
 
-        return $this->success($xml);
+        return $this->success($xml, YandexMarket::debugInfo($this->modx));
     }
 }
 

@@ -3,6 +3,7 @@
 namespace YandexMarket;
 
 use modX;
+use xPDO;
 
 class YandexMarket
 {
@@ -28,6 +29,19 @@ class YandexMarket
 
         $this->modx->addPackage('yandexmarket2', $this->config['modelPath']);
         $this->modx->lexicon->load('yandexmarket2:default');
+    }
+
+    public static function debugInfo(xPDO $xpdo): ?array
+    {
+        if(!$xpdo->getOption('yandexmarket_debug_mode')) {
+            return null;
+        }
+        return [
+            'queries'   => $xpdo->executedQueries,
+            'queryTime' => sprintf("%2.4f s", $xpdo->queryTime),
+            'totalTime' => sprintf("%2.4f s", (microtime(true) - $xpdo->startTime)),
+            'memory'    => number_format(memory_get_usage(true) / 1024, 0, ",", " ").' kb'
+        ];
     }
 
 }
