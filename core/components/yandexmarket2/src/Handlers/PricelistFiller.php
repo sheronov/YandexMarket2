@@ -3,17 +3,20 @@
 namespace YandexMarket\Handlers;
 
 use DateTimeImmutable;
+use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
 
 class PricelistFiller
 {
     protected $pricelist;
+    protected $modx;
     protected $marketplace;
 
     public function __construct(Pricelist $pricelist)
     {
         $this->pricelist = $pricelist;
+        $this->modx = $pricelist->modX();
         $this->marketplace = $pricelist->getMarketplace();
     }
 
@@ -26,15 +29,16 @@ class PricelistFiller
 
     protected function createFields(array $fields, ?Field $parent): array
     {
-        $rank = 0;
-        $fields = array_filter($fields, function (array $field) {
+        $fields = array_filter($fields, function (array $field, string $name) use ($parent) {
             return ($field['required'] ?? false) //обязательно к добавлению
                 || in_array($field['type'] ?? null,
                     [Field::TYPE_OFFER, Field::TYPE_SHOP, Field::TYPE_ROOT, Field::TYPE_CATEGORIES], true)
-                || $this->marketplace->defaultValues()[$field->type ?? null] ?? null; //если есть дефолтные значения
-        });
+                || ($this->marketplace->defaultValues()[$parent->type ?? null][$name] ?? null); //если дефолтные значения
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $rank = 0;
         foreach ($fields as $name => $data) {
-            $field = new Field($this->pricelist->getXpdo());
+            $field = new Field($this->modx);
             $field->name = $name;
             $field->parent = $parent->id ?? null;
             $field->type = $data['type'] ?? Field::TYPE_DEFAULT;
@@ -57,7 +61,15 @@ class PricelistFiller
             }
 
             if ($attributes = $this->marketplace->defaultAttributes()[$field->type] ?? []) {
-                $this->createFieldAttributes($field, $attributes);
+                foreach ($attributes as $attrName => $attrValue) {
+                    $attribute = new Attribute($this->modx);
+                    $attribute->name = $attrName;
+                    $attribute->column = $attrValue;
+                    $attribute->field_id = $field->id;
+                    if ($attribute->save()) {
+                        $field->addAttribute($attribute);
+                    }
+                }
             }
 
             if ($children = $data['fields'] ?? []) {
@@ -73,9 +85,5 @@ class PricelistFiller
         }
 
         return $fields;
-    }
-
-    protected function createFieldAttributes(Field $field, array $attributes)
-    {
     }
 }

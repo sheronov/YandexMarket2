@@ -4,7 +4,7 @@ namespace YandexMarket\Models;
 
 use DateTimeImmutable;
 use Iterator;
-use xPDO;
+use modX;
 use xPDOObject;
 use YandexMarket\Marketplaces\Marketplace;
 use ymFieldAttribute;
@@ -37,10 +37,10 @@ class Pricelist extends BaseObject
     /** @var Marketplace */
     protected $marketplace;
 
-    public function __construct(xPDO $xpdo, xPDOObject $object = null)
+    public function __construct(modX $modx, xPDOObject $object = null)
     {
-        parent::__construct($xpdo, $object);
-        $this->marketplace = Marketplace::getMarketPlace($this->type, $xpdo);
+        parent::__construct($modx, $object);
+        $this->marketplace = Marketplace::getMarketPlace($this->type, $modx);
     }
 
     public function getMarketplace(): Marketplace
@@ -58,7 +58,7 @@ class Pricelist extends BaseObject
         if (!isset($this->fields)) {
             $this->fields = [];
             foreach ($this->object->getMany('Fields') as $ymField) {
-                $field = new Field($this->xpdo, $ymField);
+                $field = new Field($this->modx, $ymField);
                 $this->fields[$field->id] = $field;
             }
 
@@ -92,12 +92,12 @@ class Pricelist extends BaseObject
         if (!isset($this->fieldsAttributes)) {
             $this->fieldsAttributes = [];
 
-            $q = $this->xpdo->newQuery(ymFieldAttribute::class);
+            $q = $this->modx->newQuery(ymFieldAttribute::class);
             $q->where(['field_id:IN' => $fieldIds]);
 
             $this->fieldsAttributes = array_map(function (ymFieldAttribute $attribute) {
-                return new Attribute($this->xpdo, $attribute);
-            }, $this->xpdo->getCollection(ymFieldAttribute::class, $q) ?? []);
+                return new Attribute($this->modx, $attribute);
+            }, $this->modx->getCollection(ymFieldAttribute::class, $q) ?? []);
         }
 
         return $this->fieldsAttributes;
@@ -129,7 +129,7 @@ class Pricelist extends BaseObject
         if (!isset($this->categories)) {
             $this->categories = [];
             foreach ($this->object->getMany('Categories') as $ymCategory) {
-                $category = new Category($this->xpdo, $ymCategory);
+                $category = new Category($this->modx, $ymCategory);
                 $this->categories[$category->id] = $category;
             }
         }
@@ -176,6 +176,8 @@ class Pricelist extends BaseObject
             // if ($shopField = $this->getFieldByName('shop')) {
             //     $data['tree'] = $this->makeFieldsTree($shopField->id);
             // }
+
+            // TODO: потом перенести это на фронт
             $data['fields'] = [
                 'shop'  => $this->marketplace::getShopFields(),
                 'offer' => $this->marketplace::getOfferFields()
@@ -183,10 +185,10 @@ class Pricelist extends BaseObject
 
             $data['values'] = [
                 'shop'       => $this->getShopValues(),
+                'offer'      => $this->getOfferValues(),
                 'categories' => array_values(array_map(static function (Category $categoryObject) {
                     return $categoryObject->resource_id;
                 }, $this->getCategories())),
-                'offer'      => $this->getOfferValues()
             ];
         }
 
@@ -195,16 +197,55 @@ class Pricelist extends BaseObject
 
     public function getShopValues(): array
     {
-        // TODO: тут дёрнуть объекты fields из БД
-        return [
-            'name'                  => $this->xpdo->getOption('site_name', 'Test'),
-            'company'               => 'Рога и копыта',
-            'url'                   => $this->xpdo->getOption('site_url'),
-            'currencies'            => ['RUB'],
-            'enable_auto_discounts' => false,
-            'platform'              => 'MODX Revolution',
-            'version'               => $this->xpdo->getOption('settings_version')
-        ];
+        if (!$field = $this->getFieldByName('shop')) {
+            return [];
+        }
+
+        return $this->writeFieldTreeToArray($field, []);
+    }
+
+    protected function writeFieldTreeToArray(Field $field, array $values = []): array
+    {
+        if (in_array($field->type, [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS], true)) {
+            return $values;
+        }
+        // TODO: подумать над тем, чтобы атрибуты на фронт в отдельном поле
+        if ($attributes = $field->getAttributes()) {
+            foreach ($attributes as $i => $attribute) {
+                $values['attribute'.$attribute->id] = [
+                    'entity'  => 'attribute',
+                    'name'    => $attribute->name,
+                    'field'   => 'field'.$attribute->field_id,
+                    'column'  => $attribute->column,
+                    'handler' => $attribute->handler,
+                    'rank'    => $i
+                ];
+            }
+        }
+
+        if ($field->isEditable()) {
+            $values['field'.$field->id] = [
+                'entity'     => 'field',
+                'type'       => $field->type,
+                'name'       => $field->name,
+                'column'     => $field->getValue(),
+                'parent'     => $field->parent ? 'field'.$field->parent : null,
+                'handler'    => $field->handler,
+                'properties' => $field->getProperties(),
+                'rank'       => $field->rank,
+                'active'     => $field->active,
+                'label'      => $field->getLabel('shop'),
+                'help'       => $field->getHelp('shop'),
+            ];
+        }
+
+        if ($children = $field->getChildren()) {
+            foreach ($children as $child) {
+                $values = $this->writeFieldTreeToArray($child, $values);
+            }
+        }
+
+        return $values;
     }
 
     public function getOfferValues(): array
@@ -238,9 +279,9 @@ class Pricelist extends BaseObject
     public function getPricelistOffers(array $where = []): Iterator
     {
         //TODO: переделать полностью
-        $q = $this->xpdo->newQuery('msProduct');
+        $q = $this->modx->newQuery('msProduct');
         $q->where(array_merge($where, ['class_key' => 'msProduct']));
         $q->sortby('RAND()');
-        return $this->xpdo->getIterator('msProduct', $q);
+        return $this->modx->getIterator('msProduct', $q);
     }
 }

@@ -55,10 +55,52 @@ class Field extends BaseObject
         return ymField::class;
     }
 
+    /**
+     * It means you can add a value in column or handler
+     */
+    public function isEditable(): bool
+    {
+        return in_array($this->type, [
+            self::TYPE_STRING,
+            self::TYPE_CDATA,
+            self::TYPE_NUMBER,
+            self::TYPE_BOOLEAN,
+            self::TYPE_PARAM,
+            self::TYPE_PICTURES,
+            self::TYPE_OPTION,
+            self::TYPE_CURRENCIES
+        ], true);
+    }
+
+    public function getValue()
+    {
+        return $this->isArrayColumn() ? json_decode($this->column, true) : $this->column;
+    }
+
+    public function getProperties(): array
+    {
+        $properties = $this->properties ?? [];
+        if ($values = $properties['values'] ?? []) {
+            $properties['values'] = array_map(static function ($value) {
+                return [
+                    'key'  => $value,
+                    'text' => $value // TODO: лексиконы подтянуть сюда
+                ];
+            }, $values);
+        }
+
+        return $properties;
+    }
+
+    public function isArrayColumn(): bool
+    {
+        return $this->type === self::TYPE_CURRENCIES;
+    }
+
     public function getPricelist(): Pricelist
     {
         if (!isset($this->pricelist)) {
-            $this->pricelist = new Pricelist($this->xpdo, $this->object->getOne('Pricelist'));
+            $this->pricelist = new Pricelist($this->modx, $this->object->getOne('Pricelist'));
         }
         return $this->pricelist;
     }
@@ -67,7 +109,7 @@ class Field extends BaseObject
     {
         if (!isset($this->attributes)) {
             $this->attributes = array_map(function (ymFieldAttribute $attribute) {
-                return new Attribute($this->xpdo, $attribute);
+                return new Attribute($this->modx, $attribute);
             }, $this->object->getMany('Attributes'));
         }
         return $this->attributes;
@@ -105,6 +147,38 @@ class Field extends BaseObject
     public function getChildren(): ?array
     {
         return $this->children;
+    }
+
+    public function lexiconKey(string $group = null): string
+    {
+        if ($group) {
+            return "ym_{$this->getPricelist()->type}_{$group}_{$this->name}";
+        }
+        return "ym_{$this->getPricelist()->type}_{$this->name}";
+    }
+
+    public function getLabel(string $group = null): string
+    {
+        if (($this->lexiconKey($group) === $label = $this->modx->lexicon($this->lexiconKey($group)))
+            && $this->lexiconKey() === $label = $this->modx->lexicon($this->lexiconKey())) {
+            $label = $this->name;
+        }
+
+        if ($this->getProperties()['required'] ?? false) {
+            $label .= ' *';
+        }
+
+        return $label;
+    }
+
+    public function getHelp(string $group = null): ?string
+    {
+        if (($this->lexiconKey($group).'_help' === $help = $this->modx->lexicon($this->lexiconKey($group).'_help'))
+            && $this->lexiconKey().'_help' === $help = $this->modx->lexicon($this->lexiconKey().'_help')) {
+            $help = null;
+        }
+
+        return $help;
     }
 
 }

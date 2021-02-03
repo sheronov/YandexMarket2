@@ -4,17 +4,16 @@ namespace YandexMarket\Marketplaces;
 
 use Exception;
 use HaydenPierce\ClassFinder\ClassFinder;
-use xPDO;
+use modX;
 use YandexMarket\Models\Field;
-use YandexMarket\Models\Pricelist;
 
 abstract class Marketplace
 {
-    protected $xpdo;
+    protected $modx;
 
-    public function __construct(xPDO $xpdo)
+    public function __construct(modX $modx)
     {
-        $this->xpdo = $xpdo;
+        $this->modx = $modx;
     }
 
     /**
@@ -22,7 +21,7 @@ abstract class Marketplace
      * Для лексиконов к полю идёт двойной поиск ym_{key}_{parent}_{field}, а потом ym_{key}_{field}
      * Название полей - ym_{key}_{parent}_{field} если отсутствует, то ym_{key}_{field} (где {parent} - родитель узла)
      * Расширенная подсказка к полю - ym_{key}_{field}_help
-     * Название атрибута поля - ym_{key}_{field}_attr_{attribute}
+     * Название атрибута поля - ym_{parent}_attr_{attribute} or ym_{key}_{field}_attr_{attribute}
      * Если есть поля или атрибуты с выбором из нескольких значений, то к лексикону названия добавляется _value_{val}
      *
      * @return string
@@ -83,11 +82,11 @@ abstract class Marketplace
      * @TODO Сделать тут автозагрузку всех маркетплейсов из этой папки method listMarketplaces()
      *
      * @param  string  $type
-     * @param  xPDO  $xpdo
+     * @param  modX  $modx
      *
      * @return Marketplace|null
      */
-    public static function getMarketPlace(string $type, xPDO $xpdo): ?Marketplace
+    public static function getMarketPlace(string $type, modX $modx): ?Marketplace
     {
         try {
             $marketplaces = self::listMarketplaces();
@@ -96,7 +95,7 @@ abstract class Marketplace
         }
         /** @noinspection SelfClassReferencingInspection */
         if (($class = $marketplaces[$type] ?? null) && is_subclass_of($class, Marketplace::class)) {
-            return new $class($xpdo);
+            return new $class($modx);
         }
 
         return null;
@@ -106,11 +105,13 @@ abstract class Marketplace
     {
         return [
             Field::TYPE_SHOP  => [
-                'name'       => $this->defaultOption('shop_name', $this->xpdo->getOption('site_name')),
-                'url'        => $this->defaultOption('shop_url', $this->xpdo->getOption('site_url')),
+                'name'       => $this->defaultOption('shop_name', $this->modx->getOption('site_name')),
+                'url'        => $this->defaultOption('shop_url', $this->modx->getOption('site_url')),
                 'platform'   => $this->defaultOption('shop_platform', 'MODX Revolution'),
-                'version'    => $this->defaultOption('shop_version', $this->xpdo->getOption('settings_version')),
-                'currencies' => explode(',', $this->defaultOption('shop_currencies', 'RUB'))
+                'version'    => $this->defaultOption('shop_version', $this->modx->getOption('settings_version')),
+                'currencies' => explode(',', $this->defaultOption('shop_currencies', 'RUB')),
+
+                'enable_auto_discounts' => (bool)$this->defaultOption('shop_enable_auto_discounts', true)
             ],
             Field::TYPE_OFFER => [
                 'name'        => $this->defaultOption('offer_name', 'modResource.pagetitle'),
@@ -144,6 +145,6 @@ abstract class Marketplace
      */
     protected function defaultOption(string $key, $default = null)
     {
-        return $this->xpdo->getOption('ym_default_'.$key, null, $default);
+        return $this->modx->getOption('ym_default_'.$key, null, $default);
     }
 }

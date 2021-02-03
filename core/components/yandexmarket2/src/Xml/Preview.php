@@ -30,7 +30,7 @@ class Preview
     public function previewShop(array $unsavedData = []): string
     {
         $data = array_filter(array_merge($this->pricelist->getShopValues(), $unsavedData), static function ($item) {
-            return $item !== '' && $item !== null;
+            return ($item['active'] ?? true);
         });
         $this->writer->writeShopData($data);
         return $this->writer->getXml();
@@ -40,7 +40,7 @@ class Preview
     {
         $resources = $this->pricelist->getPricelistOffers();
         foreach ($resources as $resource) {
-            $this->writer->writeOffer(new Offer($this->pricelist->getXpdo(), $resource), $this->pricelist);
+            $this->writer->writeOffer(new Offer($this->pricelist->modX(), $resource), $this->pricelist);
             break;
         }
         return $this->writer->getXml();

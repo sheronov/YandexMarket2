@@ -5,29 +5,30 @@ namespace YandexMarket\Models;
 use DateTimeImmutable;
 use Exception;
 use InvalidArgumentException;
-use xPDO;
+use modX;
 use xPDOObject;
 
 abstract class BaseObject
 {
-    protected $xpdo;
+    protected $modx;
     protected $object;
 
     protected const DATETIME_FIELDS = ['created_on', 'edited_on', 'generated_on'];
     protected const ARRAY_FIELDS    = ['properties'];
 
-    public function __construct(xPDO $xpdo, xPDOObject $object = null)
+    // TODO: подумать над тем, чтобы объект MODX передавать
+    public function __construct(modX $modx, xPDOObject $object = null)
     {
         $objectClass = static::getObjectClass();
         /** @var xPDOObject $newObj */
-        if (!$object && $newObj = $xpdo->newObject($objectClass)) {
+        if (!$object && $newObj = $modx->newObject($objectClass)) {
             $object = $newObj;
         }
         if (!$object || !is_a($object, $objectClass)) {
             throw new InvalidArgumentException("You should provide ".$objectClass.' entity');
         }
         $this->object = $object;
-        $this->xpdo = $xpdo;
+        $this->modx = $modx;
     }
 
     /**
@@ -86,7 +87,7 @@ abstract class BaseObject
                     try {
                         $data[$key] = new DateTimeImmutable($value);
                     } catch (Exception $exception) {
-                        $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "[YandexMarket] wrong datetime {$key} = {$value}");
+                        $this->modx->log(modX::LOG_LEVEL_ERROR, "[YandexMarket] wrong datetime {$key} = {$value}");
                         $data[$key] = $value;
                     }
                 }
@@ -100,9 +101,9 @@ abstract class BaseObject
         return $this->object;
     }
 
-    public function getXpdo(): xPDO
+    public function modX(): modX
     {
-        return $this->xpdo;
+        return $this->modx;
     }
 
 }

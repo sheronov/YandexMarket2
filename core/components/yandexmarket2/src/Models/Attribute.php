@@ -13,6 +13,7 @@ use ymFieldAttribute;
  */
 class Attribute extends BaseObject
 {
+    //where it using? TODO: add support of attribute types
     public const TYPE_VALUE   = 0;
     public const TYPE_DATE    = 1;
     public const TYPE_BOOLEAN = 2;
@@ -35,7 +36,7 @@ class Attribute extends BaseObject
     public function getField(): Field
     {
         if (!isset($this->field)) {
-            $this->field = new Field($this->xpdo, $this->object->getOne('Field'));
+            $this->field = new Field($this->modx, $this->object->getOne('Field'));
         }
         return $this->field;
     }

@@ -5,6 +5,7 @@ namespace YandexMarket\Xml;
 use modResource;
 use XMLWriter;
 use YandexMarket\Models\Category;
+use YandexMarket\Models\Field;
 use YandexMarket\Models\Offer;
 use YandexMarket\Models\Pricelist;
 
@@ -24,9 +25,9 @@ class PricelistWriter
     {
         $this->xml->startElement('shop');
         foreach ($data as $key => $value) {
-            $this->xml->startElement($key);
-            if ($key === 'currencies') {
-                foreach ($value as $i => $val) {
+            $this->xml->startElement($value['name']);
+            if ((int)$value['type'] === Field::TYPE_CURRENCIES) {
+                foreach ($value['column'] as $i => $val) {
                     $this->xml->startElement('currency');
                     $this->xml->writeAttribute('id', $val);
                     if (!$i) {
@@ -34,10 +35,13 @@ class PricelistWriter
                     }
                     $this->xml->endElement();
                 }
-            } elseif (is_bool($value)) {
-                $this->xml->text($value ? 'true' : 'false');
+            } elseif ((int)$value['type'] === Field::TYPE_BOOLEAN) {
+                $this->xml->text(filter_var($value['column'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false');
+            } elseif (($value['properties']['required'] ?? false) && ($value['column'] === null || $value['column'] === '')) {
+                $this->xml->writeComment('Это обязательное поле. Заполните его!');
+                $this->xml->setIndent(true);
             } else {
-                $this->xml->text($value);
+                $this->xml->text($value['column']);
             }
             $this->xml->endElement();
         }

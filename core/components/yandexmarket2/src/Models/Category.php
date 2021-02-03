@@ -33,7 +33,7 @@ class Category extends BaseObject
     public function getPricelist(): Pricelist
     {
         if (!isset($this->pricelist)) {
-            $this->pricelist = new Pricelist($this->xpdo, $this->object->getOne('Pricelist'));
+            $this->pricelist = new Pricelist($this->modx, $this->object->getOne('Pricelist'));
         }
 
         return $this->pricelist;
