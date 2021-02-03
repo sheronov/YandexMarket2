@@ -35,7 +35,7 @@ $modx->lexicon->load('yandexmarket2:default');
 // handle request
 $corePath = $modx->getOption('yandexmarket2_core_path', null,
     $modx->getOption('core_path').'components/yandexmarket2/');
-$modx->addPackage('yandexmarket2', $corePath.'model/orm/');
+$modx->addPackage('yandexmarket2', $corePath.'model/');
 $modx->getRequest();
 
 /** @var modConnectorRequest $request */

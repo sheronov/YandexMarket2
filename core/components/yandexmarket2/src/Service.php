@@ -20,7 +20,7 @@ class Service
 
         $this->config = array_merge([
             'corePath'       => $corePath,
-            'modelPath'      => $corePath.'model/orm/',
+            'modelPath'      => $corePath.'model/',
             'processorsPath' => $corePath.'processors/',
             'assetsUrl'      => $assetsUrl,
             'mgrAssetsUrl'   => $assetsUrl.'mgr/',

@@ -46,16 +46,18 @@ class PricelistWriter
 
     public function writeCategories(array $categories): void
     {
+        $this->xml->startElement('categories');
         if (count($categories)) {
-            $this->xml->startElement('categories');
             /** @var Category $category */
             foreach ($categories as $category) {
                 if ($resource = $category->getResource()) {
                     $this->writeCategory($resource);
                 }
             }
-            $this->xml->endElement();
+        } else {
+            $this->xml->writeComment('Выберите категории');
         }
+        $this->xml->endElement();
     }
 
     protected function writeCategory(modResource $category): void
@@ -73,14 +75,14 @@ class PricelistWriter
     public function writeOffer(Offer $offer, Pricelist $pricelist): void
     {
         $this->xml->startElement('offer');
-        $this->xml->writeAttribute('id',$offer->get('id'));
-        $this->xml->writeAttribute('availability','true');
-            $this->xml->startElement('name');
-            $this->xml->text($offer->get('pagetitle'));
-            $this->xml->endElement();
-            $this->xml->startElement('url');
-            $this->xml->text('base_url');
-            $this->xml->endElement();
+        $this->xml->writeAttribute('id', $offer->get('id'));
+        $this->xml->writeAttribute('availability', 'true');
+        $this->xml->startElement('name');
+        $this->xml->text($offer->get('pagetitle'));
+        $this->xml->endElement();
+        $this->xml->startElement('url');
+        $this->xml->text('base_url');
+        $this->xml->endElement();
         $this->xml->endElement();
     }
 

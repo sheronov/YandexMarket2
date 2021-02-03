@@ -43,6 +43,11 @@ class Pricelist extends BaseObject
         $this->marketplace = Marketplace::getMarketPlace($this->type, $xpdo);
     }
 
+    public function getMarketplace(): Marketplace
+    {
+        return $this->marketplace;
+    }
+
     public static function getObjectClass(): string
     {
         return ymPricelist::class;
@@ -167,12 +172,10 @@ class Pricelist extends BaseObject
     {
         $data = parent::toArray();
 
-        if($withFields) {
-            if ($shopField = $this->getFieldByName('shop')) {
-                $data['tree'] = $this->makeFieldsTree($shopField->id);
-            }
-
-            // TODO: может сделать группы для полей [shop, categories, offer] (чтобы на фронте легче разбивать по группам)
+        if ($withFields) {
+            // if ($shopField = $this->getFieldByName('shop')) {
+            //     $data['tree'] = $this->makeFieldsTree($shopField->id);
+            // }
             $data['fields'] = [
                 'shop'  => $this->marketplace::getShopFields(),
                 'offer' => $this->marketplace::getOfferFields()
@@ -232,7 +235,6 @@ class Pricelist extends BaseObject
         ];
     }
 
-
     public function getPricelistOffers(array $where = []): Iterator
     {
         //TODO: переделать полностью
@@ -240,11 +242,5 @@ class Pricelist extends BaseObject
         $q->where(array_merge($where, ['class_key' => 'msProduct']));
         $q->sortby('RAND()');
         return $this->xpdo->getIterator('msProduct', $q);
-    }
-
-    public function createDefaultFields()
-    {
-        // $this->marketplace->defaultValues();
-        //TODO: здесь при создании создавать первичную структуру полей в БД
     }
 }

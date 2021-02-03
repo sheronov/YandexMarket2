@@ -31,7 +31,7 @@ class ymXmlPreviewProcessor extends modProcessor
 
         switch ($this->getProperty('method')) {
             case Preview::PREVIEW_CATEGORIES:
-                $xml = $this->xml->previewCategories();
+                $xml = $this->xml->previewCategories($additional);
                 break;
             case Preview::PREVIEW_OFFERS:
                 $xml = $this->xml->previewOffer($additional);

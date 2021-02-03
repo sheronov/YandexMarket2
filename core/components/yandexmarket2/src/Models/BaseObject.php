@@ -68,6 +68,11 @@ abstract class BaseObject
         return $this->object->get($field);
     }
 
+    public function save(): bool
+    {
+        return $this->object->save();
+    }
+
     abstract public static function getObjectClass(): string;
 
     public function toArray(): array

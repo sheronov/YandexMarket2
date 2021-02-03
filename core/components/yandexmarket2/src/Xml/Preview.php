@@ -21,22 +21,22 @@ class Preview
         // TODO: здесь дёрнуть ROOT элемент из прайс-листа и пусть отрисовка идёт от него.
     }
 
-    public function previewCategories(): string
+    public function previewCategories(array $unsavedData = []): string
     {
         $this->writer->writeCategories($this->pricelist->getCategories());
         return $this->writer->getXml();
     }
 
-    public function previewShop(array $additional = []): string
+    public function previewShop(array $unsavedData = []): string
     {
-        $data = array_filter(array_merge($this->pricelist->getShopValues(), $additional), static function ($item) {
+        $data = array_filter(array_merge($this->pricelist->getShopValues(), $unsavedData), static function ($item) {
             return $item !== '' && $item !== null;
         });
         $this->writer->writeShopData($data);
         return $this->writer->getXml();
     }
 
-    public function previewOffer(array $additional = []): string
+    public function previewOffer(array $unsavedData = []): string
     {
         $resources = $this->pricelist->getPricelistOffers();
         foreach ($resources as $resource) {

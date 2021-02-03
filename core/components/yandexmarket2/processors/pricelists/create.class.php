@@ -2,6 +2,7 @@
 
 /** @noinspection PhpIncludeInspection */
 
+use YandexMarket\Handlers\PricelistFiller;
 use YandexMarket\Models\Pricelist;
 
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
@@ -39,7 +40,9 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
     public function afterSave(): bool
     {
         $pricelist = new Pricelist($this->modx, $this->object);
-        $pricelist->createDefaultFields();
+
+        $pricelistFiller = new PricelistFiller($pricelist);
+        $pricelistFiller->fillDefaultValues();
 
         $this->object = $pricelist;
 

@@ -27,9 +27,9 @@ class YandexMarket extends Marketplace
     public static function getRootFields(): array
     {
         return [
-            self::NODE_ROOT => [
-                'type'       => Field::TYPE_PARENT,
-                'editable'   => false, //it means also required=true and cant add another child
+            'yml_catalog' => [
+                'required'   => true,
+                'type'       => Field::TYPE_ROOT,
                 'attributes' => [
                     'date' => [
                         'type'     => Attribute::TYPE_DATE,
@@ -38,11 +38,10 @@ class YandexMarket extends Marketplace
                 ],
                 'fields'     => [
                     'shop' => [
-                        'type'     => Field::TYPE_SHOP,
-                        'editable' => false,
-                        'fields'   => [] //the fields will be passed here automatically (cause TYPE_SHOP)
+                        'type'   => Field::TYPE_SHOP,
+                        'fields' => [] //the fields will be passed here automatically (cause TYPE_SHOP)
                     ]
-                ]
+                ],
             ]
         ];
     }
@@ -53,32 +52,32 @@ class YandexMarket extends Marketplace
         return [
             'name'                  => [
                 'required' => true,
-                'type'     => Field::TYPE_TEXT,
+                'type'     => Field::TYPE_OPTION,
             ],
             'company'               => [
                 'required' => true,
-                'type'     => Field::TYPE_TEXT,
+                'type'     => Field::TYPE_OPTION,
             ],
             'url'                   => [
                 'required' => true,
-                'type'     => Field::TYPE_TEXT,
+                'type'     => Field::TYPE_OPTION,
             ],
             'platform'              => [
-                'type' => Field::TYPE_TEXT,
+                'type' => Field::TYPE_OPTION,
             ],
             'version'               => [
-                'type' => Field::TYPE_TEXT,
+                'type' => Field::TYPE_OPTION,
             ],
             'agency'                => [
-                'type' => Field::TYPE_TEXT,
+                'type' => Field::TYPE_OPTION,
             ],
             'email'                 => [
-                'type' => Field::TYPE_TEXT,
+                'type' => Field::TYPE_OPTION,
             ],
             'currencies'            => [
                 'type'     => Field::TYPE_CURRENCIES,
                 'required' => true,
-                'values'   => ['RUR', 'UAH', 'BYN', 'KZT', 'USD', 'EUR'],
+                'values'   => ['RUB', 'UAH', 'BYN', 'KZT', 'USD', 'EUR'],
             ],
             'categories'            => [
                 'type'     => Field::TYPE_CATEGORIES,
@@ -99,6 +98,7 @@ class YandexMarket extends Marketplace
                 'fields'   => [
                     'offer' => [
                         'type'       => Field::TYPE_OFFER,
+                        'required'   => true,
                         'attributes' => [
                             'id'   => [
                                 'required' => true,
@@ -143,7 +143,6 @@ class YandexMarket extends Marketplace
         return [
             'name'                  => [
                 'type' => Field::TYPE_DEFAULT,
-                //'required' => true //при vendor.model необязательно
             ],
             'model'                 => [
                 'type'     => Field::TYPE_DEFAULT,
@@ -174,7 +173,7 @@ class YandexMarket extends Marketplace
                 ],
             ],
             'param'                 => [
-                'type'       => Field::TYPE_OFFER_PARAM,
+                'type'       => Field::TYPE_PARAM, // TODO: тут убрать тип, так как можно выбирать
                 'multiple'   => true,
                 'attributes' => [
                     'name' => [
@@ -207,7 +206,7 @@ class YandexMarket extends Marketplace
                 'required' => true,
             ],
             'picture'               => [
-                'type' => Field::TYPE_OFFER_PICTURES,
+                'type' => Field::TYPE_PICTURES,
             ],
             'supplier'              => [
                 'type'       => Field::TYPE_DEFAULT,

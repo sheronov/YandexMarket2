@@ -4,19 +4,18 @@
   "require": {
     "php": ">=7.1",
     "ext-xmlwriter": "*",
-    "ext-xmlreader": "*"
+    "ext-xmlreader": "*",
+    "haydenpierce/class-finder": "dev-master"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-master"
   },
   "autoload": {
     "classmap": [
-      "model/orm/yandexmarket2/"
+      "model/yandexmarket2/"
     ],
     "psr-4": {
-      "YandexMarket\\": [
-        "model/"
-      ],
-      "YandexMarket\\Processors\\": [
-        "processors/"
-      ]
+      "YandexMarket\\": "src/"
     }
   }
 }

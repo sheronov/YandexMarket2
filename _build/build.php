@@ -82,7 +82,7 @@ class YandexMarket2Package
      */
     protected function model()
     {
-        $model_file = $this->config['core'] . 'model/orm/schema/' . $this->config['name_lower'] . '.mysql.schema.xml';
+        $model_file = $this->config['core'] . 'model/schema/' . $this->config['name_lower'] . '.mysql.schema.xml';
         $isEmpty = file_get_contents($model_file);
         if (!file_exists($model_file) || empty($isEmpty)) {
             return;
@@ -90,7 +90,7 @@ class YandexMarket2Package
         /** @var xPDOCacheManager $cache */
         if ($cache = $this->modx->getCacheManager()) {
             $cache->deleteTree(
-                $this->config['core'] . 'model/orm/' . $this->config['name_lower'] . '/mysql',
+                $this->config['core'] . 'model/' . $this->config['name_lower'] . '/mysql',
                 ['deleteTop' => true, 'skipDirs' => false, 'extensions' => []]
             );
         }
@@ -100,8 +100,8 @@ class YandexMarket2Package
         /** @var xPDOGenerator $generator */
         $generator = $manager->getGenerator();
         $generator->parseSchema(
-            $this->config['core'] . 'model/orm/schema/' . $this->config['name_lower'] . '.mysql.schema.xml',
-            $this->config['core'] . 'model/orm/'
+            $this->config['core'] . 'model/schema/' . $this->config['name_lower'] . '.mysql.schema.xml',
+            $this->config['core'] . 'model/'
         );
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Model updated');
     }

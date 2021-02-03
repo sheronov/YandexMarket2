@@ -22,25 +22,24 @@ use ymFieldAttribute;
 class Field extends BaseObject
 {
     //любое значение может быть записано в column и дополнительно обработано в handler
-    public const TYPE_PARENT = 0; //обёртка без своего собственного значения
-    public const TYPE_TEXT   = 1; //чисто текстовое значение (не будет как-либо заменяться)
+    public const TYPE_ROOT       = 0;
+    public const TYPE_PARENT     = 1; //обёртка без своего собственного значения
+    public const TYPE_SHOP       = 2; // поле магазин (сюда будут прокинуты SHOP_FIELDS)
+    public const TYPE_CURRENCIES = 4; // валюта
+    public const TYPE_CATEGORIES = 5; // категории
+    public const TYPE_OFFERS     = 6; // предложения
+    public const TYPE_OFFER      = 7; // предложение
+    public const TYPE_OPTION     = 8; //чисто текстовое значение (не будет как-либо заменяться)
+    public const TYPE_FEATURE    = 9; // ещё не реализовано
 
-    public const TYPE_BOOLEAN = 2; //выбор да/нет (игнорировать null - intermediate)
-    public const TYPE_NUMBER  = 3; //числовое предложения
-    public const TYPE_CDATA   = 4; //большой текст, обернуть в CDATA
-    public const TYPE_DEFAULT = 5; //просто боле текстовое (подходит всегда)
+    public const TYPE_STRING   = 10; //просто боле текстовое (подходит всегда)
+    public const TYPE_CDATA    = 11; //большой текст, обернуть в CDATA
+    public const TYPE_NUMBER   = 12; //числовое предложения
+    public const TYPE_BOOLEAN  = 13; //выбор да/нет (игнорировать null - intermediate)
+    public const TYPE_PARAM    = 14; // параметр предложения TODO: может и не нужно, иначе будет неудобно обрабатывать по типу
+    public const TYPE_PICTURES = 15; // изображения предложения
 
-    //специальные типы
-    public const TYPE_OFFER      = 6; // предложение
-    public const TYPE_CURRENCIES = 7; // валюта
-    public const TYPE_CATEGORIES = 8; // категории
-    public const TYPE_SHOP       = 9; // поле магазин (сюда будут прокинуты SHOP_FIELDS)
-    public const TYPE_OFFERS      = 10; // предложение
-
-    public const TYPE_OFFER_PARAM    = 11; // параметр предложения
-    public const TYPE_OFFER_PICTURES = 12; // изображения предложения
-
-    public const TYPE_FEATURE = 20; // ещё не реализовано
+    public const TYPE_DEFAULT = self::TYPE_STRING; //поле по умолчанию
 
     /** @var null|Field */
     protected $parentField;
