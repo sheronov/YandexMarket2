@@ -2,13 +2,11 @@
 
 namespace YandexMarket\Marketplaces;
 
-use xPDO;
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Field;
 
 class YandexMarket extends Marketplace
 {
-
     public const TYPE_SIMPLE        = '';
     public const TYPE_CUSTOM        = 'vendor.model';
     public const TYPE_ALCOHOL       = 'alco';
@@ -19,15 +17,17 @@ class YandexMarket extends Marketplace
     public const TYPE_MUSIC_VIDEO   = 'artist.title';
     public const TYPE_TOURS         = 'tour';
 
+    /** @inheritDoc */
     public static function getKey(): string
     {
         return 'yandex.market';
     }
 
-    public static function getDefaultFields(xPDO $xpdo): array
+    /** @inheritDoc */
+    public static function getRootFields(): array
     {
         return [
-            'yml_catalog' => [
+            self::NODE_ROOT => [
                 'type'       => Field::TYPE_PARENT,
                 'editable'   => false, //it means also required=true and cant add another child
                 'attributes' => [
@@ -38,22 +38,22 @@ class YandexMarket extends Marketplace
                 ],
                 'fields'     => [
                     'shop' => [
-                        'type'     => Field::TYPE_PARENT,
+                        'type'     => Field::TYPE_SHOP,
                         'editable' => false,
-                        'fields'   => self::getShopFields($xpdo)
+                        'fields'   => [] //the fields will be passed here automatically (cause TYPE_SHOP)
                     ]
                 ]
             ]
         ];
     }
 
-    public static function getShopFields(xPDO $xpdo): array
+    /** @inheritDoc */
+    public static function getShopFields(): array
     {
         return [
             'name'                  => [
                 'required' => true,
                 'type'     => Field::TYPE_TEXT,
-                'default'  => $xpdo->getOption('site_name')
             ],
             'company'               => [
                 'required' => true,
@@ -62,15 +62,12 @@ class YandexMarket extends Marketplace
             'url'                   => [
                 'required' => true,
                 'type'     => Field::TYPE_TEXT,
-                'default'  => $xpdo->getOption('site_url')
             ],
             'platform'              => [
-                'type'    => Field::TYPE_TEXT,
-                'default' => 'MODX Revolution',
+                'type' => Field::TYPE_TEXT,
             ],
             'version'               => [
-                'type'    => Field::TYPE_TEXT,
-                'default' => $xpdo->getOption('settings_version')
+                'type' => Field::TYPE_TEXT,
             ],
             'agency'                => [
                 'type' => Field::TYPE_TEXT,
@@ -82,7 +79,6 @@ class YandexMarket extends Marketplace
                 'type'     => Field::TYPE_CURRENCIES,
                 'required' => true,
                 'values'   => ['RUR', 'UAH', 'BYN', 'KZT', 'USD', 'EUR'],
-                'default'  => ['RUR']
             ],
             'categories'            => [
                 'type'     => Field::TYPE_CATEGORIES,
@@ -95,11 +91,10 @@ class YandexMarket extends Marketplace
                 'type' => Field::TYPE_FEATURE
             ],
             'enable_auto_discounts' => [
-                'type'    => Field::TYPE_BOOLEAN,
-                'default' => null
+                'type' => Field::TYPE_BOOLEAN,
             ],
             'offers'                => [
-                'type'     => Field::TYPE_PARENT,
+                'type'     => Field::TYPE_OFFERS,
                 'required' => true,
                 'fields'   => [
                     'offer' => [
@@ -108,7 +103,6 @@ class YandexMarket extends Marketplace
                             'id'   => [
                                 'required' => true,
                                 'type'     => Attribute::TYPE_VALUE,
-                                'default'  => 'modResource.id'
                             ],
                             'type' => [
                                 'type'     => Attribute::TYPE_SELECT,
@@ -124,14 +118,13 @@ class YandexMarket extends Marketplace
                                     self::TYPE_MUSIC_VIDEO,
                                     self::TYPE_TOURS
                                 ],
-                                'default'  => self::TYPE_SIMPLE
                             ],
                             'bid'  => [
                                 'type'     => Attribute::TYPE_VALUE,
                                 'optional' => true,
                             ]
                         ],
-                        'fields'     => self::getOfferFields($xpdo)
+                        'fields'     => [] //fields will be passed here automatically (cause TYPE_OFFER)
                     ]
                 ]
             ],
@@ -144,12 +137,12 @@ class YandexMarket extends Marketplace
         ];
     }
 
-    public static function getOfferFields(xPDO $xpdo): array
+    /** @inheritDoc */
+    public static function getOfferFields(): array
     {
         return [
             'name'                  => [
-                'type'    => Field::TYPE_DEFAULT,
-                'default' => 'modResource.pagetitle',
+                'type' => Field::TYPE_DEFAULT,
                 //'required' => true //при vendor.model необязательно
             ],
             'model'                 => [
@@ -169,26 +162,24 @@ class YandexMarket extends Marketplace
             'url'                   => [
                 'type'     => Field::TYPE_DEFAULT,
                 'required' => true,
-                'default'  => 'offer.url',
             ],
             'price'                 => [
-                'type'     => Field::TYPE_NUMBER,
-                'required' => true,
+                'type'       => Field::TYPE_NUMBER,
+                'required'   => true,
+                'attributes' => [
+                    'from' => [
+                        'type'     => Attribute::TYPE_BOOLEAN,
+                        'optional' => true,
+                    ]
+                ],
             ],
             'param'                 => [
                 'type'       => Field::TYPE_OFFER_PARAM,
                 'multiple'   => true,
                 'attributes' => [
                     'name' => [
-                        'type'       => Attribute::TYPE_TEXT,
-                        'required'   => true,
-                        'attributes' => [
-                            'from' => [
-                                'type'     => Attribute::TYPE_BOOLEAN,
-                                'default'  => true,
-                                'optional' => true,
-                            ]
-                        ],
+                        'type'     => Attribute::TYPE_TEXT,
+                        'required' => true,
                     ],
                     'unit' => [
                         'type' => Attribute::TYPE_TEXT
@@ -210,7 +201,6 @@ class YandexMarket extends Marketplace
             'currencyId'            => [
                 'type'     => Field::TYPE_DEFAULT,
                 'required' => true,
-                'default'  => 'RUR'
             ],
             'categoryId'            => [
                 'type'     => Field::TYPE_NUMBER,
@@ -230,12 +220,10 @@ class YandexMarket extends Marketplace
                 ]
             ],
             'delivery'              => [
-                'type'    => Field::TYPE_BOOLEAN,
-                'default' => true,
+                'type' => Field::TYPE_BOOLEAN,
             ],
             'pickup'                => [
-                'type'    => Field::TYPE_BOOLEAN,
-                'default' => true,
+                'type' => Field::TYPE_BOOLEAN,
             ],
             'delivery-options'      => [
                 'type'     => Field::TYPE_FEATURE,
@@ -250,9 +238,8 @@ class YandexMarket extends Marketplace
                 'optional' => true
             ],
             'description'           => [
-                'type'    => Field::TYPE_CDATA,
-                'default' => 'modResource.introtext',
-                'length'  => 3000
+                'type'   => Field::TYPE_CDATA,
+                'length' => 3000
             ],
             'sales_notes'           => [
                 'type'   => Field::TYPE_DEFAULT,

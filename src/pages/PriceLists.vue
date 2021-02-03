@@ -115,6 +115,7 @@ export default {
   data() {
     return {
       types: [
+          //TODO: сделать подгрузку маркетплейсов с сервера вместе с полями
         {text: 'Яндекс Маркет', value: 'yandex.market'}
       ],
       defaultItem: {

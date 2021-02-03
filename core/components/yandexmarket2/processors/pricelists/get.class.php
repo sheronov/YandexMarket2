@@ -13,7 +13,7 @@ class ymPricelistGetProcessor extends modObjectGetProcessor
 
     public function cleanup()
     {
-        return $this->success('', (new Pricelist($this->modx, $this->object))->toArray());
+        return $this->success('', (new Pricelist($this->modx, $this->object))->toArray(true));
     }
 }
 

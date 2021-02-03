@@ -40,7 +40,7 @@ class Pricelist extends BaseObject
     public function __construct(xPDO $xpdo, xPDOObject $object = null)
     {
         parent::__construct($xpdo, $object);
-        $this->marketplace = Marketplace::getMarketPlace($this->type);
+        $this->marketplace = Marketplace::getMarketPlace($this->type, $xpdo);
     }
 
     public static function getObjectClass(): string
@@ -163,27 +163,29 @@ class Pricelist extends BaseObject
         return $branch;
     }
 
-    public function toArray(): array
+    public function toArray(bool $withFields = false): array
     {
         $data = parent::toArray();
 
-        if ($shopField = $this->getFieldByName('shop')) {
-            $data['tree'] = $this->makeFieldsTree($shopField->id);
+        if($withFields) {
+            if ($shopField = $this->getFieldByName('shop')) {
+                $data['tree'] = $this->makeFieldsTree($shopField->id);
+            }
+
+            // TODO: может сделать группы для полей [shop, categories, offer] (чтобы на фронте легче разбивать по группам)
+            $data['fields'] = [
+                'shop'  => $this->marketplace::getShopFields(),
+                'offer' => $this->marketplace::getOfferFields()
+            ];
+
+            $data['values'] = [
+                'shop'       => $this->getShopValues(),
+                'categories' => array_values(array_map(static function (Category $categoryObject) {
+                    return $categoryObject->resource_id;
+                }, $this->getCategories())),
+                'offer'      => $this->getOfferValues()
+            ];
         }
-
-        // TODO: может сделать группы для полей [shop, categories, offer] (чтобы на фронте легче разбивать по группам)
-        $data['fields'] = [
-            'shop'  => $this->marketplace::getShopFields($this->xpdo),
-            'offer' => $this->marketplace::getOfferFields($this->xpdo)
-        ];
-
-        $data['values'] = [
-            'shop'       => $this->getShopValues(),
-            'categories' => array_values(array_map(static function (Category $categoryObject) {
-                return $categoryObject->resource_id;
-            }, $this->getCategories())),
-            'offer'      => $this->getOfferValues()
-        ];
 
         return $data;
     }
@@ -242,6 +244,7 @@ class Pricelist extends BaseObject
 
     public function createDefaultFields()
     {
+        // $this->marketplace->defaultValues();
         //TODO: здесь при создании создавать первичную структуру полей в БД
     }
 }

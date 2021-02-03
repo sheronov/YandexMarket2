@@ -31,9 +31,11 @@ class Field extends BaseObject
     public const TYPE_DEFAULT = 5; //просто боле текстовое (подходит всегда)
 
     //специальные типы
+    public const TYPE_OFFER      = 6; // предложение
     public const TYPE_CURRENCIES = 7; // валюта
     public const TYPE_CATEGORIES = 8; // категории
-    public const TYPE_OFFER      = 10; // предложение
+    public const TYPE_SHOP       = 9; // поле магазин (сюда будут прокинуты SHOP_FIELDS)
+    public const TYPE_OFFERS      = 10; // предложение
 
     public const TYPE_OFFER_PARAM    = 11; // параметр предложения
     public const TYPE_OFFER_PICTURES = 12; // изображения предложения
@@ -44,7 +46,7 @@ class Field extends BaseObject
     protected $parentField;
     /** @var null|Field[] */
     protected $children;
-    /** @var null|Attribute[]*/
+    /** @var null|Attribute[] */
     protected $attributes;
     /** @var Pricelist */
     protected $pricelist;
@@ -95,7 +97,7 @@ class Field extends BaseObject
 
     public function addChildren(Field $child): void
     {
-        if(!isset($this->children)) {
+        if (!isset($this->children)) {
             $this->children = [];
         }
         $this->children[] = $child->setParent($this);
