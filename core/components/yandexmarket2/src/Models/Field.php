@@ -12,7 +12,7 @@ use ymFieldAttribute;
  * @property null|int $parent
  * @property int $type
  * @property int $pricelist_id
- * @property null|string $column
+ * @property null|string $value
  * @property null|string $handler
  * @property null|array $properties
  * @property int $rank
@@ -21,13 +21,13 @@ use ymFieldAttribute;
  */
 class Field extends BaseObject
 {
-    //любое значение может быть записано в column и дополнительно обработано в handler
+    //любое значение может быть записано в value и дополнительно обработано в handler
     public const TYPE_ROOT       = 0;
     public const TYPE_PARENT     = 1; //обёртка без своего собственного значения
     public const TYPE_SHOP       = 2; // поле магазин (сюда будут прокинуты SHOP_FIELDS)
     public const TYPE_CURRENCIES = 4; // валюта
     public const TYPE_CATEGORIES = 5; // категории
-    public const TYPE_OFFERS     = 6; // предложения
+    public const TYPE_OFFERS     = 6; // предложения (почти бесполезно, но нужно, чтобы пропускать)
     public const TYPE_OFFER      = 7; // предложение
     public const TYPE_OPTION     = 8; //чисто текстовое значение (не будет как-либо заменяться)
     public const TYPE_FEATURE    = 9; // ещё не реализовано
@@ -56,7 +56,7 @@ class Field extends BaseObject
     }
 
     /**
-     * It means you can add a value in column or handler
+     * It means you can add a value in value or handler
      */
     public function isEditable(): bool
     {
@@ -72,9 +72,24 @@ class Field extends BaseObject
         ], true);
     }
 
+    public function isAttributable(): bool
+    {
+        return true;
+    }
+
+    public function isFieldable(): bool
+    {
+        return in_array($this->type, [self::TYPE_OFFER, self::TYPE_ROOT, self::TYPE_PARENT, self::TYPE_SHOP], true);
+    }
+
+    public function isArrayValue(): bool
+    {
+        return $this->type === self::TYPE_CURRENCIES;
+    }
+
     public function getValue()
     {
-        return $this->isArrayColumn() ? json_decode($this->column, true) : $this->column;
+        return $this->isArrayValue() ? json_decode($this->value, true) : $this->value;
     }
 
     public function getProperties(): array
@@ -90,11 +105,6 @@ class Field extends BaseObject
         }
 
         return $properties;
-    }
-
-    public function isArrayColumn(): bool
-    {
-        return $this->type === self::TYPE_CURRENCIES;
     }
 
     public function getPricelist(): Pricelist
@@ -133,6 +143,13 @@ class Field extends BaseObject
 
     public function getParent(): ?Field
     {
+        if (!isset($this->parentField)) {
+            if ($parent = $this->object->getOne('Parent')) {
+                $this->parentField = new self($this->modx, $parent);
+            } else {
+                $this->parentField = null;
+            }
+        }
         return $this->parentField;
     }
 
@@ -146,21 +163,75 @@ class Field extends BaseObject
 
     public function getChildren(): ?array
     {
+        if (!isset($this->children)) {
+            $this->children = array_map(function (ymField $field) {
+                return new Field($this->modx, $field);
+            }, $this->object->getMany('Children'));
+        }
+
         return $this->children;
     }
 
-    public function lexiconKey(string $group = null): string
+    public function toArray(): array
     {
-        if ($group) {
-            return "ym_{$this->getPricelist()->type}_{$group}_{$this->name}";
+        $data = parent::toArray();
+        $data['is_editable'] = $this->isEditable();
+        $data['is_array_value'] = $this->isArrayValue();
+        $data['is_attributable'] = $this->isAttributable(); //
+        $data['is_fieldable'] = $this->isFieldable();
+        $data['label'] = $this->getLabel($this->getParent()->name ?? null);
+        $data['help'] = $this->getHelp($this->getParent()->name ?? null);
+        $data['properties'] = $this->getProperties();
+        $data['value'] = $this->getValue();
+
+        return $data;
+    }
+
+    public function toFrontend(bool $withItself = false, array $skipChildrenTypes = []): array
+    {
+        $data = [];
+        if ($withItself) {
+            $data = $this->toArray();
+            if ($this->isAttributable()) {
+                $data['attributes'] = [];
+                if ($attributes = $this->getAttributes()) {
+                    foreach ($attributes as $attribute) {
+                        $data['attributes']['attr'.$attribute->id] = $attribute->toArray();
+                    }
+                }
+            }
+        }
+
+        if ($this->isFieldable()) {
+            if ($withItself) {
+                $data['fields'] = [];
+                $fields = &$data['fields'];
+            } else {
+                $fields = &$data;
+            }
+
+            foreach ($this->getChildren() as $child) {
+                if (in_array($child->type, $skipChildrenTypes, true)) {
+                    continue;
+                }
+                $fields['field'.$child->id] = $child->toFrontend(true, $skipChildrenTypes);
+            }
+        }
+
+        return $data;
+    }
+
+    public function lexiconKey(?string $parent = null): string
+    {
+        if ($parent) {
+            return "ym_{$this->getPricelist()->type}_{$parent}_{$this->name}";
         }
         return "ym_{$this->getPricelist()->type}_{$this->name}";
     }
 
-    public function getLabel(string $group = null): string
+    public function getLabel(?string $parent = null): string
     {
-        if (($this->lexiconKey($group) === $label = $this->modx->lexicon($this->lexiconKey($group)))
-            && $this->lexiconKey() === $label = $this->modx->lexicon($this->lexiconKey())) {
+        if (!$label = $this->getLexicon($this->lexiconKey($parent), $this->lexiconKey())) {
             $label = $this->name;
         }
 
@@ -171,14 +242,22 @@ class Field extends BaseObject
         return $label;
     }
 
-    public function getHelp(string $group = null): ?string
+    public function getHelp(?string $parent = null): ?string
     {
-        if (($this->lexiconKey($group).'_help' === $help = $this->modx->lexicon($this->lexiconKey($group).'_help'))
-            && $this->lexiconKey().'_help' === $help = $this->modx->lexicon($this->lexiconKey().'_help')) {
-            $help = null;
+        return $this->getLexicon($this->lexiconKey($parent).'_help', $this->lexiconKey().'_help');
+    }
+
+    public function getLexicon(string $key, string $fallbackKey = null): ?string
+    {
+        if (($key !== $lexicon = $this->modx->lexicon($key))) {
+            return $lexicon;
         }
 
-        return $help;
+        if ($fallbackKey && $fallbackKey !== $key && $fallbackKey !== $lexicon = $this->modx->lexicon($fallbackKey)) {
+            return $lexicon;
+        }
+
+        return null;
     }
 
 }

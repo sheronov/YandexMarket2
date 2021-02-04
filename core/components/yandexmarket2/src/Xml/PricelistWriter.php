@@ -27,7 +27,7 @@ class PricelistWriter
         foreach ($data as $key => $value) {
             $this->xml->startElement($value['name']);
             if ((int)$value['type'] === Field::TYPE_CURRENCIES) {
-                foreach ($value['column'] as $i => $val) {
+                foreach ($value['value'] as $i => $val) {
                     $this->xml->startElement('currency');
                     $this->xml->writeAttribute('id', $val);
                     if (!$i) {
@@ -36,12 +36,12 @@ class PricelistWriter
                     $this->xml->endElement();
                 }
             } elseif ((int)$value['type'] === Field::TYPE_BOOLEAN) {
-                $this->xml->text(filter_var($value['column'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false');
-            } elseif (($value['properties']['required'] ?? false) && ($value['column'] === null || $value['column'] === '')) {
+                $this->xml->text(filter_var($value['value'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false');
+            } elseif (($value['properties']['required'] ?? false) && ($value['value'] === null || $value['value'] === '')) {
                 $this->xml->writeComment('Это обязательное поле. Заполните его!');
                 $this->xml->setIndent(true);
             } else {
-                $this->xml->text($value['column']);
+                $this->xml->text($value['value']);
             }
             $this->xml->endElement();
         }

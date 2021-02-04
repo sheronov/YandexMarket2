@@ -8,7 +8,7 @@ use ymFieldAttribute;
  * @property int $id
  * @property string $name
  * @property int $field_id
- * @property null|string $column
+ * @property null|string $value
  * @property null|string $handler
  */
 class Attribute extends BaseObject

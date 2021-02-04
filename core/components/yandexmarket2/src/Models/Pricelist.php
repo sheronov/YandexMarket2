@@ -77,6 +77,7 @@ class Pricelist extends BaseObject
                 return ($a->rank < $b->rank) ? -1 : 1;
             });
 
+            //It's reduces sql queries
             foreach ($this->fields as $field) {
                 if ($field->parent && $parent = $this->fields[$field->parent] ?? null) {
                     $parent->addChildren($field);
@@ -114,10 +115,10 @@ class Pricelist extends BaseObject
         return null;
     }
 
-    public function getFieldByName(string $name): ?Field
+    public function getFieldByType(int $type): ?Field
     {
         foreach ($this->getFields(true) as $field) {
-            if ($field->name === $name) {
+            if ($field->type === $type) {
                 return $field;
             }
         }
@@ -143,7 +144,7 @@ class Pricelist extends BaseObject
             'name'       => $field->name,
             'type'       => $field->type,
             'parent'     => $field->parent,
-            'column'     => $field->column,
+            'value'     => $field->value,
             'handler'    => $field->handler,
             'properties' => $field->properties,
             'rank'       => $field->rank,
@@ -197,60 +198,21 @@ class Pricelist extends BaseObject
 
     public function getShopValues(): array
     {
-        if (!$field = $this->getFieldByName('shop')) {
+        if (!$field = $this->getFieldByType(Field::TYPE_SHOP)) {
             return [];
         }
 
-        return $this->writeFieldTreeToArray($field, []);
-    }
-
-    protected function writeFieldTreeToArray(Field $field, array $values = []): array
-    {
-        if (in_array($field->type, [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS], true)) {
-            return $values;
-        }
-        // TODO: подумать над тем, чтобы атрибуты на фронт в отдельном поле
-        if ($attributes = $field->getAttributes()) {
-            foreach ($attributes as $i => $attribute) {
-                $values['attribute'.$attribute->id] = [
-                    'entity'  => 'attribute',
-                    'name'    => $attribute->name,
-                    'field'   => 'field'.$attribute->field_id,
-                    'column'  => $attribute->column,
-                    'handler' => $attribute->handler,
-                    'rank'    => $i
-                ];
-            }
-        }
-
-        if ($field->isEditable()) {
-            $values['field'.$field->id] = [
-                'entity'     => 'field',
-                'type'       => $field->type,
-                'name'       => $field->name,
-                'column'     => $field->getValue(),
-                'parent'     => $field->parent ? 'field'.$field->parent : null,
-                'handler'    => $field->handler,
-                'properties' => $field->getProperties(),
-                'rank'       => $field->rank,
-                'active'     => $field->active,
-                'label'      => $field->getLabel('shop'),
-                'help'       => $field->getHelp('shop'),
-            ];
-        }
-
-        if ($children = $field->getChildren()) {
-            foreach ($children as $child) {
-                $values = $this->writeFieldTreeToArray($child, $values);
-            }
-        }
-
-        return $values;
+        return $field->toFrontend(false, [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS]);
     }
 
     public function getOfferValues(): array
     {
-        // TODO: тут нужно сделать иначе, по ID из БД например, чтобы избежать множественных значений внутри одного
+        if (!$field = $this->getFieldByType(Field::TYPE_OFFER)) {
+            return [];
+        }
+
+        return $field->toFrontend(true);
+        // TODO: удалить ниже
         return [
             'offer' => [
                 'attributes' => [
@@ -264,7 +226,7 @@ class Pricelist extends BaseObject
                     'attributes' => [
                         'name' => ['handler' => 'Цвет']
                     ],
-                    'column'     => 'Option.color'
+                    'value'     => 'Option.color'
                 ],
                 [
                     'attributes' => [

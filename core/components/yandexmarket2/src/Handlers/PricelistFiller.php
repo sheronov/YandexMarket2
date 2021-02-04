@@ -52,7 +52,7 @@ class PricelistFiller
                 $field->properties = $properties;
             }
             if ($parent && $value = $this->marketplace->defaultValues()[$parent->type][$name] ?? null) {
-                $field->column = is_array($value) ? json_encode($value) : $value;
+                $field->value = is_array($value) ? json_encode($value) : $value;
             }
             $field->save();
 
@@ -64,7 +64,7 @@ class PricelistFiller
                 foreach ($attributes as $attrName => $attrValue) {
                     $attribute = new Attribute($this->modx);
                     $attribute->name = $attrName;
-                    $attribute->column = $attrValue;
+                    $attribute->value = $attrValue;
                     $attribute->field_id = $field->id;
                     if ($attribute->save()) {
                         $field->addAttribute($attribute);
