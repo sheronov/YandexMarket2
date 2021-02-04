@@ -1,7 +1,7 @@
 <template>
   <v-row>
-    <v-col v-for="(attribute,param) in attributes" :key="param">
-        {{param}}="{{attribute.title}}"
+    <v-col v-for="(attribute,id) in attributes" :key="id">
+      <pre>{{attribute}}</pre>
     </v-col>
   </v-row>
 </template>

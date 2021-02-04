@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import HelloWorld from './components/HelloWorld'
 import PriceLists from './pages/PriceLists'
 import PriceList from './pages/PriceList'
-import PriceListOffers from './pages/PriceListOffers'
+import PriceListOffer from './pages/PriceListOffer'
 import PriceListShop from './pages/PriceListShop'
 import PriceListCategories from './pages/PriceListCategories'
 import Main from './pages/Main'
@@ -34,7 +34,7 @@ const routes = [
                 meta: {title: 'Категории'}
             }, {
                 path: 'offers',
-                component: PriceListOffers,
+                component: PriceListOffer,
                 name: 'pricelist.offers',
                 meta: {title: 'Данные'}
             }]
