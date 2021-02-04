@@ -12,7 +12,7 @@ $xpdo_meta_map['ymFieldAttribute']= array (
   array (
     'name' => NULL,
     'field_id' => NULL,
-    'column' => NULL,
+    'value' => NULL,
     'handler' => NULL,
   ),
   'fieldMeta' => 
@@ -30,7 +30,7 @@ $xpdo_meta_map['ymFieldAttribute']= array (
       'phptype' => 'integer',
       'null' => false,
     ),
-    'column' => 
+    'value' => 
     array (
       'dbtype' => 'varchar',
       'precision' => '255',

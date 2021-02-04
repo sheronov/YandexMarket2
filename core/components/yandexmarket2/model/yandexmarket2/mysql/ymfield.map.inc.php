@@ -14,7 +14,7 @@ $xpdo_meta_map['ymField']= array (
     'parent' => NULL,
     'type' => NULL,
     'pricelist_id' => NULL,
-    'column' => NULL,
+    'value' => NULL,
     'handler' => NULL,
     'properties' => NULL,
     'rank' => 0,
@@ -49,7 +49,7 @@ $xpdo_meta_map['ymField']= array (
       'attributes' => 'unsigned',
       'phptype' => 'integer',
     ),
-    'column' => 
+    'value' => 
     array (
       'dbtype' => 'varchar',
       'precision' => '255',
@@ -100,6 +100,14 @@ $xpdo_meta_map['ymField']= array (
       'cardinality' => 'many',
       'owner' => 'local',
     ),
+    'Children' => 
+    array (
+      'class' => 'ymField',
+      'local' => 'id',
+      'foreign' => 'parent',
+      'cardinality' => 'many',
+      'owner' => 'local',
+    ),
   ),
   'aggregates' => 
   array (
@@ -107,6 +115,14 @@ $xpdo_meta_map['ymField']= array (
     array (
       'class' => 'ymPricelist',
       'local' => 'pricelist_id',
+      'foreign' => 'id',
+      'cardinality' => 'one',
+      'owner' => 'foreign',
+    ),
+    'Parent' => 
+    array (
+      'class' => 'ymField',
+      'local' => 'parent',
       'foreign' => 'id',
       'cardinality' => 'one',
       'owner' => 'foreign',

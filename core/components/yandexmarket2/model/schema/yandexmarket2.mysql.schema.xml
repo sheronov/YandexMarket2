@@ -50,7 +50,7 @@
         <field key="type" dbtype="int" phptype="integer" null="false"/>
         <field key="pricelist_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
 
-        <field key="column" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="value" dbtype="varchar" precision="255" phptype="string" null="true"/>
         <field key="handler" dbtype="text" phptype="string" null="true"/>
         <!--  в handler возможно попадёт какой-либо Fenom обработчик значения, вместо значения из колонки -->
 
@@ -64,12 +64,14 @@
                    owner="foreign"/>
         <composite alias="Attributes" class="ymFieldAttribute" local="id" foreign="field_id" cardinality="many"
                    owner="local"/>
+        <composite alias="Children" class="ymField" local="id" foreign="parent" cardinality="many" owner="local"/>
+        <aggregate alias="Parent" class="ymField" local="parent" foreign="id" cardinality="one" owner="foreign"/>
     </object>
 
     <object class="ymFieldAttribute" table="yandexmarket_field_attributes" extends="xPDOSimpleObject">
         <field key="name" dbtype="varchar" phptype="string" precision="255" null="false"/>
         <field key="field_id" dbtype="int" phptype="integer" null="false"/>
-        <field key="column" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="value" dbtype="varchar" precision="255" phptype="string" null="true"/>
         <field key="handler" dbtype="text" phptype="string" null="true"/>
 
         <aggregate alias="Field" class="ymField" local="field_id" foreign="id" cardinality="one" owner="foreign"/>
