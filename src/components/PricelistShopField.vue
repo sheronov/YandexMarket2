@@ -2,10 +2,10 @@
   <div class="yandexmarket-shop-value mb-3">
     <!-- TODO: сделать поддержку разных компонентов -->
     <v-select
-        v-if="value.type === 4"
-        :label="value.label"
-        :value="value.column"
-        :items="value.properties.values"
+        v-if="field.type === 4"
+        :label="field.label"
+        :value="field.value"
+        :items="field.properties.values"
         filled
         dense
         multiple
@@ -33,23 +33,29 @@
         </v-chip>
       </template>
     </v-select>
+    <v-checkbox
+        v-else-if="field.type === 13"
+        :label="field.label"
+        :input-value="!!field.value"
+        @change="inputField(!!$event)"
+    ></v-checkbox>
     <v-text-field
         v-else
-        :label="value.label"
-        :value="value.column"
+        :label="field.label"
+        :value="field.value"
         hide-details="auto"
         filled
         dense
         @change="inputField($event)"
     >
-      <template v-slot:append v-if="value.help">
+      <template v-slot:append v-if="field.help">
         <v-tooltip bottom :max-width="400" :close-delay="500">
           <template v-slot:activator="{ on }">
             <v-icon v-on="on">
               icon-question-circle
             </v-icon>
           </template>
-          <div class="text-caption" style="white-space: pre-line;">{{ value.help }}</div>
+          <div class="text-caption" style="white-space: pre-line;">{{ field.help }}</div>
         </v-tooltip>
       </template>
     </v-text-field>
@@ -58,27 +64,25 @@
 
 <script>
 export default {
-  name: 'PricelistShopValue',
+  name: 'PricelistShopField',
   props: {
-    id: {},
-    value: {required: true},
+    field: {required: true},
     marketplace: {required: true},
-    // field: {required: true, type: Object}
   },
   computed: {
     label() {
-      let label = this.value.name;
-      let lexicon = `ym_${this.marketplace}_shop_${this.value.name}`;
+      let label = this.field.name;
+      let lexicon = `ym_${this.marketplace}_shop_${this.field.name}`;
       if (lexicon !== this.$t(lexicon)) {
         label = this.$t(lexicon);
       } else {
-        lexicon = `ym_${this.marketplace}_${this.value.name}`;
+        lexicon = `ym_${this.marketplace}_${this.field.name}`;
         if (lexicon !== this.$t(lexicon)) {
           label = this.$t(lexicon);
         }
       }
 
-      if (this.value.properties && this.value.properties.required) {
+      if (this.field.properties && this.field.properties.required) {
         label += ' *';
       }
       return label;
@@ -89,15 +93,15 @@ export default {
   },
   methods: {
     inputField(value) {
-      this.$emit('input', {...this.value, column: value});
+      this.$emit('input', {...this.field, value: value});
     },
     removeChip(item) {
-      let values = [...this.value.column];
+      let values = [...this.field.value];
       values.splice(values.indexOf(item.key), 1)
       this.inputField(values);
     },
     makeFirst(item) {
-      let values = [...this.value.column];
+      let values = [...this.field.value];
       values.splice(values.indexOf(item.key), 1);
       values.unshift(item.key);
       this.inputField(values);

@@ -3,11 +3,10 @@
     <h4>Настройки магазина</h4>
     <p class="mb-2">Обязательные поля отмечены звёздочкой. Пустые поля не попадут в выгрузку.</p>
 
-    <pricelist-shop-value
-        v-for="(value,key) in values"
+    <pricelist-shop-field
+        v-for="(field,key) in fields"
         :key="key"
-        :value="value"
-        :id="key"
+        :field="field"
         :marketplace="pricelist.type"
         @input="changedValue(key,$event)"
     />
@@ -21,49 +20,44 @@
 <script>
 
 // import PricelistField from "@/components/PricelistField";
-import PricelistShopValue from "@/components/PricelistShopValue";
+import PricelistShopField from "@/components/PricelistShopField";
 
 export default {
   name: 'PriceListShop',
-  components: {PricelistShopValue},
+  components: {PricelistShopField},
   props: {
     pricelist: {type: Object, required: true}
   },
   data: () => ({
-    fields: [],
-    currencies: [],
-    form: {},
-    values: {}
+    fields: {},
   }),
   watch: {
     'pricelist.values.shop': {
       immediate: true,
-      handler: function (pricelistValues) {
-        this.values = {
-          ...this.values,
-          ...pricelistValues
+      handler: function (shopFields) {
+        this.fields = {
+          ...this.fields,
+          ...shopFields
         }
       }
     }
   },
   methods: {
     previewXml() {
-      this.$emit('preview:xml', 'shop', this.values)
+      this.$emit('preview:xml', 'shop', this.fields)
     },
     save() {
-      this.$emit('@input:settings', this.form);
+      this.$emit('@input:shop', this.fields);
     },
     reset() {
-      this.form = {...this.pricelist.shop || {}};
+      this.fields = {...this.pricelist.values.shop};
     },
     changedValue(id, value) {
-      // console.log(id, value);
-      this.$set(this.values, id, value);
+      this.$set(this.fields, id, value);
       this.previewXml();
     }
   },
   mounted() {
-    this.fields = this.pricelist.fields || [];
     this.reset();
     this.previewXml();
   }

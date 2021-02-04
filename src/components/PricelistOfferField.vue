@@ -155,7 +155,7 @@ export default {
         // значит параметр множественный, скорее всего param
       } else if (value instanceof Object) {
         //значит есть атрибуты
-        value = value.column || value.handler || null;
+        value = value.value || value.handler || null;
       }
       return value;
     },
