@@ -43,7 +43,7 @@ class PricelistFiller
             $field->parent = $parent->id ?? null;
             $field->type = $data['type'] ?? Field::TYPE_DEFAULT;
             $field->pricelist_id = $this->pricelist->id;
-            $field->rank = $rank;
+            $field->rank = $rank++;
             $field->created_on = new DateTimeImmutable();
             $field->active = true;
             if ($properties = array_filter($data, static function (string $key) {
@@ -95,7 +95,6 @@ class PricelistFiller
             }
 
             $fields[$name] = $field;
-            $rank += 10; //чтобы удобнее было перемещать
         }
 
         return $fields;
