@@ -47,12 +47,21 @@ class PricelistFiller
             $field->created_on = new DateTimeImmutable();
             $field->active = true;
             if ($properties = array_filter($data, static function (string $key) {
-                return !in_array($key, ['type', 'fields', 'attributes'], true);
+                return !in_array($key, ['type', 'fields'], true);
             }, ARRAY_FILTER_USE_KEY)) {
                 $field->properties = $properties;
             }
             if ($parent && $value = $this->marketplace->defaultValues()[$parent->type][$name] ?? null) {
-                $field->value = is_array($value) ? json_encode($value) : $value;
+                if (is_array($value)) {
+                    if (isset($value['handler'])) {
+                        $field->handler = $value['handler'];
+                    }
+                    if (isset($value['value'])) {
+                        $field->value = is_array($value['value']) ? json_encode($value['value']) : $value['value'];
+                    }
+                } else {
+                    $field->value = $value;
+                }
             }
             $field->save();
 
@@ -60,12 +69,17 @@ class PricelistFiller
                 $parent->addChildren($field);
             }
 
-            if ($attributes = $this->marketplace->defaultAttributes()[$field->type] ?? []) {
-                foreach ($attributes as $attrName => $attrValue) {
+            if ($attributes = array_filter($data['attributes'] ?? [], static function (array $attribute) {
+                return $attribute['required'] ?? false;
+            })) {
+                foreach ($attributes as $attrName => $attrData) {
                     $attribute = new Attribute($this->modx);
                     $attribute->name = $attrName;
-                    $attribute->value = $attrValue;
                     $attribute->field_id = $field->id;
+                    if ($attrValue = $this->marketplace->defaultAttributes()[$field->type][$attrName] ?? null) {
+                        $attribute->value = $attrValue;
+                    }
+                    $attribute->properties = $attrData;
                     if ($attribute->save()) {
                         $field->addAttribute($attribute);
                     }

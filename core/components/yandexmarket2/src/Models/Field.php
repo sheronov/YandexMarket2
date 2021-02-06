@@ -29,10 +29,10 @@ class Field extends BaseObject
     public const TYPE_CATEGORIES = 5; // категории
     public const TYPE_OFFERS     = 6; // предложения (почти бесполезно, но нужно, чтобы пропускать)
     public const TYPE_OFFER      = 7; // предложение
-    public const TYPE_OPTION     = 8; //чисто текстовое значение (не будет как-либо заменяться)
+    public const TYPE_OPTION     = 8; // чисто текстовое значение (не будет как-либо обрабатываться)
     public const TYPE_FEATURE    = 9; // ещё не реализовано
 
-    public const TYPE_STRING   = 10; //просто боле текстовое (подходит всегда)
+    public const TYPE_STRING   = 10; //просто строковое поле (подходит всегда)
     public const TYPE_CDATA    = 11; //большой текст, обернуть в CDATA
     public const TYPE_NUMBER   = 12; //числовое предложения
     public const TYPE_BOOLEAN  = 13; //выбор да/нет (игнорировать null - intermediate)
@@ -56,20 +56,36 @@ class Field extends BaseObject
     }
 
     /**
-     * It means you can add a value in value or handler
+     * It means you can edit tag, type
      */
     public function isEditable(): bool
     {
-        return in_array($this->type, [
-            self::TYPE_STRING,
-            self::TYPE_CDATA,
-            self::TYPE_NUMBER,
-            self::TYPE_BOOLEAN,
-            self::TYPE_PARAM,
-            self::TYPE_PICTURES,
-            self::TYPE_OPTION,
-            self::TYPE_CURRENCIES
-        ], true);
+        return !($this->getProperties()['required'] ?? false)
+            && ($this->getProperties()['editable'] ?? true)
+            && in_array($this->type, [
+                self::TYPE_STRING,
+                self::TYPE_CDATA,
+                self::TYPE_NUMBER,
+                self::TYPE_BOOLEAN,
+                self::TYPE_PARAM,
+                self::TYPE_PICTURES,
+                self::TYPE_OPTION,
+                self::TYPE_CURRENCIES
+            ], true);
+    }
+
+    /**
+     * It means you can delete field
+     */
+    public function isDeletable(): bool
+    {
+        return !($this->getProperties()['required'] ?? false)
+            && !in_array($this->type, [
+                self::TYPE_ROOT,
+                self::TYPE_SHOP,
+                self::TYPE_OFFER,
+                self::TYPE_OFFERS,
+            ], true);
     }
 
     public function isAttributable(): bool
@@ -176,6 +192,7 @@ class Field extends BaseObject
     {
         $data = parent::toArray();
         $data['is_editable'] = $this->isEditable();
+        $data['is_deletable'] = $this->isDeletable();
         $data['is_array_value'] = $this->isArrayValue();
         $data['is_attributable'] = $this->isAttributable(); //
         $data['is_fieldable'] = $this->isFieldable();

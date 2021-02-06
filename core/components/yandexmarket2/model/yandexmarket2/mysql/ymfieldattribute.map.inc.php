@@ -14,6 +14,7 @@ $xpdo_meta_map['ymFieldAttribute']= array (
     'field_id' => NULL,
     'value' => NULL,
     'handler' => NULL,
+    'properties' => NULL,
   ),
   'fieldMeta' => 
   array (
@@ -41,6 +42,12 @@ $xpdo_meta_map['ymFieldAttribute']= array (
     array (
       'dbtype' => 'text',
       'phptype' => 'string',
+      'null' => true,
+    ),
+    'properties' => 
+    array (
+      'dbtype' => 'text',
+      'phptype' => 'json',
       'null' => true,
     ),
   ),

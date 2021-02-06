@@ -102,7 +102,7 @@ class YandexMarket extends Marketplace
                         'attributes' => [
                             'id'   => [
                                 'required' => true,
-                                'type'     => Attribute::TYPE_VALUE,
+                                'type'     => Attribute::TYPE_STRING,
                             ],
                             'type' => [
                                 'type'     => Attribute::TYPE_SELECT,
@@ -120,7 +120,7 @@ class YandexMarket extends Marketplace
                                 ],
                             ],
                             'bid'  => [
-                                'type'     => Attribute::TYPE_VALUE,
+                                'type'     => Attribute::TYPE_STRING,
                                 'optional' => true,
                             ]
                         ],
@@ -177,11 +177,11 @@ class YandexMarket extends Marketplace
                 'multiple'   => true,
                 'attributes' => [
                     'name' => [
-                        'type'     => Attribute::TYPE_TEXT,
+                        'type'     => Attribute::TYPE_STRING,
                         'required' => true,
                     ],
                     'unit' => [
-                        'type' => Attribute::TYPE_TEXT
+                        'type' => Attribute::TYPE_STRING
                     ]
                 ]
             ],
@@ -214,7 +214,7 @@ class YandexMarket extends Marketplace
                 'attributes' => [
                     'ogrn' => [
                         'required' => true,
-                        'type'     => Attribute::TYPE_VALUE
+                        'type'     => Attribute::TYPE_STRING
                     ]
                 ]
             ],

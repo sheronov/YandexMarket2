@@ -73,6 +73,7 @@
         <field key="field_id" dbtype="int" phptype="integer" null="false"/>
         <field key="value" dbtype="varchar" precision="255" phptype="string" null="true"/>
         <field key="handler" dbtype="text" phptype="string" null="true"/>
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
 
         <aggregate alias="Field" class="ymField" local="field_id" foreign="id" cardinality="one" owner="foreign"/>
 

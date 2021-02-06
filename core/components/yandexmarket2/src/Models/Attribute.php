@@ -10,15 +10,16 @@ use ymFieldAttribute;
  * @property int $field_id
  * @property null|string $value
  * @property null|string $handler
+ * @property null|array $properties
  */
 class Attribute extends BaseObject
 {
-    //where it using? TODO: add support of attribute types
-    public const TYPE_VALUE   = 0;
+    public const TYPE_STRING  = 0;
     public const TYPE_DATE    = 1;
     public const TYPE_BOOLEAN = 2;
-    public const TYPE_TEXT    = 3;
-    public const TYPE_SELECT  = 4;
+    public const TYPE_SELECT  = 3;
+
+    public const TYPE_DEFAULT = self::TYPE_STRING;
 
     protected $field;
 
@@ -39,5 +40,10 @@ class Attribute extends BaseObject
             $this->field = new Field($this->modx, $this->object->getOne('Field'));
         }
         return $this->field;
+    }
+
+    public function getType(): int
+    {
+        return $this->properties['type'] ?? self::TYPE_DEFAULT;
     }
 }

@@ -101,24 +101,37 @@ abstract class Marketplace
         return null;
     }
 
+    /**
+     * По умолчанию значение попадёт в столбец value
+     * Если вернуть массив - то можно указать ['value'=>modResource.field, 'handler' => '{$input ? 'Да' : 'Нет'}
+     *
+     * @return array[]
+     */
     public function defaultValues(): array
     {
         return [
             Field::TYPE_SHOP  => [
-                'name'       => $this->defaultOption('shop_name', $this->modx->getOption('site_name')),
-                'url'        => $this->defaultOption('shop_url', $this->modx->getOption('site_url')),
-                'platform'   => $this->defaultOption('shop_platform', 'MODX Revolution'),
-                'version'    => $this->defaultOption('shop_version', $this->modx->getOption('settings_version')),
-                'currencies' => explode(',', $this->defaultOption('shop_currencies', 'RUB')),
-
+                'name'                  => $this->defaultOption('shop_name', $this->modx->getOption('site_name')),
+                'url'                   => $this->defaultOption('shop_url', $this->modx->getOption('site_url')),
+                'platform'              => $this->defaultOption('shop_platform', 'MODX Revolution'),
+                'version'               => $this->defaultOption('shop_version', $this->modx->getOption('settings_version')),
+                'currencies'            => [
+                    'value' => explode(',', $this->defaultOption('shop_currencies', 'RUB'))
+                ],
                 'enable_auto_discounts' => (bool)$this->defaultOption('shop_enable_auto_discounts', true)
             ],
             Field::TYPE_OFFER => [
                 'name'        => $this->defaultOption('offer_name', 'modResource.pagetitle'),
                 'url'         => $this->defaultOption('offer_url', 'Offer.url'), // Offer собирающий класс
-                'currencyId'  => $this->defaultOption('offer_currency_id', 'RUB'),
-                'delivery'    => $this->defaultOption('offer_delivery', true),
-                'pickup'      => $this->defaultOption('offer_pickup', true),
+                'currencyId'  => [
+                    'handler' => $this->defaultOption('offer_currency_id', 'RUB')
+                ],
+                'delivery'    => [
+                    'handler' => $this->defaultOption('offer_delivery', 'true')
+                ],
+                'pickup'      => [
+                    'handler' => $this->defaultOption('offer_pickup', 'true')
+                ],
                 'description' => $this->defaultOption('offer_description', 'modResource.introtext'),
             ]
         ];
