@@ -43,7 +43,7 @@ class PricelistFiller
             $field->parent = $parent->id ?? null;
             $field->type = $data['type'] ?? Field::TYPE_DEFAULT;
             $field->pricelist_id = $this->pricelist->id;
-            $field->rank = $rank++;
+            $field->rank = ++$rank;
             $field->created_on = new DateTimeImmutable();
             $field->active = true;
             if ($properties = array_filter($data, static function (string $key) {
@@ -76,8 +76,8 @@ class PricelistFiller
                     $attribute = new Attribute($this->modx);
                     $attribute->name = $attrName;
                     $attribute->field_id = $field->id;
-                    if ($attrValue = $this->marketplace->defaultAttributes()[$field->type][$attrName] ?? null) {
-                        $attribute->value = $attrValue;
+                    if (isset($this->marketplace->defaultAttributes()[$field->type][$attrName])) {
+                        $attribute->value = $this->marketplace->defaultAttributes()[$field->type][$attrName];
                     }
                     $attribute->properties = $attrData;
                     if ($attribute->save()) {
