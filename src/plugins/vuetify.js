@@ -4,7 +4,7 @@ import Vue from 'vue';
 import Vuetify from 'vuetify/lib';
 import 'vuetify/src/styles/styles.sass'
 import {MODX_ICONS} from "@/icons";
-import { Ripple } from 'vuetify/lib/directives'
+import {Ripple} from 'vuetify/lib/directives'
 
 Vue.use(Vuetify, {
     directives: {
@@ -19,7 +19,8 @@ export default new Vuetify({
     theme: {
         themes: {
             light: {
-                primary: '#3697cd',
+                primary: '#3697cd', //default modx class .primary changes color of buttons
+                accent: '#3697cd',
                 secondary: '#32AB9A'
             }
         }

@@ -2,10 +2,11 @@
   <div class="yandexmarket-pricelist-offers-fields">
     <h4>Настройка полей предложений</h4>
     <p class="mb-2">Интерактивный режим добавления и редактирования полей</p>
-    <v-expansion-panels v-model="opened" multiple accordion class="pb-2">
+    <v-expansion-panels v-model="opened" multiple class="pb-2">
       <pricelist-offer-field
           :field="field"
           tag="offer"
+          :lighten="3"
       />
     </v-expansion-panels>
   </div>

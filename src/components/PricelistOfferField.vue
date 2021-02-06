@@ -1,46 +1,57 @@
 <template>
-  <v-expansion-panel class="yandexmarket-offer-field" :ref="'panel'+field.id" >
-    <v-expansion-panel-header color="grey lighten-4" hide-actions>
+  <v-expansion-panel class="yandexmarket-offer-field" :ref="'panel'+field.id" :readonly="field.name !== 'offer'">
+    <v-expansion-panel-header :color="`grey lighten-${lighten}`" hide-actions class="pr-2">
        <span style="padding-left: 1px; padding-right: 4px;">
          &lt;{{ field.name }}&gt;
       </span>
-      <span class="pl-1 grey--text text-caption">
-          (тип: {{ types.find((type) => type.value === field.type).text || field.type }})
+      <span class="pl-1 grey--text">
+          <span v-if="field.label.replace(' *','') !== field.name">{{ field.label.replace(' *', '') }}</span>
+          ({{ types.find((type) => type.value === field.type).text || field.type }})
         </span>
+      <v-tooltip v-if="field.help" bottom :max-width="400" :close-delay="200" :attach="true">
+        <template v-slot:activator="{ on }">
+          <v-btn small icon v-on="on" @click.stop="" class="ml-1">
+            <v-icon>
+              icon-question-circle
+            </v-icon>
+          </v-btn>
+        </template>
+        <div class="text-caption" style="white-space: pre-line;">{{ field.help }}</div>
+      </v-tooltip>
       <v-spacer/>
 
 
-      <v-btn small depressed @click="addAttribute" title="Добавить атрибут" color="grey lighten-3">
-        <v-icon class="icon-xs mr-1">icon-plus</v-icon>
-        <v-icon class="icon-xs">icon-font</v-icon>
+      <v-btn small depressed @click="addAttribute" title="Добавить атрибут" color="transparent" min-width="40"
+             class="px-0">
+        <v-icon class="icon-xs mr-1" color="grey darken-1">icon-plus</v-icon>
+        <v-icon class="icon-xs" color="grey darken-1">icon-font</v-icon>
       </v-btn>
-      <v-btn small icon title="Отредактировать название и тип поля" @click="toggleEdit" class="ml-3"
+      <v-btn small icon title="Отредактировать название и тип поля" @click="toggleEdit" class="ml-1"
              v-if="field.is_editable">
         <v-icon>icon-pencil</v-icon>
       </v-btn>
-      <v-btn small icon title="Удалить поле" @click.stop="deleteField" v-if="field.is_editable" class="ml-3">
+      <v-btn small icon title="Удалить поле" @click.stop="deleteField" v-if="field.is_deletable" class="ml-1">
         <v-icon>icon-trash</v-icon>
       </v-btn>
-
     </v-expansion-panel-header>
-    <v-expansion-panel-content class="pt-3">
-      <!-- TODO: Сделать здесь всё на одном фоне шапки. Так оступы меньше и красивее.     -->
-      <offer-field-attributes v-if="field.attributes && Object.keys(field.attributes).length"
-                              :attributes="field.attributes"/>
-      <v-row class="pl-0" v-if="edit" dense>
+    <v-expansion-panel-content :color="`grey lighten-${lighten}`">
+      <template v-if="field.attributes && Object.keys(field.attributes).length">
+        <div class="grey--text mb-1">Атрибуты:</div>
+        <offer-field-attributes :attributes="field.attributes"/>
+      </template>
+      <v-row class="px-0 pb-3" v-if="edit" dense>
         <v-col>
           <v-combobox
               :value="field.name"
               :items="tags"
               @input="changedTag"
               class="yandexmarket-offer-field-tag text-center mr-2"
-              label="Укажите элемент"
+
               placeholder="Введите или выберите из списка"
-              background-color="grey lighten-4"
               :attach="true"
+
               hide-details
               solo
-              flat
               dense
           >
             <template v-slot:prepend-inner>
@@ -59,18 +70,16 @@
           <v-select
               v-if="edit"
               :value="field.type"
-              :items="types"
+              :items="selectableTypes"
               @input="changedType"
-              class="yandexmarket-offer-field-type mr-3"
+              class="yandexmarket-offer-field-type"
               :full-width="false"
               label="Тип элемента"
               placeholder="Выберите тип"
-              background-color="grey lighten-4"
               :menu-props="{offsetY: true}"
               :attach="true"
               hide-details
               solo
-              flat
               dense
           >
             <template v-slot:prepend-inner>
@@ -93,13 +102,20 @@
             solo
             dense
         >
+          <template v-slot:prepend-inner>
+            <div class="text-no-wrap mr-2">
+              <code>Поле:</code>
+              <v-icon right color="inherit">icon-list-ul</v-icon>
+
+            </div>
+          </template>
           <template v-slot:item="{item}">
             <code>{{ item.key }}</code><span class="pl-1">{{ item.text }}</span>
           </template>
         </v-combobox>
         <v-btn
             title="Добавить код-обработчик значения"
-            color="grey lighten-3"
+            :color="field.handler ? 'secondary' : 'accent'"
             @click="toggleCode"
             class="ml-3"
             min-width="30"
@@ -108,18 +124,19 @@
         </v-btn>
       </v-card-title>
       <v-card-text class="pl-0 pr-0" v-if="field.is_fieldable">
-        <b>Дочерние узлы:</b>
-        <v-expansion-panels v-model="opened" v-if="field.fields" multiple accordion>
+        <div class="grey--text mb-1">Поля:</div>
+        <v-expansion-panels :value="opened" v-if="field.fields" multiple>
           <pricelist-offer-field
+              :lighten="lighten+1"
               v-for="(child,key) in field.fields"
               :key="key"
               :field="child"
           />
         </v-expansion-panels>
         <v-flex class="flex-row text-right">
-          <v-btn small class="mt-5">
+          <v-btn small class="mt-5" color="white">
             <v-icon class="icon-sm" left>icon-plus</v-icon>
-            Добавить дочерний узел
+            Добавить узел в &lt;{{ field.name }}&gt;
           </v-btn>
         </v-flex>
       </v-card-text>
@@ -137,11 +154,11 @@ export default {
   },
   props: {
     field: {required: true, type: [Object]},
+    lighten: {type: Number, default: 2}
   },
   data: () => ({
     edit: false,
     code: false,
-    opened: [],
     //TODO: всё ниже нужно грузить из бэкенда вместе с тегами
     columns: [
       {header: 'Поля ресурса'},
@@ -151,25 +168,37 @@ export default {
       {header: 'Поля товара'},
       {key: 'Data.price', text: 'Цена товара'},
     ],
-    tags: [],
+    tags: [
+      'test',
+      'blabla',
+      'yes'
+    ],
     types: [
-      {value: 0, text: 'корневой'},
-      {value: 1, text: 'родительский'},
-      {value: 2, text: 'магазин'},
-      {value: 4, text: 'валюта'},
-      {value: 5, text: 'категории'},
-      {value: 6, text: 'предложения'},
-      {value: 7, text: 'предложение'},
-      {value: 8, text: 'текстовая опция'},
-      {value: 9, text: 'ещё не реализовано'},
-      {value: 10, text: 'строковый'},
+      {value: 0, text: 'корневой', selectable: false},
+      {value: 2, text: 'магазин', selectable: false},
+      {value: 4, text: 'валюта', selectable: false},
+      {value: 5, text: 'категории', selectable: false},
+      {value: 6, text: 'предложения', selectable: false},
+      {value: 7, text: 'предложение', selectable: false},
+      {value: 8, text: 'текстовая опция', selectable: false},
+      {value: 9, text: 'ещё не реализовано', selectable: false},
+      {value: 10, text: 'текст'},
       {value: 11, text: 'текст в CDATA'},
-      {value: 12, text: 'числовой'},
+      {value: 12, text: 'число'},
       {value: 13, text: 'да/нет'},
       {value: 14, text: 'параметр'},
       {value: 15, text: 'изображения'},
+      {value: 1, text: 'родительский'},
     ],
   }),
+  computed: {
+    selectableTypes() {
+      return this.types.filter((type) => !Object.prototype.hasOwnProperty.call(type, 'selectable') || type.selectable)
+    },
+    opened() {
+      return Object.keys(this.field.fields || {}).map((field, index) => index)
+    }
+  },
   methods: {
     addField() {
 
@@ -198,9 +227,7 @@ export default {
 
     }
   },
-  mounted() {
-    this.opened = Object.keys(this.field.fields || {}).map((field, index) => index);
-  }
+
 }
 </script>
 
@@ -258,7 +285,7 @@ export default {
 }
 
 .v-select.v-select--is-menu-active .v-input__append-inner .icon {
-  transform: rotate(90deg);
+  transform: rotate(0deg);
 }
 
 .yandexmarket-offer-field-tag .v-select__slot input {
