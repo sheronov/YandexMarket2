@@ -39,7 +39,8 @@
             <div class="yandexmarket-xml-preview">
               <h4><label for="yandexmarket-preview">Предпросмотр XML элемента &lt;{{ previewType }}&gt;</label></h4>
               <p class="mb-2">Автоматически обновляется при любом изменении</p>
-              <textarea ref="textarea" id="yandexmarket-preview"></textarea>
+<!--              <textarea ref="textarea" id="yandexmarket-preview"></textarea>-->
+              <codemirror id="yandexmarket-preview" v-model="code" :options="cmOptions"></codemirror>
             </div>
             <pre v-if="debug && Object.keys(debug).length">{{debug}}</pre>
           </v-col>
@@ -53,24 +54,31 @@
 <script>
 import Loader from "@/components/Loader";
 import api from "@/api";
-import CodeMirror from 'codemirror';
+import {codemirror} from 'vue-codemirror';
+// import CodeMirror from 'codemirror';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/xml/xml';
 
 export default {
   name: 'PriceList',
-  components: {Loader},
+  components: {Loader, codemirror},
   data: () => ({
     id: null,
     pricelist: null,
     type: 'yandexmarket',
-    codemirror: null,
     preview: true,
     previewType: null,
     previewData: {},
     hasChanges: true,
-    debug: null
+    debug: null,
+    code: null,
+    cmOptions: {
+      lineNumbers: true,
+      mode: 'xml',
+      cursorBlinkRate: -1,
+      readOnly: true,
+    }
   }),
   methods: {
     // TODO: сделать предупреждение при переходе по вкладкам при неотправленных изменениях
@@ -84,7 +92,7 @@ export default {
       this.preview = !this.preview;
       if (this.preview) {
         this.$nextTick().then(() => {
-          this.initializeCodeMirror();
+          // this.initializeCodeMirror();
           this.getXmlPreview();
         });
       }
@@ -97,10 +105,10 @@ export default {
       }
     },
     getXmlPreview() {
-      this.codemirror.setValue('<!-- Загружается XML элемент ' + this.previewType + ' -->');
+      this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
       api.post('xml/preview', {id: this.pricelist.id, method: this.previewType, data: this.previewData})
           .then(({data}) => {
-            this.codemirror.setValue(data.message);
+            this.code = data.message;
             this.debug = data.object;
           })
           .catch(error => console.log(error));
@@ -116,19 +124,10 @@ export default {
             setTimeout(() => this.$router.push({name: 'pricelists'}), 3000);
           })
     },
-    initializeCodeMirror() {
-      this.codemirror = CodeMirror.fromTextArea(this.$refs.textarea, {
-        lineNumbers: true,
-        mode: 'xml',
-        cursorBlinkRate: -1,
-        readOnly: true,
-      });
-    }
   },
   mounted() {
     this.id = parseInt(this.$route.params.id);
     this.loadPricelist();
-    this.initializeCodeMirror();
   }
 }
 </script>

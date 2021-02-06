@@ -1,7 +1,22 @@
 <template>
   <v-expansion-panel class="yandexmarket-offer-field" :ref="'panel'+field.id" :readonly="field.name !== 'offer'">
     <v-expansion-panel-header :color="`grey lighten-${lighten}`" hide-actions class="pr-2">
-       <span style="padding-left: 1px; padding-right: 4px;">
+      <inline-edit-dialog v-if="field.name !== 'offer'">
+        <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
+          #{{ field.rank }}
+        </v-btn>
+        <template v-slot:input>
+          <v-text-field
+              v-model="field.rank"
+              label="Приоритет"
+              single-line
+              type="number"
+              prepend-icon="icon-sort"
+              min="0"
+          />
+        </template>
+      </inline-edit-dialog>
+      <span style="padding-left: 1px; padding-right: 4px;">
          &lt;{{ field.name }}&gt;
       </span>
       <span class="pl-1 grey--text">
@@ -19,8 +34,6 @@
         <div class="text-caption" style="white-space: pre-line;">{{ field.help }}</div>
       </v-tooltip>
       <v-spacer/>
-
-
       <v-btn small depressed @click="addAttribute" title="Добавить атрибут" color="transparent" min-width="40"
              class="px-0">
         <v-icon class="icon-xs mr-1" color="grey darken-1">icon-plus</v-icon>
@@ -106,7 +119,6 @@
             <div class="text-no-wrap mr-2">
               <code>Поле:</code>
               <v-icon right color="inherit">icon-list-ul</v-icon>
-
             </div>
           </template>
           <template v-slot:item="{item}">
@@ -114,8 +126,8 @@
           </template>
         </v-combobox>
         <v-btn
-            title="Добавить код-обработчик значения"
-            :color="field.handler ? 'secondary' : 'accent'"
+            :title="openedCode ? 'Для закрытия очистите введённый код' :'Добавить код-обработчик значения'"
+            :color="openedCode ? 'secondary' : 'accent'"
             @click="toggleCode"
             class="ml-3"
             min-width="30"
@@ -123,20 +135,48 @@
           <v-icon>icon-code</v-icon>
         </v-btn>
       </v-card-title>
+
+      <v-sheet elevation="1" v-if="openedCode" style="position: relative;">
+        <codemirror
+            v-model="field.handler"
+            :options="cmOptions"
+            class="mt-3"
+            placeholder="Пример: {$input === 'Да' ? 'true' : 'false'}"
+        ></codemirror>
+
+        <v-tooltip left :max-width="450" :close-delay="200" :attach="true">
+          <template v-slot:activator="{on}">
+            <v-btn v-on="on" x-small fab icon absolute style="right: -4px; top: -4px;">
+              <v-icon color="grey darken-1">icon-question-circle</v-icon>
+            </v-btn>
+          </template>
+          <div class="text-caption" style="white-space: pre-line;">
+            INLINE обработка поля на Fenom (значение попадает в $input)<br>
+            Пригодится для приведения к boolean значениям, вырезанию лишних тегов/текстов, обработки массивов или
+            ТВ-полей.<br>
+            <br>
+            Доступны поля ресурса {$resource.pagetitle}, товаров miniShop2 {$data.price}, опций ms2 {$option.color}, тв
+            полей {$tv.tag}.<br>
+            Все нужные ТВ-поля, опции будут приджойнены автоматически.<br>
+            <br>
+            Писать @INLINE перед кодом НЕ нужно.
+          </div>
+        </v-tooltip>
+      </v-sheet>
       <v-card-text class="pl-0 pr-0" v-if="field.is_fieldable">
         <div class="grey--text mb-1">Поля:</div>
-        <v-expansion-panels :value="opened" v-if="field.fields" multiple>
+        <v-expansion-panels :value="opened" v-if="children" multiple>
           <pricelist-offer-field
               :lighten="lighten+1"
-              v-for="(child,key) in field.fields"
-              :key="key"
+              v-for="child in children"
+              :key="child.id"
               :field="child"
           />
         </v-expansion-panels>
         <v-flex class="flex-row text-right">
           <v-btn small class="mt-5" color="white">
             <v-icon class="icon-sm" left>icon-plus</v-icon>
-            Добавить узел в &lt;{{ field.name }}&gt;
+            Добавить поле в &lt;{{ field.name }}&gt;
           </v-btn>
         </v-flex>
       </v-card-text>
@@ -146,11 +186,19 @@
 
 <script>
 import OfferFieldAttributes from "@/components/OfferFieldAttributes";
+import InlineEditDialog from "@/components/InlineEditDialog";
+import {codemirror} from 'vue-codemirror';
+
+
+import 'codemirror/mode/smarty/smarty';
+import 'codemirror/addon/display/placeholder';
 
 export default {
   name: 'PricelistOfferField',
   components: {
-    OfferFieldAttributes
+    OfferFieldAttributes,
+    InlineEditDialog,
+    codemirror
   },
   props: {
     field: {required: true, type: [Object]},
@@ -159,6 +207,17 @@ export default {
   data: () => ({
     edit: false,
     code: false,
+    cmOptions: {
+      taSize: 4,
+      mode: {
+        name: 'smarty',
+        baseMode: 'text/html',
+        version: 3,
+      },
+      line: true,
+      lineNumbers: true,
+      lineWrapping: true
+    },
     //TODO: всё ниже нужно грузить из бэкенда вместе с тегами
     columns: [
       {header: 'Поля ресурса'},
@@ -197,6 +256,20 @@ export default {
     },
     opened() {
       return Object.keys(this.field.fields || {}).map((field, index) => index)
+    },
+    openedCode() {
+      return this.field.handler || this.code;
+    },
+    children() {
+      if (!this.field.fields || !Object.keys(this.field.fields).length) {
+        return [];
+      }
+      return Object.values(this.field.fields).sort((a, b) => a.rank - b.rank);
+    }
+  },
+  mounted() {
+    if (this.field.handler) {
+      this.code = true;
     }
   },
   methods: {
@@ -221,6 +294,9 @@ export default {
 
     },
     toggleCode() {
+      if (this.field.handler) {
+        return;
+      }
       this.code = !this.code;
     },
     deleteField() {
@@ -237,6 +313,15 @@ export default {
   position: relative;
   margin-right: -1px;
   margin-top: -1px;
+}
+
+.yandexmarket-offer-field .CodeMirror {
+  height: auto;
+  min-height: 30px;
+}
+
+.yandexmarket-offer-field .CodeMirror pre.CodeMirror-placeholder {
+  color: #999;
 }
 
 .yandexmarket-field-fieldset {
