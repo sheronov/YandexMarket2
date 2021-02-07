@@ -3,7 +3,6 @@
 namespace YandexMarket\Models;
 
 use DateTimeImmutable;
-use Iterator;
 use modX;
 use xPDOObject;
 use YandexMarket\Marketplaces\Marketplace;
@@ -134,7 +133,6 @@ class Pricelist extends BaseObject
                 $this->categories[$category->id] = $category;
             }
         }
-
         return $this->categories;
     }
 
@@ -212,38 +210,5 @@ class Pricelist extends BaseObject
         }
 
         return $field->toFrontend(true);
-        // TODO: удалить ниже
-        return [
-            'offer' => [
-                'attributes' => [
-                    'id'   => 'modResource.id',
-                    'type' => ''
-                ]
-            ],
-            'name'  => 'modResource.pagetitle',
-            'param' => [
-                [
-                    'attributes' => [
-                        'name' => ['handler' => 'Цвет']
-                    ],
-                    'value'     => 'Option.color'
-                ],
-                [
-                    'attributes' => [
-                        'name' => ['handler' => 'Размер']
-                    ],
-                    'handler'    => '@INLINE {$Data.color[0]}'
-                ],
-            ]
-        ];
-    }
-
-    public function getPricelistOffers(array $where = []): Iterator
-    {
-        //TODO: переделать полностью
-        $q = $this->modx->newQuery('msProduct');
-        $q->where(array_merge($where, ['class_key' => 'msProduct']));
-        $q->sortby('RAND()');
-        return $this->modx->getIterator('msProduct', $q);
     }
 }

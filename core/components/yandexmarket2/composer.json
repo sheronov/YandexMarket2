@@ -5,7 +5,8 @@
     "php": ">=7.1",
     "ext-xmlwriter": "*",
     "ext-xmlreader": "*",
-    "haydenpierce/class-finder": "dev-master"
+    "haydenpierce/class-finder": "dev-master",
+    "agelxnash/jevix": "dev-master"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master"
