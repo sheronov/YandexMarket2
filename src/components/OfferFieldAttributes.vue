@@ -1,16 +1,16 @@
 <template>
   <v-row dense class="mb-2">
-    <v-col cols="6" v-for="(attribute,id) in attributes" :key="id">
+    <v-col md="4" sm="6" v-for="(attribute,id) in attributes" :key="id">
       <component
           :is="attribute.type === 3 ? 'v-select' : 'v-combobox'"
           v-model="attribute.value"
           :items="attribute.properties.values"
           class="yandexmarket-offer-field-attribute"
           :placeholder="attribute.type === 3 ? 'Выберите из списка' : 'Введите значение'"
-          hide-details
           dense
           filled
-          rounded
+          :hint="attribute.name"
+          persistent-hint
           :attach="true"
           :menu-props="{offsetY: true}"
           :label="attribute.label"
@@ -19,13 +19,9 @@
      click:append-outer.stop
           -->
         <template v-slot:prepend-inner>
-          <div class="mt-n3">
-            <v-icon size="15" left class="ml-n1">icon-font</v-icon>
-            <br/>
-            <div class="text-no-wrap">
-              <code class="mr-1 ml-n2 d-inline-block" style="margin-top: 2px;">{{ attribute.name }}</code>
-            </div>
-          </div>
+<!--          <div class="mt-n3">-->
+            <v-icon size="15" title="Атрибут" left class="ml-n1">icon-font</v-icon>
+<!--          </div>-->
         </template>
       </component>
       <!--      <pre>{{ attribute }}</pre>-->

@@ -1,5 +1,6 @@
 <template>
   <v-expansion-panel class="yandexmarket-offer-field" :ref="'panel'+field.id" readonly>
+    <!--  TODO: переделать панели на обычные div, чтобы не закрывались самостоятельно (бесит)  -->
     <v-expansion-panel-header :color="`grey lighten-${lighten}`" hide-actions class="pr-2 pb-1">
       <inline-edit-dialog v-if="field.name !== 'offer'">
         <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
@@ -21,7 +22,9 @@
       </span>
       <span class="pl-1 grey--text">
           <span v-if="field.label.replace(' *','') !== field.name">{{ field.label.replace(' *', '') }}</span>
-          ({{ types.find((type) => type.value === field.type).text || field.type }})
+          ({{
+          types.find((type) => type.value === field.type) && types.find((type) => type.value === field.type).text || field.type
+        }})
         </span>
       <v-tooltip v-if="field.help" bottom :max-width="400" :close-delay="200" :attach="true">
         <template v-slot:activator="{ on }">
@@ -46,18 +49,21 @@
       <v-btn small icon title="Удалить поле" @click.stop="deleteField" v-if="field.is_deletable" class="ml-1">
         <v-icon>icon-trash</v-icon>
       </v-btn>
+      <v-btn @click="saveField" small title="Сохранить изменения" class="ml-2 mb-1" color="secondary"
+             v-if="edited.field" height="26">
+        <v-icon left>icon-save</v-icon>
+        Сохранить
+      </v-btn>
     </v-expansion-panel-header>
-    <v-expansion-panel-content :color="`grey lighten-${lighten}`" >
-      <template v-if="field.attributes && Object.keys(field.attributes).length">
-<!--        <div class="grey&#45;&#45;text mb-1">Атрибуты:</div>-->
-        <offer-field-attributes :attributes="field.attributes"/>
+    <v-expansion-panel-content :color="`grey lighten-${lighten}`">
+      <template v-if="attributes && Object.keys(attributes).length">
+        <offer-field-attributes :attributes="attributes"/>
       </template>
       <v-row class="px-0 pb-3" v-if="edit" dense>
         <v-col>
           <v-combobox
-              :value="field.name"
+              v-model="field.name"
               :items="tags"
-              @input="changedTag"
               class="yandexmarket-offer-field-tag text-center mr-2"
               placeholder="Введите или выберите из списка"
               :attach="true"
@@ -81,9 +87,8 @@
         <v-col>
           <v-select
               v-if="edit"
-              :value="field.type"
+              v-model="field.type"
               :items="selectableTypes"
-              @input="changedType"
               class="yandexmarket-offer-field-type"
               :full-width="false"
               label="Тип элемента"
@@ -117,6 +122,7 @@
             hide-details
             solo
             dense
+            clearable
         >
           <template v-slot:prepend-inner>
             <div class="text-no-wrap mr-2">
@@ -139,11 +145,10 @@
         </v-btn>
       </v-card-title>
 
-      <v-sheet elevation="1" v-if="openedCode" style="position: relative;">
+      <v-sheet elevation="1" v-if="openedCode" class="mt-2" style="position: relative;">
         <codemirror
             v-model="field.handler"
             :options="cmOptions"
-            class="mt-3"
             placeholder="Пример: {$input === 'Да' ? 'true' : 'false'}"
         ></codemirror>
 
@@ -155,7 +160,8 @@
           </template>
           <div class="text-caption" style="white-space: pre-line;">
             INLINE обработка поля на Fenom (значение попадает в $input)<br>
-            Нужно для приведения к boolean, вырезанию лишних тегов/текстов, обработки массивов, ТВ-полей или для независимых значений.
+            Нужно для приведения к boolean, вырезанию лишних тегов/текстов, обработки массивов, ТВ-полей или для
+            независимых значений.
             <br><br>
             Доступны поля ресурса {$resource.pagetitle}, товаров miniShop2 {$data.price}, опций ms2 {$option.color}, тв
             полей {$tv.tag}.<br>
@@ -165,18 +171,20 @@
           </div>
         </v-tooltip>
       </v-sheet>
-      <v-card-text class="pl-0 pr-0 pt-0" v-if="field.is_fieldable">
+      <v-card-text class="pa-0" v-if="field.is_fieldable">
         <div class="grey--text mb-1">Поля:</div>
-        <v-expansion-panels :value="opened" v-if="children" multiple accordion>
+        <v-expansion-panels :value="opened" v-if="children" multiple accordion :key="field.name">
           <pricelist-offer-field
               :lighten="lighten+1"
               v-for="child in children"
               :key="child.id"
-              :field="child"
+              :item="child"
+              @updated="handleUpdated"
+              @deleted="handleDeleted"
           />
         </v-expansion-panels>
         <v-flex class="flex-row text-right">
-          <v-btn small class="mt-5" color="white">
+          <v-btn small class="mt-4" color="white" @click="addField">
             <v-icon class="icon-sm" left>icon-plus</v-icon>
             Добавить поле в &lt;{{ field.name }}&gt;
           </v-btn>
@@ -190,6 +198,7 @@
 import OfferFieldAttributes from "@/components/OfferFieldAttributes";
 import InlineEditDialog from "@/components/InlineEditDialog";
 import {codemirror} from 'vue-codemirror';
+import api from '@/api';
 
 
 import 'codemirror/mode/smarty/smarty';
@@ -203,10 +212,30 @@ export default {
     codemirror
   },
   props: {
-    field: {required: true, type: [Object]},
+    item: {required: true, type: [Object]},
     lighten: {type: Number, default: 2}
   },
+  watch: {
+    item: {
+      immediate: true,
+      handler: function ({attributes = {}, fields = {}, ...fieldData}) {
+        this.field = {
+          ...this.field,
+          ...fieldData
+        }
+        // TODO: атрибуты и поля переделать на массивы
+        this.attributes = {
+          ...this.attributes,
+          ...attributes
+        }
+        this.fields = Object.values(fields);
+      }
+    }
+  },
   data: () => ({
+    field: {},
+    attributes: {},
+    fields: [],
     edit: false,
     code: false,
     cmOptions: {
@@ -253,6 +282,14 @@ export default {
     ],
   }),
   computed: {
+    edited() {
+      let {fields, attributes, ...itemData} = this.item;
+      return {
+        field: JSON.stringify(itemData) !== JSON.stringify(this.field),
+        fields: JSON.stringify(fields) !== JSON.stringify(this.fields),
+        attributes: JSON.stringify(attributes) !== JSON.stringify(this.attributes),
+      }
+    },
     value() {
       if (typeof this.field.value === 'object') {
         return this.field.value;
@@ -273,21 +310,24 @@ export default {
       return this.types.filter((type) => !Object.prototype.hasOwnProperty.call(type, 'selectable') || type.selectable)
     },
     opened() {
-      return Object.keys(this.field.fields || {}).map((field, index) => index)
+      return Object.keys(this.fields).map((field, index) => index)
     },
     openedCode() {
       return this.field.handler || this.code;
     },
     children() {
-      if (!this.field.fields || !Object.keys(this.field.fields).length) {
+      if (!this.fields || !Object.keys(this.fields).length) {
         return [];
       }
-      return Object.values(this.field.fields).sort((a, b) => a.rank - b.rank);
+      return Object.values(this.fields).sort((a, b) => a.rank - b.rank);
     }
   },
   mounted() {
     if (this.field.handler) {
       this.code = true;
+    }
+    if (!this.field.id) {
+      this.edit = true;
     }
   },
   methods: {
@@ -296,7 +336,9 @@ export default {
           || (item && item.value && item.value.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1);
     },
     changedValue(value) {
-      if (typeof value === 'object') {
+      if (value === null) {
+        this.field.value = null;
+      } else if (typeof value === 'object') {
         this.field.value = value.value;
       } else {
         //новое значение
@@ -306,7 +348,20 @@ export default {
       // if it will be wrong, see https://github.com/vuetifyjs/vuetify/issues/5479#issuecomment-672300135
     },
     addField() {
-
+      this.fields.push({
+        name: null,
+        type: null,
+        label: 'Новое поле',
+        text: '',
+        value: null,
+        handler: null,
+        pricelist_id: this.field.pricelist_id,
+        parent: this.field.id,
+        is_editable: true,
+        is_deletable: true,
+        rank: Object.keys(this.fields).length + 1,
+        properties: {custom: true}
+      });
     },
     toggleEdit(event) {
       if (this.$refs['panel' + this.field.id].isActive) {
@@ -320,20 +375,47 @@ export default {
       }
       //TODO: implement here
     },
-    changedTag(value) {
-      this.tag = value;
-    },
-    changedType() {
-
-    },
     toggleCode() {
       if (this.field.handler) {
         return;
       }
       this.code = !this.code;
+      if (!this.code) {
+        this.field.handler = null;
+      }
     },
     deleteField() {
-
+      if (confirm('Вы действительно хотите удалить поле ' + this.field.name + '?')) {
+        api.post('fields/remove', {ids: JSON.stringify([this.field.id])})
+            .then(() => this.$emit('deleted', this.field.id))
+            .catch(error => console.log(error));
+      }
+    },
+    handleDeleted(id) {
+      this.fields = this.fields.filter(field => field.id !== id);
+    },
+    saveField() {
+      api.post(this.field.id ? 'fields/update' : 'fields/create', this.field)
+          .then(({data}) => {
+            if (!this.field.id) {
+              this.field.id = data.object.id;
+            }
+            this.$nextTick().then(() => this.$emit('updated', data.object));
+          })
+          .catch(error => console.error(error));
+    },
+    handleUpdated(item) {
+      //TODO: тут вставку в список чтобы vueвидел изменени
+      this.fields = this.fields.map(field => {
+        if (parseInt(field.id) === parseInt(item.id)) {
+          field = item;
+        }
+        if (!field.id) {
+          field = item;
+        }
+        return field
+      });
+      this.$emit('updated', this.field);
     }
   },
 

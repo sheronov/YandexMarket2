@@ -3,11 +3,12 @@
     <h4>Настройка полей предложений</h4>
     <p class="mb-2">Интерактивный режим добавления и редактирования полей</p>
     <p>TODO: добавить сюда условия</p>
-    <v-expansion-panels v-model="opened" multiple class="pb-2">
+    <v-expansion-panels :value="openedFields" multiple class="pb-2" key="offers">
       <pricelist-offer-field
-          :field="field"
+          :item="field"
           tag="offer"
           :lighten="3"
+          @updated="handleUpdated"
       />
     </v-expansion-panels>
   </div>
@@ -25,7 +26,7 @@ export default {
   data: () => ({
     nodes: [],
     field: {},
-    opened: [0],
+    openedFields: [0]
   }),
   watch: {
     'pricelist.values.offer': {
@@ -55,6 +56,14 @@ export default {
     saveField() {
 
     },
+    handleUpdated(field) {
+       console.log(field);
+       // this.field = {
+       //   ...this.field,
+       //   ...field
+       // }
+       this.previewXml();
+    }
   },
   mounted() {
     this.previewXml();
