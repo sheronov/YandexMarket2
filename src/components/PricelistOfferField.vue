@@ -1,6 +1,6 @@
 <template>
-  <v-expansion-panel class="yandexmarket-offer-field" :ref="'panel'+field.id" :readonly="field.name !== 'offer'">
-    <v-expansion-panel-header :color="`grey lighten-${lighten}`" hide-actions class="pr-2">
+  <v-expansion-panel class="yandexmarket-offer-field" :ref="'panel'+field.id" readonly>
+    <v-expansion-panel-header :color="`grey lighten-${lighten}`" hide-actions class="pr-2 pb-1">
       <inline-edit-dialog v-if="field.name !== 'offer'">
         <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
           #{{ field.rank }}
@@ -47,9 +47,9 @@
         <v-icon>icon-trash</v-icon>
       </v-btn>
     </v-expansion-panel-header>
-    <v-expansion-panel-content :color="`grey lighten-${lighten}`">
+    <v-expansion-panel-content :color="`grey lighten-${lighten}`" >
       <template v-if="field.attributes && Object.keys(field.attributes).length">
-        <div class="grey--text mb-1">Атрибуты:</div>
+<!--        <div class="grey&#45;&#45;text mb-1">Атрибуты:</div>-->
         <offer-field-attributes :attributes="field.attributes"/>
       </template>
       <v-row class="px-0 pb-3" v-if="edit" dense>
@@ -59,10 +59,10 @@
               :items="tags"
               @input="changedTag"
               class="yandexmarket-offer-field-tag text-center mr-2"
-
               placeholder="Введите или выберите из списка"
               :attach="true"
-
+              item-value="value"
+              item-text="text"
               hide-details
               solo
               dense
@@ -72,7 +72,6 @@
                 <code class="mr-2 mt-1 d-inline-block">Элемент:</code>
                 <v-icon>icon-angle-left</v-icon>
               </div>
-
             </template>
             <template v-slot:append>
               <v-icon>icon-angle-right</v-icon>
@@ -105,24 +104,28 @@
       </v-row>
       <v-card-title v-if="!field.is_fieldable" class="pa-0" style="position: relative;">
         <v-combobox
-            :value="field.value"
+            :value="value"
+            @input="changedValue"
+            :filter="valueSearch"
             :items="columns"
             :attach="true"
             label="Выберите поле товара"
             placeholder='Или введите в формате "Class.key"'
             prepend-inner-icon="icon-list-ul"
+            item-value="value"
+            item-text="text"
             hide-details
             solo
             dense
         >
           <template v-slot:prepend-inner>
             <div class="text-no-wrap mr-2">
-              <code>Поле:</code>
-              <v-icon right color="inherit">icon-list-ul</v-icon>
+              <v-icon left color="inherit">icon-list-ul</v-icon>
+              <code style="position:relative; top:1px;">{{ valuePrepend }}</code>
             </div>
           </template>
           <template v-slot:item="{item}">
-            <code>{{ item.key }}</code><span class="pl-1">{{ item.text }}</span>
+            <code>{{ item.value }}</code><span class="pl-1">{{ item.text }}</span>
           </template>
         </v-combobox>
         <v-btn
@@ -152,9 +155,8 @@
           </template>
           <div class="text-caption" style="white-space: pre-line;">
             INLINE обработка поля на Fenom (значение попадает в $input)<br>
-            Пригодится для приведения к boolean значениям, вырезанию лишних тегов/текстов, обработки массивов или
-            ТВ-полей.<br>
-            <br>
+            Нужно для приведения к boolean, вырезанию лишних тегов/текстов, обработки массивов, ТВ-полей или для независимых значений.
+            <br><br>
             Доступны поля ресурса {$resource.pagetitle}, товаров miniShop2 {$data.price}, опций ms2 {$option.color}, тв
             полей {$tv.tag}.<br>
             Все нужные ТВ-поля, опции будут приджойнены автоматически.<br>
@@ -163,9 +165,9 @@
           </div>
         </v-tooltip>
       </v-sheet>
-      <v-card-text class="pl-0 pr-0" v-if="field.is_fieldable">
+      <v-card-text class="pl-0 pr-0 pt-0" v-if="field.is_fieldable">
         <div class="grey--text mb-1">Поля:</div>
-        <v-expansion-panels :value="opened" v-if="children" multiple>
+        <v-expansion-panels :value="opened" v-if="children" multiple accordion>
           <pricelist-offer-field
               :lighten="lighten+1"
               v-for="child in children"
@@ -221,11 +223,11 @@ export default {
     //TODO: всё ниже нужно грузить из бэкенда вместе с тегами
     columns: [
       {header: 'Поля ресурса'},
-      {key: 'modResource.pagetitle', text: 'Заголовок ресурса'},
-      {key: 'longtitle', text: 'Расширенный заголовок'},
+      {value: 'modResource.pagetitle', text: 'Заголовок ресурса'},
+      {value: 'longtitle', text: 'Расширенный заголовок'},
       {divider: true},
       {header: 'Поля товара'},
-      {key: 'Data.price', text: 'Цена товара'},
+      {value: 'Data.price', text: 'Цена товара'},
     ],
     tags: [
       'test',
@@ -251,6 +253,22 @@ export default {
     ],
   }),
   computed: {
+    value() {
+      if (typeof this.field.value === 'object') {
+        return this.field.value;
+      }
+      let column = this.columns.find(column => column.value === this.field.value);
+      return {
+        value: this.field.value,
+        text: column ? column.text : this.field.value
+      };
+    },
+    valuePrepend() {
+      if (this.value && this.value.value !== this.value.text) {
+        return this.value.value;
+      }
+      return 'Поле';
+    },
     selectableTypes() {
       return this.types.filter((type) => !Object.prototype.hasOwnProperty.call(type, 'selectable') || type.selectable)
     },
@@ -273,6 +291,20 @@ export default {
     }
   },
   methods: {
+    valueSearch(item, queryText, itemText) {
+      return itemText.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1
+          || (item && item.value && item.value.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1);
+    },
+    changedValue(value) {
+      if (typeof value === 'object') {
+        this.field.value = value.value;
+      } else {
+        //новое значение
+        this.field.value = value;
+        //TODO: добавить в store VUEX ко всем колонкам товара
+      }
+      // if it will be wrong, see https://github.com/vuetifyjs/vuetify/issues/5479#issuecomment-672300135
+    },
     addField() {
 
     },
@@ -286,6 +318,7 @@ export default {
       if (this.$refs['panel' + this.field.id].isActive) {
         event.stopPropagation();
       }
+      //TODO: implement here
     },
     changedTag(value) {
       this.tag = value;

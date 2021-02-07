@@ -13,8 +13,11 @@
         deletable-chips
         small-chips
         hide-details="auto"
-        item-value="key"
+        item-value="value"
+        item-text="text"
         @change="inputField($event)"
+        :menu-props="{offsetY: true}"
+        :attach="true"
     >
       <template v-slot:selection="{ attrs, index, item, selected }">
         <v-chip
@@ -28,7 +31,7 @@
             close
             small
         >
-          <strong>{{ item.key }}</strong>
+          <strong>{{ item.value }}</strong>
           <span class="pl-1">({{ item.text }})</span>
         </v-chip>
       </template>
