@@ -9,6 +9,7 @@
           tag="offer"
           :lighten="3"
           @updated="handleUpdated"
+          @created="handleUpdated"
       />
     </v-expansion-panels>
   </div>
@@ -58,10 +59,10 @@ export default {
     },
     handleUpdated(field) {
        console.log(field);
-       // this.field = {
-       //   ...this.field,
-       //   ...field
-       // }
+       this.field = {
+         ...this.field,
+         ...field
+       }
        this.previewXml();
     }
   },

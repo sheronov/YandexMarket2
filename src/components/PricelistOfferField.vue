@@ -55,7 +55,7 @@
         Сохранить
       </v-btn>
     </v-expansion-panel-header>
-    <v-expansion-panel-content :color="`grey lighten-${lighten}`">
+    <v-expansion-panel-content :color="`grey lighten-${lighten}`" eager>
       <template v-if="attributes && Object.keys(attributes).length">
         <offer-field-attributes :attributes="attributes"/>
       </template>
@@ -176,10 +176,11 @@
         <v-expansion-panels :value="opened" v-if="children" multiple accordion :key="field.name">
           <pricelist-offer-field
               :lighten="lighten+1"
-              v-for="child in children"
-              :key="child.id"
+              v-for="(child,index) in children"
+              :key="index"
               :item="child"
               @updated="handleUpdated"
+              @created="handleUpdated"
               @deleted="handleDeleted"
           />
         </v-expansion-panels>
@@ -395,12 +396,13 @@ export default {
       this.fields = this.fields.filter(field => field.id !== id);
     },
     saveField() {
-      api.post(this.field.id ? 'fields/update' : 'fields/create', this.field)
+      let isAdd = !this.field.id;
+      api.post(isAdd ? 'fields/create' : 'fields/update', this.field)
           .then(({data}) => {
             if (!this.field.id) {
               this.field.id = data.object.id;
             }
-            this.$nextTick().then(() => this.$emit('updated', data.object));
+            this.$nextTick().then(() => this.$emit(isAdd ? 'created' : 'updated', data.object));
           })
           .catch(error => console.error(error));
     },
@@ -408,14 +410,17 @@ export default {
       //TODO: тут вставку в список чтобы vueвидел изменени
       this.fields = this.fields.map(field => {
         if (parseInt(field.id) === parseInt(item.id)) {
-          field = item;
-        }
-        if (!field.id) {
-          field = item;
+          field = {...item};
+        } else if (!field.id) {
+          field = {...item};
         }
         return field
       });
-      this.$emit('updated', this.field);
+      this.$nextTick().then(() => this.$emit('updated', {
+        ...this.field,
+        fields: this.fields,
+        attributes: this.attributes
+      }));
     }
   },
 
