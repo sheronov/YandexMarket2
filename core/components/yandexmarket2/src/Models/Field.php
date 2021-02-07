@@ -112,10 +112,10 @@ class Field extends BaseObject
     {
         $properties = $this->properties ?? [];
         if ($values = $properties['values'] ?? []) {
-            $properties['values'] = array_map(static function ($value) {
+            $properties['values'] = array_map(function ($value) {
                 return [
-                    'key'  => $value,
-                    'text' => $value // TODO: лексиконы подтянуть сюда
+                    'value'  => $value,
+                    'text' => $this->getLexicon($this->lexiconKey().'_value_'.$value) ?? $value
                 ];
             }, $values);
         }

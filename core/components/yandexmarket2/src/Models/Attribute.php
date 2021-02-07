@@ -46,4 +46,53 @@ class Attribute extends BaseObject
     {
         return $this->properties['type'] ?? self::TYPE_DEFAULT;
     }
+
+    public function getProperties(): array
+    {
+        $properties = $this->properties ?? [];
+        if ($values = $properties['values'] ?? []) {
+            $properties['values'] = array_map(function ($value) {
+                return [
+                    'value' => $value,
+                    'text'  => $this->getLexicon($this->lexiconKey().'_value_'.$value) ?? $value
+                ];
+            }, $values);
+        }
+
+        return $properties;
+    }
+
+    public function toArray(): array
+    {
+        $data = parent::toArray();
+        $data['type'] = $this->getType();
+        $data['properties'] = $this->getProperties();
+        $data['label'] = $this->getLabel();
+        return $data;
+    }
+
+    public function getLabel(): string
+    {
+        $label = $this->getLexicon($this->lexiconKey()) ?? $this->name;
+
+        if ($this->getProperties()['required'] ?? false) {
+            $label .= ' *';
+        }
+
+        return $label;
+    }
+
+    public function lexiconKey(): string
+    {
+        return "ym_{$this->getField()->getPricelist()->type}_{$this->getField()->name}_attr_{$this->name}";
+    }
+
+    public function getLexicon(string $key): ?string
+    {
+        if (($key !== $lexicon = $this->modx->lexicon($key))) {
+            return $lexicon;
+        }
+
+        return null;
+    }
 }
