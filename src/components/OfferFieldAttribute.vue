@@ -1,5 +1,5 @@
 <template>
-  <v-col :md="edit ? 12 : 4" :sm="edit ? 12 : 6" class="yandexmarket-offer-field-attribute">
+  <v-col :md="edit ? 12 : 4" :sm="edit ? 12 : 6"  cols="12" class="yandexmarket-offer-field-attribute">
     <component
         v-if="!edit"
         :is="item.values ? 'v-select' : 'v-text-field'"
@@ -32,8 +32,8 @@
     </component>
     <v-sheet v-else elevation="1" class="pt-1 px-2" color="grey lighten-5">
       <v-row class="ma-0">
-        <h5 v-if="attribute.id">Редактирование атрибута {{ attribute.name }}</h5>
-        <h5 v-else>Добавление нового атрибута
+        <div v-if="attribute.id">Редактирование атрибута {{ attribute.name }}</div>
+        <div v-else>Добавление нового атрибута
           <v-tooltip bottom :max-width="400" :close-delay="200" :attach="true">
             <template v-slot:activator="{ on }">
               <v-btn small icon v-on="on" class="mt-n1">
@@ -43,7 +43,7 @@
             <div class="text-caption" style="white-space: pre-line;">Описание атрибута можно задать через лексиконы
             </div>
           </v-tooltip>
-        </h5>
+        </div>
         <v-spacer/>
         <template v-if="edited">
           <v-btn @click="cancelChanges" small icon title="Отменить изменения" class="ml-1" color="orange darken-1">
@@ -55,7 +55,7 @@
           </v-btn>
         </template>
         <template v-else>
-          <v-btn small icon title="Отменить редактирование" @click="editAttr" class="ml-1" color="secondary">
+          <v-btn v-if="item.id" small icon title="Отменить редактирование" @click="editAttr" class="ml-1" color="secondary">
             <v-icon>icon-pencil</v-icon>
           </v-btn>
           <v-btn small icon title="Удалить поле" @click="deleteAttribute" class="ml-1">

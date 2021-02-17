@@ -83,7 +83,7 @@
         </v-row>
       </template>
       <v-row class="px-0 pb-3" v-if="edit" dense>
-        <v-col>
+        <v-col cols="12">
           <v-combobox
               v-model="field.name"
               :items="tags"
@@ -107,7 +107,7 @@
             </template>
           </v-combobox>
         </v-col>
-        <v-col>
+        <v-col cols="12">
           <v-select
               v-model="field.type"
               :items="selectableTypes"
@@ -129,7 +129,7 @@
           </v-select>
         </v-col>
       </v-row>
-      <v-card-title v-if="!field.is_parent" class="pa-0" style="position: relative;">
+      <v-card-title v-if="!field.is_parent" class="pa-0 flex-nowrap">
         <v-combobox
             :value="value"
             @input="changedValue"
