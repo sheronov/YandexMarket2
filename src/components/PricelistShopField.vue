@@ -2,10 +2,10 @@
   <div class="yandexmarket-shop-value mb-3">
     <!-- TODO: сделать поддержку разных компонентов -->
     <v-select
-        v-if="field.type === 4"
+        v-if="field.type === currenciesType"
         :label="field.label"
         :value="field.value"
-        :items="field.properties.values"
+        :items="field.values"
         filled
         dense
         multiple
@@ -37,7 +37,7 @@
       </template>
     </v-select>
     <v-checkbox
-        v-else-if="field.type === 13"
+        v-else-if="field.type === booleanType"
         :label="field.label"
         :input-value="!!field.value"
         @change="inputField(!!$event)"
@@ -66,12 +66,18 @@
 </template>
 
 <script>
+import {TYPE_BOOLEAN, TYPE_CURRENCIES} from "@/components/FieldTypes";
+
 export default {
   name: 'PricelistShopField',
   props: {
     field: {required: true},
     marketplace: {required: true},
   },
+  data: () => ({
+    currenciesType: TYPE_CURRENCIES,
+    booleanType: TYPE_BOOLEAN,
+  }),
   computed: {
     label() {
       let label = this.field.name;

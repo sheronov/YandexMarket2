@@ -21,11 +21,19 @@ import CategoriesTree from "@/components/CategoriesTree";
 import api from "@/api";
 
 export default {
+  name: 'PriceListCategories',
   props: {
     pricelist: {type: Object, required: true}
   },
-  name: 'PriceListCategories',
   components: {CategoriesTree},
+  watch: {
+    'pricelist.categories': {
+      immediate: true,
+      handler: function (categories) {
+        this.selected = categories || [];
+      }
+    }
+  },
   data: () => ({
     selected: [],
     categories: []
@@ -40,7 +48,9 @@ export default {
       this.$emit('preview:xml', 'categories');
     },
     categoryAdd(resourceId, send = true) {
-      this.selected.push(resourceId);
+      if (this.selected.indexOf(resourceId) === -1) {
+        this.selected.push(resourceId);
+      }
       if (send) {
         api.post('categories/create', {...this.where, resource_id: resourceId})
             .then(() => this.previewXml())

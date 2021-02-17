@@ -4,22 +4,24 @@
       <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Настройки прайс-листа</v-tab>
       <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>Категории и условия</v-tab>
       <v-tab :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>Поля предложений</v-tab>
-      <!--      <v-spacer/>-->
-      <!--      <v-tab :to="{name: 'pricelists'}" ripple exact title="Вернуться назад ко всем прайс-листам">-->
-      <!--        <v-icon left>icon icon-undo</v-icon>-->
-      <!--        Вернуться-->
-      <!--      </v-tab>-->
+      <v-tab :to="{name: 'pricelist.generate', params: {id: id}}" :ripple="false" exact>Выгрузка и параметры</v-tab>
     </v-tabs>
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
-        <v-btn @click="togglePreview" fab absolute top right small elevation="1" color="white"
+        <v-btn v-if="showPreview"
+               @click="togglePreview" fab absolute top right small elevation="1" color="white"
                :title="preview ? 'Отключить предпросмотр' : 'Включить предпросмотр'">
           <v-icon :color="preview ? 'primary' : 'default'">icon-file-code-o</v-icon>
         </v-btn>
         <v-row dense>
-          <v-col :md="preview ? 7 : 12">
-            <router-view v-if="pricelist" v-bind="{pricelist:pricelist}" @preview:xml="previewXml"></router-view>
-            <v-card-actions class="px-0">
+          <v-col :md="showPreview && preview ? 7 : 12">
+            <router-view
+                v-if="pricelist"
+                v-bind="{pricelist:pricelist}"
+                @preview:xml="previewXml"
+                @input="pricelistUpdated"
+            ></router-view>
+            <v-card-actions class="px-0" v-if="false">
               <v-btn v-if="!hasChanges" :to="{name: 'pricelists'}" exact title="Ко всем прайс-листам">
                 <v-icon left>icon-arrow-left</v-icon>
                 Вернуться
@@ -35,14 +37,14 @@
               </v-btn>
             </v-card-actions>
           </v-col>
-          <v-col cols="12" md="5" v-if="preview">
+          <v-col cols="12" md="5" v-if="showPreview && preview">
             <div class="yandexmarket-xml-preview">
               <h4><label for="yandexmarket-preview">Предпросмотр XML элемента &lt;{{ previewType }}&gt;</label></h4>
               <p class="mb-2">Автоматически обновляется при любом изменении</p>
-<!--              <textarea ref="textarea" id="yandexmarket-preview"></textarea>-->
+              <!--              <textarea ref="textarea" id="yandexmarket-preview"></textarea>-->
               <codemirror id="yandexmarket-preview" v-model="code" :options="cmOptions"></codemirror>
             </div>
-            <pre v-if="debug && Object.keys(debug).length">{{debug}}</pre>
+            <pre v-if="debug && Object.keys(debug).length">{{ debug }}</pre>
           </v-col>
         </v-row>
         <loader :status="!pricelist"></loader>
@@ -55,10 +57,11 @@
 import Loader from "@/components/Loader";
 import api from "@/api";
 import {codemirror} from 'vue-codemirror';
-// import CodeMirror from 'codemirror';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/xml/xml';
+import 'codemirror/mode/smarty/smarty';
+import 'codemirror/addon/display/placeholder';
 
 export default {
   name: 'PriceList',
@@ -80,7 +83,16 @@ export default {
       readOnly: true,
     }
   }),
+  computed: {
+    showPreview() {
+      return ['pricelist', 'pricelist.categories', 'pricelist.offers'].indexOf(this.$route.name) !== -1;
+    }
+  },
   methods: {
+    pricelistUpdated(pricelist) {
+      this.pricelist = {...this.pricelist, ...pricelist};
+      this.getXmlPreview()
+    },
     // TODO: сделать предупреждение при переходе по вкладкам при неотправленных изменениях
     cancelChanges() {
 

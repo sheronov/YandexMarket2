@@ -37,7 +37,7 @@ class ymXmlPreviewProcessor extends modProcessor
                 $xml = $this->xml->previewOffer($additional);
                 break;
             case Preview::PREVIEW_SHOP:
-                $xml = $this->xml->previewShop($additional);
+                $xml = $this->xml->previewShop();
                 break;
             default:
                 return $this->failure($this->modx->lexicon('yandexmarket2_pricelist_err_method'));

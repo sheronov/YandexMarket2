@@ -1,9 +1,9 @@
 <?php
 
-class ymFieldRemoveProcessor extends modObjectProcessor
+class ymAttributeRemoveProcessor extends modObjectProcessor
 {
-    public $objectType     = 'ym_field';
-    public $classKey       = 'ymField';
+    public $objectType     = 'ym_attribute';
+    public $classKey       = 'ymFieldAttribute';
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
 
@@ -18,13 +18,13 @@ class ymFieldRemoveProcessor extends modObjectProcessor
 
         $ids = $this->modx->fromJSON($this->getProperty('ids'));
         if (empty($ids)) {
-            return $this->failure($this->modx->lexicon('ym_field_err_ns'));
+            return $this->failure($this->modx->lexicon('ym_attribute_err_ns'));
         }
 
         foreach ($ids as $id) {
-            /** @var ymField $object */
+            /** @var ymFieldAttribute $object */
             if (!$object = $this->modx->getObject($this->classKey, $id)) {
-                return $this->failure($this->modx->lexicon('ym_field_err_nf'));
+                return $this->failure($this->modx->lexicon('ym_attribute_err_nf'));
             }
 
             $object->remove();
@@ -35,4 +35,4 @@ class ymFieldRemoveProcessor extends modObjectProcessor
 
 }
 
-return ymFieldRemoveProcessor::class;
+return ymAttributeRemoveProcessor::class;

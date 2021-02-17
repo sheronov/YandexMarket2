@@ -7,6 +7,9 @@ use YandexMarket\Models\Pricelist;
 
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
+/**
+ * @property Pricelist|ymPricelist $object
+ */
 class ymPricelistCreateProcessor extends modObjectCreateProcessor
 {
     public $objectType     = 'ym_pricelist';

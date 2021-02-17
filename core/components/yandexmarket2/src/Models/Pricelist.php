@@ -142,7 +142,7 @@ class Pricelist extends BaseObject
             'name'       => $field->name,
             'type'       => $field->type,
             'parent'     => $field->parent,
-            'value'     => $field->value,
+            'value'      => $field->value,
             'handler'    => $field->handler,
             'properties' => $field->properties,
             'rank'       => $field->rank,
@@ -176,19 +176,27 @@ class Pricelist extends BaseObject
             //     $data['tree'] = $this->makeFieldsTree($shopField->id);
             // }
 
-            // TODO: потом перенести это на фронт
-            $data['fields'] = [
-                'shop'  => $this->marketplace::getShopFields(),
-                'offer' => $this->marketplace::getOfferFields()
-            ];
+            // TODO: потом перенести возможные поля на фронт в объект маркетплейсов (в VueX)
+            $data['shop_fields'] = $this->marketplace::getShopFields();
+            $data['offer_fields'] = $this->marketplace::getOfferFields();
 
-            $data['values'] = [
-                'shop'       => $this->getShopValues(),
-                'offer'      => $this->getOfferValues(),
-                'categories' => array_values(array_map(static function (Category $categoryObject) {
-                    return $categoryObject->resource_id;
-                }, $this->getCategories())),
-            ];
+            $data['fields'] = array_map(static function (Field $field) {
+                return $field->toArray();
+            }, array_values($this->getFields(false)));
+
+            $data['attributes'] = array_map(static function (Attribute $attribute) {
+                return $attribute->toArray();
+            }, array_values($this->getFieldsAttributes(array_keys($this->getFields(false)))));
+
+            $data['categories'] = array_map(static function (Category $categoryObject) {
+                return $categoryObject->resource_id;
+            }, array_values($this->getCategories()));
+
+            // $data['values'] = [
+            //     'shop'       => $this->getShopValues(),
+            //     'offer'      => $this->getOfferValues(),
+            //     'categories' => ,
+            // ];
         }
 
         return $data;

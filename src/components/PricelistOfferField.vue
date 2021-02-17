@@ -2,13 +2,14 @@
   <v-expansion-panel class="yandexmarket-offer-field" :ref="'panel'+field.id" readonly>
     <!--  TODO: переделать панели на обычные div, чтобы не закрывались самостоятельно (бесит)  -->
     <v-expansion-panel-header :color="`grey lighten-${lighten}`" hide-actions class="pr-2 pb-1">
-      <inline-edit-dialog v-if="field.name !== 'offer'">
+      <inline-edit-dialog v-if="item.type !== offerType">
         <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
           #{{ field.rank }}
         </v-btn>
         <template v-slot:input>
           <v-text-field
-              v-model="field.rank"
+              :value="field.rank"
+              @input="field.rank = parseInt($event)"
               label="Приоритет"
               single-line
               type="number"
@@ -18,15 +19,15 @@
         </template>
       </inline-edit-dialog>
       <span style="padding-left: 1px; padding-right: 4px;">
-         &lt;{{ field.name }}&gt;
+         &lt;{{ item.name || 'введите элемент' }}&gt;
       </span>
       <span class="pl-1 grey--text">
-          <span v-if="field.label.replace(' *','') !== field.name">{{ field.label.replace(' *', '') }}</span>
+          <span v-if="item.label.replace(' *','') !== item.name">{{ item.label.replace(' *', '') }}</span>
           ({{
-          types.find((type) => type.value === field.type) && types.find((type) => type.value === field.type).text || field.type
+          types.find((type) => type.value === item.type) && types.find((type) => type.value === item.type).text || item.type || 'выберите тип'
         }})
-        </span>
-      <v-tooltip v-if="field.help" bottom :max-width="400" :close-delay="200" :attach="true">
+      </span>
+      <v-tooltip v-if="item.help" bottom :max-width="400" :close-delay="200" :attach="true">
         <template v-slot:activator="{ on }">
           <v-btn small icon v-on="on" @click.stop="" class="ml-1">
             <v-icon>
@@ -34,30 +35,52 @@
             </v-icon>
           </v-btn>
         </template>
-        <div class="text-caption" style="white-space: pre-line;">{{ field.help }}</div>
+        <div class="text-caption" style="white-space: pre-line;">{{ item.help }}</div>
       </v-tooltip>
       <v-spacer/>
-      <v-btn small depressed @click="addAttribute" title="Добавить атрибут" color="transparent" min-width="40"
-             class="px-0">
-        <v-icon class="icon-xs mr-1" color="grey darken-1">icon-plus</v-icon>
-        <v-icon class="icon-xs" color="grey darken-1">icon-font</v-icon>
-      </v-btn>
-      <v-btn small icon title="Отредактировать название и тип поля" @click="toggleEdit" class="ml-1"
-             v-if="field.is_editable">
-        <v-icon>icon-pencil</v-icon>
-      </v-btn>
-      <v-btn small icon title="Удалить поле" @click.stop="deleteField" v-if="field.is_deletable" class="ml-1">
-        <v-icon>icon-trash</v-icon>
-      </v-btn>
-      <v-btn @click="saveField" small title="Сохранить изменения" class="ml-2 mb-1" color="secondary"
-             v-if="edited.field" height="26">
-        <v-icon left>icon-save</v-icon>
-        Сохранить
-      </v-btn>
+      <template v-if="edited">
+        <v-btn @click="cancelEdit" small icon title="Отменить изменения" class="ml-1" color="orange darken-1">
+          <v-icon>icon-rotate-left</v-icon>
+        </v-btn>
+        <v-btn @click="saveField" small title="Сохранить изменения" class="ml-2 mb-1" color="secondary" height="26">
+          <v-icon left>icon-save</v-icon>
+          Сохранить
+        </v-btn>
+      </template>
+      <template v-else>
+        <v-btn
+            v-if="field.id"
+            small depressed
+            @click="addAttribute"
+            :title="!!attrs.filter(a => !a.id).length ? 'Сначала сохраните новый' : 'Добавить атрибут'"
+            color="transparent"
+            min-width="40"
+            class="px-0"
+            :disabled="!!attrs.filter(a => !a.id).length"
+        >
+          <v-icon class="icon-xs mr-1" color="grey darken-1">icon-plus</v-icon>
+          <v-icon class="icon-xs" color="grey darken-1">icon-font</v-icon>
+        </v-btn>
+        <v-btn v-if="field.id && field.is_editable"
+               small icon
+               title="Отредактировать название и тип поля"
+               @click="toggleEdit"
+               :color="edit ? 'secondary': 'default'"
+               class="ml-1"
+        >
+          <v-icon>icon-pencil</v-icon>
+        </v-btn>
+        <v-btn small icon title="Удалить поле" @click.stop="deleteField" v-if="field.is_deletable" class="ml-1">
+          <v-icon>icon-trash</v-icon>
+        </v-btn>
+      </template>
     </v-expansion-panel-header>
     <v-expansion-panel-content :color="`grey lighten-${lighten}`" eager>
-      <template v-if="attributes && Object.keys(attributes).length">
-        <offer-field-attributes :attributes="attributes"/>
+      <template v-if="attrs.length">
+        <div class="grey--text mb-1" style="font-size: 13px;">Атрибуты:</div>
+        <v-row dense class="mb-1">
+          <offer-field-attribute v-for="attribute in attrs" :key="attribute.id" :attribute="attribute" v-on="$listeners"/>
+        </v-row>
       </template>
       <v-row class="px-0 pb-3" v-if="edit" dense>
         <v-col>
@@ -86,7 +109,6 @@
         </v-col>
         <v-col>
           <v-select
-              v-if="edit"
               v-model="field.type"
               :items="selectableTypes"
               class="yandexmarket-offer-field-type"
@@ -107,7 +129,7 @@
           </v-select>
         </v-col>
       </v-row>
-      <v-card-title v-if="!field.is_fieldable" class="pa-0" style="position: relative;">
+      <v-card-title v-if="!field.is_parent" class="pa-0" style="position: relative;">
         <v-combobox
             :value="value"
             @input="changedValue"
@@ -144,14 +166,13 @@
           <v-icon>icon-code</v-icon>
         </v-btn>
       </v-card-title>
-
       <v-sheet elevation="1" v-if="openedCode" class="mt-2" style="position: relative;">
-        <codemirror
+        <vue-codemirror
+            v-if="rerender"
             v-model="field.handler"
             :options="cmOptions"
-            placeholder="Пример: {$input === 'Да' ? 'true' : 'false'}"
-        ></codemirror>
-
+            placeholder="Пример: {$input === 'Да' ? true : false}"
+        ></vue-codemirror>
         <v-tooltip left :max-width="450" :close-delay="200" :attach="true">
           <template v-slot:activator="{on}">
             <v-btn v-on="on" x-small fab icon absolute style="right: -4px; top: -4px;">
@@ -171,74 +192,92 @@
           </div>
         </v-tooltip>
       </v-sheet>
-      <v-card-text class="pa-0" v-if="field.is_fieldable">
-        <div class="grey--text mb-1">Поля:</div>
-        <v-expansion-panels :value="opened" v-if="children" multiple accordion :key="field.name">
-          <pricelist-offer-field
-              :lighten="lighten+1"
-              v-for="(child,index) in children"
-              :key="index"
-              :item="child"
-              @updated="handleUpdated"
-              @created="handleUpdated"
-              @deleted="handleDeleted"
-          />
-        </v-expansion-panels>
-        <v-flex class="flex-row text-right">
-          <v-btn small class="mt-4" color="white" @click="addField">
+      <v-card-text class="pa-0" v-if="field.is_parent">
+        <template v-if="children.length">
+          <div class="grey--text" style="font-size: 13px;">Поля:</div>
+          <v-expansion-panels :value="opened" multiple accordion :key="field.name">
+            <pricelist-offer-field
+                v-for="child in children"
+                :key="child.id"
+                :item="child"
+                :fields="fields"
+                :attributes="attributes"
+                :lighten="lighten+1"
+                v-on="$listeners"
+            />
+          </v-expansion-panels>
+        </template>
+        <v-row class="ma-0 align-center">
+          <div v-if="!children.length" class="grey--text">Ещё нет дочерних полей</div>
+          <v-spacer/>
+          <v-btn small class="mt-4" color="white" @click="addField" :disabled="!!children.filter(f => !f.id).length">
             <v-icon class="icon-sm" left>icon-plus</v-icon>
-            Добавить поле в &lt;{{ field.name }}&gt;
+            <template v-if="children.filter(f => !f.id).length">
+              Сохраните новое поле
+            </template>
+            <template v-else>
+              Добавить поле в &lt;{{ field.name }}&gt;
+            </template>
           </v-btn>
-        </v-flex>
+        </v-row>
       </v-card-text>
     </v-expansion-panel-content>
   </v-expansion-panel>
 </template>
 
 <script>
-import OfferFieldAttributes from "@/components/OfferFieldAttributes";
+import OfferFieldAttribute from "@/components/OfferFieldAttribute";
 import InlineEditDialog from "@/components/InlineEditDialog";
 import {codemirror} from 'vue-codemirror';
+import FieldTypes, {TYPE_OFFER} from "@/components/FieldTypes";
 import api from '@/api';
-
-
-import 'codemirror/mode/smarty/smarty';
-import 'codemirror/addon/display/placeholder';
 
 export default {
   name: 'PricelistOfferField',
   components: {
-    OfferFieldAttributes,
+    OfferFieldAttribute,
     InlineEditDialog,
-    codemirror
+    VueCodemirror: codemirror
   },
   props: {
     item: {required: true, type: [Object]},
+    attributes: {type: Array, default: () => ([])},
+    fields: {type: Array, default: () => ([])},
     lighten: {type: Number, default: 2}
   },
   watch: {
     item: {
       immediate: true,
-      handler: function ({attributes = {}, fields = {}, ...fieldData}) {
-        this.field = {
-          ...this.field,
-          ...fieldData
-        }
-        // TODO: атрибуты и поля переделать на массивы
-        this.attributes = {
-          ...this.attributes,
-          ...attributes
-        }
-        this.fields = Object.values(fields);
+      handler: function (item) {
+        this.field = {...this.field, ...item};
+        this.$nextTick().then(() => this.code = !!this.field.handler)
+      }
+    },
+    fields: {
+      immediate: true,
+      handler: function (fields) {
+        this.children = fields
+            .filter(field => !field.is_hidden && field.parent === this.item.id).slice()
+            .sort((a, b) => a.rank - b.rank);
+        this.$nextTick().then(() => this.opened = Object.keys(this.children).map((field, index) => index));
+      }
+    },
+    attributes: {
+      immediate: true,
+      handler: function (attributes) {
+        this.attrs = attributes.filter(attribute => attribute.field_id === this.item.id).slice();
       }
     }
   },
   data: () => ({
+    rerender: true,
     field: {},
-    attributes: {},
-    fields: [],
+    attrs: [],
+    children: [],
+    opened: [],
     edit: false,
     code: false,
+    offerType: TYPE_OFFER,
     cmOptions: {
       taSize: 4,
       mode: {
@@ -264,32 +303,11 @@ export default {
       'blabla',
       'yes'
     ],
-    types: [
-      {value: 0, text: 'корневой', selectable: false},
-      {value: 2, text: 'магазин', selectable: false},
-      {value: 4, text: 'валюта', selectable: false},
-      {value: 5, text: 'категории', selectable: false},
-      {value: 6, text: 'предложения', selectable: false},
-      {value: 7, text: 'предложение', selectable: false},
-      {value: 8, text: 'текстовая опция', selectable: false},
-      {value: 9, text: 'ещё не реализовано', selectable: false},
-      {value: 10, text: 'текст'},
-      {value: 11, text: 'текст в CDATA'},
-      {value: 12, text: 'число'},
-      {value: 13, text: 'да/нет'},
-      {value: 14, text: 'параметр'},
-      {value: 15, text: 'изображения'},
-      {value: 1, text: 'родительский'},
-    ],
+    types: FieldTypes,
   }),
   computed: {
     edited() {
-      let {fields, attributes, ...itemData} = this.item;
-      return {
-        field: JSON.stringify(itemData) !== JSON.stringify(this.field),
-        fields: JSON.stringify(fields) !== JSON.stringify(this.fields),
-        attributes: JSON.stringify(attributes) !== JSON.stringify(this.attributes),
-      }
+      return JSON.stringify(this.item) !== JSON.stringify(this.field);
     },
     value() {
       if (typeof this.field.value === 'object') {
@@ -310,26 +328,16 @@ export default {
     selectableTypes() {
       return this.types.filter((type) => !Object.prototype.hasOwnProperty.call(type, 'selectable') || type.selectable)
     },
-    opened() {
-      return Object.keys(this.fields).map((field, index) => index)
-    },
     openedCode() {
       return this.field.handler || this.code;
     },
-    children() {
-      if (!this.fields || !Object.keys(this.fields).length) {
-        return [];
-      }
-      return Object.values(this.fields).sort((a, b) => a.rank - b.rank);
-    }
   },
   mounted() {
-    if (this.field.handler) {
-      this.code = true;
-    }
     if (!this.field.id) {
       this.edit = true;
     }
+    this.rerender = false;
+    this.$nextTick().then(() => this.rerender = true);
   },
   methods: {
     valueSearch(item, queryText, itemText) {
@@ -349,18 +357,20 @@ export default {
       // if it will be wrong, see https://github.com/vuetifyjs/vuetify/issues/5479#issuecomment-672300135
     },
     addField() {
-      this.fields.push({
+      this.$emit('field:created', {
+        id: null,
         name: null,
         type: null,
         label: 'Новое поле',
         text: '',
+        help: 'Описание поля можно задать через лексиконы',
         value: null,
         handler: null,
         pricelist_id: this.field.pricelist_id,
         parent: this.field.id,
         is_editable: true,
         is_deletable: true,
-        rank: Object.keys(this.fields).length + 1,
+        rank: Object.keys(this.children).length + 1,
         properties: {custom: true}
       });
     },
@@ -370,11 +380,22 @@ export default {
       }
       this.edit = !this.edit;
     },
-    addAttribute(event) {
-      if (this.$refs['panel' + this.field.id].isActive) {
-        event.stopPropagation();
-      }
-      //TODO: implement here
+    addAttribute() {
+      // if (this.$refs['panel' + this.field.id].isActive) {
+      //   event.stopPropagation();
+      // }
+      this.$emit('attribute:created', {
+        id: null,
+        field_id: this.field.id,
+        handler: null,
+        label: 'Новый атрибут',
+        name: '',
+        value: null,
+        type: 0,
+        properties: {
+          custom: true
+        },
+      });
     },
     toggleCode() {
       if (this.field.handler) {
@@ -386,42 +407,27 @@ export default {
       }
     },
     deleteField() {
+      if (!this.field.id) {
+        this.$emit('field:deleted', this.field);
+        return;
+      }
       if (confirm('Вы действительно хотите удалить поле ' + this.field.name + '?')) {
         api.post('fields/remove', {ids: JSON.stringify([this.field.id])})
-            .then(() => this.$emit('deleted', this.field.id))
+            .then(() => this.$emit('field:deleted', this.field))
             .catch(error => console.log(error));
       }
     },
-    handleDeleted(id) {
-      this.fields = this.fields.filter(field => field.id !== id);
+    cancelEdit() {
+      this.field = {...this.field, ...this.item};
     },
     saveField() {
-      let isAdd = !this.field.id;
-      api.post(isAdd ? 'fields/create' : 'fields/update', this.field)
+      api.post(!this.field.id ? 'fields/create' : 'fields/update', this.field)
           .then(({data}) => {
-            if (!this.field.id) {
-              this.field.id = data.object.id;
-            }
-            this.$nextTick().then(() => this.$emit(isAdd ? 'created' : 'updated', data.object));
+            this.edit = false;
+            this.$nextTick().then(() => this.$emit('field:updated', data.object));
           })
           .catch(error => console.error(error));
     },
-    handleUpdated(item) {
-      //TODO: тут вставку в список чтобы vueвидел изменени
-      this.fields = this.fields.map(field => {
-        if (parseInt(field.id) === parseInt(item.id)) {
-          field = {...item};
-        } else if (!field.id) {
-          field = {...item};
-        }
-        return field
-      });
-      this.$nextTick().then(() => this.$emit('updated', {
-        ...this.field,
-        fields: this.fields,
-        attributes: this.attributes
-      }));
-    }
   },
 
 }

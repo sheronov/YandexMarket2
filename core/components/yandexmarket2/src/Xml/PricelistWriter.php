@@ -2,6 +2,7 @@
 
 namespace YandexMarket\Xml;
 
+use DateTimeImmutable;
 use Exception;
 use Jevix;
 use modResource;
@@ -140,17 +141,28 @@ class PricelistWriter
         $this->xml->endElement();
     }
 
+
     protected function writeOfferAttribute(Offer $offer, Attribute $attribute): void
     {
+        // TODO: добавить обработку значения через handler, если присутствует
         switch ($attribute->getType()) {
-            case Attribute::TYPE_STRING:
+            case Attribute::TYPE_BOOLEAN:
                 if ($value = $offer->get($attribute->value)) {
-                    $this->xml->writeAttribute($attribute->name, $value);
+                    $this->xml->writeAttribute($attribute->name, $value ? 'true' : 'false');
                 }
                 break;
-            case Attribute::TYPE_SELECT:
+            case Attribute::TYPE_DATE:
+                // TODO: тут значение дёрнуть откуда нужно
+                $this->xml->writeAttribute($attribute->name, (new DateTimeImmutable())->format(DATE_ATOM));
+                break;
+            case Attribute::TYPE_RAW:
                 if (!empty($attribute->value)) {
                     $this->xml->writeAttribute($attribute->name, $attribute->value);
+                }
+                break;
+            default:
+                if ($value = $offer->get($attribute->value)) {
+                    $this->xml->writeAttribute($attribute->name, $value);
                 }
                 break;
         }

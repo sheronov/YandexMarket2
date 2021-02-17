@@ -93,7 +93,7 @@ class Field extends BaseObject
         return true;
     }
 
-    public function isFieldable(): bool
+    public function isParent(): bool
     {
         return in_array($this->type, [self::TYPE_OFFER, self::TYPE_ROOT, self::TYPE_PARENT, self::TYPE_SHOP], true);
     }
@@ -103,6 +103,12 @@ class Field extends BaseObject
         return $this->type === self::TYPE_CURRENCIES;
     }
 
+    protected function isHidden(): bool
+    {
+        return in_array($this->type, [self::TYPE_CATEGORIES, self::TYPE_OFFERS, self::TYPE_SHOP, self::TYPE_ROOT],
+            true);
+    }
+
     public function getValue()
     {
         return $this->isArrayValue() ? json_decode($this->value, true) : $this->value;
@@ -110,17 +116,7 @@ class Field extends BaseObject
 
     public function getProperties(): array
     {
-        $properties = $this->properties ?? [];
-        if ($values = $properties['values'] ?? []) {
-            $properties['values'] = array_map(function ($value) {
-                return [
-                    'value'  => $value,
-                    'text' => $this->getLexicon($this->lexiconKey().'_value_'.$value) ?? $value
-                ];
-            }, $values);
-        }
-
-        return $properties;
+        return $this->properties ?? [];
     }
 
     public function getPricelist(): Pricelist
@@ -191,15 +187,24 @@ class Field extends BaseObject
     public function toArray(): array
     {
         $data = parent::toArray();
-        $data['is_editable'] = $this->isEditable();
-        $data['is_deletable'] = $this->isDeletable();
-        $data['is_array_value'] = $this->isArrayValue();
-        $data['is_attributable'] = $this->isAttributable(); //
-        $data['is_fieldable'] = $this->isFieldable();
+        $data['is_editable'] = $this->isEditable(); //можно ли редактировать
+        $data['is_deletable'] = $this->isDeletable(); //можно ли удалять
+        $data['is_array_value'] = $this->isArrayValue(); //в значении хранится массив
+        $data['is_attributable'] = $this->isAttributable(); //может иметь атрибуты
+        $data['is_parent'] = $this->isParent(); //может иметь дочерние узлы
+        $data['is_hidden'] = $this->isHidden(); //может иметь дочерние узлы
         $data['label'] = $this->getLabel($this->getParent()->name ?? null);
         $data['help'] = $this->getHelp($this->getParent()->name ?? null);
         $data['properties'] = $this->getProperties();
         $data['value'] = $this->getValue();
+        if ($values = $this->getProperties()['values'] ?? []) {
+            $data['values'] = array_map(function ($value) {
+                return [
+                    'value' => $value,
+                    'text'  => $this->getLexicon($this->lexiconKey().'_value_'.$value) ?? $value
+                ];
+            }, $values);
+        }
 
         return $data;
     }
@@ -219,7 +224,7 @@ class Field extends BaseObject
             }
         }
 
-        if ($this->isFieldable()) {
+        if ($this->isParent()) {
             if ($withItself) {
                 $data['fields'] = [];
                 $fields = &$data['fields'];

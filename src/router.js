@@ -6,6 +6,7 @@ import PriceList from './pages/PriceList'
 import PriceListOffer from './pages/PriceListOffer'
 import PriceListShop from './pages/PriceListShop'
 import PriceListCategories from './pages/PriceListCategories'
+import PriceListGenerate from './pages/PriceListGenerate'
 import Main from './pages/Main'
 
 Vue.use(Router);
@@ -37,6 +38,11 @@ const routes = [
                 component: PriceListOffer,
                 name: 'pricelist.offers',
                 meta: {title: 'Данные'}
+            }, {
+                path: 'generate',
+                component: PriceListGenerate,
+                name: 'pricelist.generate',
+                meta: {title: 'Выгрузка'}
             }]
         }, {
             path: '404', name: '404', component: HelloWorld, meta: {title: 'Ошибка 404'}

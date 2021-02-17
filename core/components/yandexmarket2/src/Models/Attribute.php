@@ -17,7 +17,7 @@ class Attribute extends BaseObject
     public const TYPE_STRING  = 0;
     public const TYPE_DATE    = 1;
     public const TYPE_BOOLEAN = 2;
-    public const TYPE_SELECT  = 3;
+    public const TYPE_RAW     = 3;
 
     public const TYPE_DEFAULT = self::TYPE_STRING;
 
@@ -49,17 +49,7 @@ class Attribute extends BaseObject
 
     public function getProperties(): array
     {
-        $properties = $this->properties ?? [];
-        if ($values = $properties['values'] ?? []) {
-            $properties['values'] = array_map(function ($value) {
-                return [
-                    'value' => $value,
-                    'text'  => $this->getLexicon($this->lexiconKey().'_value_'.$value) ?? $value
-                ];
-            }, $values);
-        }
-
-        return $properties;
+        return $this->properties ?? [];
     }
 
     public function toArray(): array
@@ -68,6 +58,14 @@ class Attribute extends BaseObject
         $data['type'] = $this->getType();
         $data['properties'] = $this->getProperties();
         $data['label'] = $this->getLabel();
+        if ($values = $this->getProperties()['values'] ?? []) {
+            $data['values'] = array_map(function ($value) {
+                return [
+                    'value' => $value,
+                    'text'  => $this->getLexicon($this->lexiconKey().'_value_'.$value) ?? $value
+                ];
+            }, $values);
+        }
         return $data;
     }
 
