@@ -154,7 +154,6 @@ export default {
     //TODO: всё ниже нужно грузить из бэкенда вместе с тегами
     tags: [
       'test',
-      'blabla',
       'yes'
     ],
   }),
