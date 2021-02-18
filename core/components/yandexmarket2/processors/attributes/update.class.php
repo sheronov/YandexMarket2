@@ -8,7 +8,7 @@ require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 class ymAttributeUpdateProcessor extends modObjectUpdateProcessor
 {
     public $objectType     = 'ym_attribute';
-    public $classKey       = 'ymFieldAttribute';
+    public $classKey       = ymFieldAttribute::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 

@@ -3,7 +3,7 @@
 class ymAttributeRemoveProcessor extends modObjectProcessor
 {
     public $objectType     = 'ym_attribute';
-    public $classKey       = 'ymFieldAttribute';
+    public $classKey       = ymFieldAttribute::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
 

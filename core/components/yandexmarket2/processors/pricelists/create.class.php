@@ -13,7 +13,7 @@ require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 class ymPricelistCreateProcessor extends modObjectCreateProcessor
 {
     public $objectType     = 'ym_pricelist';
-    public $classKey       = 'ymPricelist';
+    public $classKey       = ymPricelist::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'create';
 

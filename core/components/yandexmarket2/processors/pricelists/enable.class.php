@@ -3,7 +3,7 @@
 class ymPricelistEnableProcessor extends modObjectProcessor
 {
     public $objectType     = 'ym_pricelist';
-    public $classKey       = 'ymPricelist';
+    public $classKey       = ymPricelist::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 

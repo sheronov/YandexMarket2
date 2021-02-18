@@ -3,7 +3,7 @@
 class ymCategoryCreateProcessor extends modObjectCreateProcessor
 {
     public $objectType     = 'ym_category';
-    public $classKey       = 'ymCategory';
+    public $classKey       = ymCategory::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'create';
 

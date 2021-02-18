@@ -3,7 +3,7 @@
 class ymFieldRemoveProcessor extends modObjectProcessor
 {
     public $objectType     = 'ym_field';
-    public $classKey       = 'ymField';
+    public $classKey       = ymField::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
 

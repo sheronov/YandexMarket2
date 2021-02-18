@@ -8,7 +8,7 @@ require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 class ymFieldCreateProcessor extends modObjectCreateProcessor
 {
     public $objectType     = 'ym_field';
-    public $classKey       = 'ymField';
+    public $classKey       = ymField::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 
@@ -31,7 +31,7 @@ class ymFieldCreateProcessor extends modObjectCreateProcessor
 
     public function cleanup()
     {
-        return $this->success('', (new Field($this->modx, $this->object))->toFrontend(true));
+        return $this->success('', (new Field($this->modx, $this->object))->toArray());
     }
 }
 

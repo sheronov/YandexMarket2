@@ -2,8 +2,8 @@
 
 class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
 {
-    public $objectType = 'ymPricelist';
-    public $classKey = 'ymPricelist';
+    public $objectType = 'ym_pricelist';
+    public $classKey = ymPricelist::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 
