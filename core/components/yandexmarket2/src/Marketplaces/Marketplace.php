@@ -114,15 +114,17 @@ abstract class Marketplace
                 'name'                  => $this->defaultOption('shop_name', $this->modx->getOption('site_name')),
                 'url'                   => $this->defaultOption('shop_url', $this->modx->getOption('site_url')),
                 'platform'              => $this->defaultOption('shop_platform', 'MODX Revolution'),
-                'version'               => $this->defaultOption('shop_version', $this->modx->getOption('settings_version')),
+                'version'               => $this->defaultOption('shop_version',
+                    $this->modx->getOption('settings_version')),
                 'currencies'            => [
                     'value' => explode(',', $this->defaultOption('shop_currencies', 'RUB'))
                 ],
-                'enable_auto_discounts' => (bool)$this->defaultOption('shop_enable_auto_discounts', true)
+                'enable_auto_discounts' => $this->defaultOption('shop_enable_auto_discounts', true) ? 'true' : 'false'
             ],
             Field::TYPE_OFFER => [
                 'name'        => $this->defaultOption('offer_name', 'modResource.pagetitle'),
                 'url'         => $this->defaultOption('offer_url', 'Offer.url'), // Offer собирающий класс
+                'price'       => $this->defaultOption('offer_price', 'Offer.price'), // Offer собирающий класс
                 'currencyId'  => [
                     'handler' => $this->defaultOption('offer_currency_id', 'RUB')
                 ],

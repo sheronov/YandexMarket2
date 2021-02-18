@@ -2,7 +2,9 @@
 
 namespace YandexMarket;
 
+use modResource;
 use modX;
+use msProduct;
 use xPDO;
 use xPDOQuery;
 use YandexMarket\Models\Category;
@@ -35,13 +37,14 @@ class Service
         $this->modx->addPackage('yandexmarket2', $this->config['modelPath']);
         $this->modx->lexicon->load('yandexmarket2:default');
 
-        if($this->hasMS2 = self::hasMiniShop2()) {
-            $c = $modx->newQuery('modPluginEvent', array('event:IN' => array('msOnGetProductPrice', 'msOnGetProductWeight')));
+        if ($this->hasMS2 = self::hasMiniShop2()) {
+            $c = $modx->newQuery('modPluginEvent', ['event:IN' => ['msOnGetProductPrice', 'msOnGetProductWeight']]);
             $c->innerJoin('modPlugin', 'modPlugin', 'modPlugin.id = modPluginEvent.pluginid');
             $c->where('modPlugin.disabled = 0');
-
             $this->pricePlugins = $modx->getOption('ms2_price_snippet', null, false, true)
-                 || $modx->getCount('modPluginEvent', $c);
+                || $modx->getCount('modPluginEvent', $c);
+            // $modx->addPackage('minishop2', $modx->getOption('minishop2_core_path', null,
+            //         $modx->getOption('core_path').'components/minishop2/').'model/');
         }
     }
 
@@ -66,7 +69,7 @@ class Service
     // TODO: тут получить товары со всеми возможными опциями и тв полями
     public function queryForPricelist(Pricelist $pricelist, array $data = [])
     {
-        $class = $this->hasMS2 ? 'msProduct' : 'modResource';
+        $class = $this->hasMS2 ? msProduct::class : modResource::class;
         $q = $this->modx->newQuery($class);
         $q->select($this->modx->getSelectColumns($class, $class, ''));
 

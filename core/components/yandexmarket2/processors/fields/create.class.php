@@ -25,6 +25,9 @@ class ymFieldCreateProcessor extends modObjectCreateProcessor
         }
         $this->setProperty('created_on', new DateTimeImmutable());
         $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
+        if(is_array($this->getProperty('value'))) {
+            $this->setProperty('value',json_encode($this->getProperty('value')));
+        }
 
         return parent::beforeSet();
     }

@@ -40,6 +40,7 @@ class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
         } elseif ($this->modx->getCount($this->classKey, ['name' => $name, 'id:!=' => $id])) {
             $this->modx->error->addField('name', $this->modx->lexicon('ym_pricelist_err_ae'));
         }
+        $this->unsetProperty('created_on');
 
         return parent::beforeSet();
     }

@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from './components/HelloWorld'
 import PriceLists from './pages/PriceLists'
 import PriceList from './pages/PriceList'
 import PriceListOffer from './pages/PriceListOffer'
@@ -45,9 +44,7 @@ const routes = [
                 meta: {title: 'Выгрузка'}
             }]
         }, {
-            path: '404', name: '404', component: HelloWorld, meta: {title: 'Ошибка 404'}
-        }, {
-            path: '*', redirect: '404'
+            path: '*', redirect: '/'
         }]
     }
 ];

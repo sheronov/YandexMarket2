@@ -3,6 +3,7 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify';
 import axios from "axios";
 import router from "./router";
+import store from './store';
 
 const appId = 'yandexmarket-app';
 
@@ -47,6 +48,7 @@ window.onload = function () {
     new Vue({
         vuetify,
         router,
+        store,
         render: h => h(App)
     }).$mount(`#${appId}`)
 }

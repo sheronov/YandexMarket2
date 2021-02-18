@@ -1,92 +1,279 @@
 <template>
-  <div class="yandexmarket-shop-field mb-3">
-    <!-- TODO: сделать поддержку разных компонентов -->
-    <v-select
-        v-if="field.component === 'select'"
-        :label="field.title + (field.required ? ' *': '')"
-        :value="value"
-        :items="field.values"
-        filled
-        dense
-        multiple
-        chips
-        deletable-chips
-        small-chips
-        hide-details="auto"
-        item-value="key"
-        @change="inputField($event)"
-    >
-      <template v-slot:selection="{ attrs, index, item, selected }">
-        <v-chip
-            v-bind="attrs"
-            :input-value="selected"
-            text-color="white"
-            :color="!index ? 'primary' : 'grey'"
-            :title="!index ? 'Основная валюта' : 'Выбрать основной'"
-            @click.stop="makeFirst(item)"
-            @click:close="removeChip(item)"
-            close
-            small
-        >
-          <strong>{{ item.key }}</strong>
-          <span class="pl-1">({{ item.text }})</span>
-        </v-chip>
+  <v-expansion-panel class="yandexmarket-field" :ref="'panel'+field.id" readonly>
+    <!--  TODO: переделать панели на обычные div, чтобы не закрывались самостоятельно (бесит)  -->
+    <field-header
+        :field="field"
+        :item="item"
+        :color="`grey lighten-${lighten}`"
+        :edit="edit"
+        :disabledAddAttribute="!!attrs.filter(a => !a.id).length"
+        @attribute:add="addAttribute"
+        @edit:toggle="toggleEdit"
+        @edit:cancel="cancelEdit"
+        @field:deleted="$emit('field:deleted',$event)"
+        @field:updated="$emit('field:updated',$event)"
+    />
+    <v-expansion-panel-content :color="`grey lighten-${lighten}`" eager>
+      <template v-if="attrs.length">
+        <div class="grey--text mb-1" style="font-size: 13px;">Атрибуты:</div>
+        <v-row dense class="mb-1">
+          <field-attribute v-for="attribute in attrs" :key="attribute.id" :attribute="attribute" v-on="$listeners"/>
+        </v-row>
       </template>
-    </v-select>
-    <v-text-field
-        v-else
-        :label="field.title + (field.required ? ' *': '')"
-        :value="value"
-        hide-details="auto"
-        filled
-        dense
-        @change="inputField($event)"
-    >
-      <template v-slot:append v-if="field.help">
-        <v-tooltip bottom :max-width="400" :close-delay="500">
-          <template v-slot:activator="{ on }">
-            <v-icon v-on="on">
-              icon-question-circle
-            </v-icon>
-          </template>
-          <div class="text-caption" style="white-space: pre-line;">{{ field.help }}</div>
-        </v-tooltip>
-      </template>
-    </v-text-field>
-  </div>
+      <v-row class="px-0 pb-3" v-if="edit" dense>
+        <v-col cols="12" md="6">
+          <v-combobox
+              v-model="field.name"
+              :items="tags"
+              class="yandexmarket-field-tag text-center mr-2"
+              placeholder="Введите или выберите из списка"
+              :attach="true"
+              item-value="value"
+              item-text="text"
+              hide-details
+              solo
+              dense
+          >
+            <template v-slot:prepend-inner>
+              <div class="text-no-wrap">
+                <code class="mr-2 mt-1 d-inline-block">Элемент:</code>
+                <v-icon>icon-angle-left</v-icon>
+              </div>
+            </template>
+            <template v-slot:append>
+              <v-icon>icon-angle-right</v-icon>
+            </template>
+          </v-combobox>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-select
+              v-model="field.type"
+              :items="selectableTypes"
+              class="yandexmarket-field-type"
+              :full-width="false"
+              label="Тип элемента"
+              placeholder="Выберите тип"
+              :menu-props="{offsetY: true}"
+              :attach="true"
+              hide-details
+              solo
+              dense
+          >
+            <template v-slot:prepend-inner>
+              <div class="text-no-wrap mr-2">
+                <code>Тип:</code>
+              </div>
+            </template>
+          </v-select>
+        </v-col>
+      </v-row>
+      <field-value :field="field" @input="field.value = $event"/>
+      <v-card-text class="pa-0" v-if="isParent(field)">
+        <template v-if="children.length">
+         <div class="grey--text" style="font-size: 13px;">Дочерние элементы:</div>
+          <v-expansion-panels :value="opened" multiple accordion :key="field.name">
+            <pricelist-field
+                v-for="child in children"
+                :key="child.id"
+                :item="child"
+                :fields="fields"
+                :attributes="attributes"
+                :lighten="lighten+1"
+                v-on="$listeners"
+            />
+          </v-expansion-panels>
+        </template>
+        <v-row class="ma-0 align-center">
+          <div v-if="!children.length" class="grey--text">Ещё нет дочерних полей</div>
+          <v-spacer/>
+          <v-btn small class="mt-4" color="white" @click="addField" :disabled="!!children.filter(f => !f.id).length">
+            <v-icon class="icon-sm" left>icon-plus</v-icon>
+            <template v-if="children.filter(f => !f.id).length">
+              Сохраните новое поле
+            </template>
+            <template v-else>
+              Добавить элемент в &lt;{{ field.name }}&gt;
+            </template>
+          </v-btn>
+        </v-row>
+      </v-card-text>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script>
+import {mapGetters} from 'vuex';
+import FieldAttribute from "@/components/FieldAttribute";
+import FieldHeader from "@/components/FieldHeader";
+import FieldValue from "@/components/FieldValue";
+
 export default {
   name: 'PricelistField',
+  components: {
+    FieldValue,
+    FieldHeader,
+    FieldAttribute,
+  },
   props: {
-    value: {required: true},
-    field: {required: true, type: Object}
+    item: {required: true, type: [Object]},
+    attributes: {type: Array, default: () => ([])},
+    fields: {type: Array, default: () => ([])},
+    lighten: {type: Number, default: 2}
+  },
+  watch: {
+    item: {
+      immediate: true,
+      handler: function (item) {
+        this.field = {...this.field, ...item};
+        this.$nextTick().then(() => this.code = !!this.field.handler)
+      }
+    },
+    fields: {
+      immediate: true,
+      handler: function (fields) {
+        this.children = fields
+            .filter(field => field.parent === this.item.id).slice()
+            .sort((a, b) => a.rank - b.rank);
+        this.$nextTick().then(() => this.opened = Object.keys(this.children).map((field, index) => index));
+      }
+    },
+    attributes: {
+      immediate: true,
+      handler: function (attributes) {
+        this.attrs = attributes.filter(attribute => attribute.field_id === this.item.id).slice();
+      }
+    }
   },
   data: () => ({
-    active: true
+    field: {},
+    attrs: [],
+    children: [],
+    opened: [],
+    edit: false,
+    code: false,
+    //TODO: всё ниже нужно грузить из бэкенда вместе с тегами
+    tags: [
+      'test',
+      'blabla',
+      'yes'
+    ],
   }),
-  methods: {
-    inputField(value) {
-      this.$emit('input', value);
-    },
-    removeChip(item) {
-      let values = [...this.value];
-      values.splice(values.indexOf(item.key), 1)
-      this.inputField(values);
-    },
-    makeFirst(item) {
-      let values = [...this.value];
-      values.splice(values.indexOf(item.key), 1);
-      values.unshift(item.key);
-      this.inputField(values);
+  computed: {
+    ...mapGetters('field', [
+      'selectableTypes',
+      'isParent',
+    ]),
+  },
+  mounted() {
+    if (!this.field.id) {
+      this.edit = true;
     }
-  }
+  },
+  methods: {
+    addField() {
+      this.$emit('field:created', {
+        id: null,
+        name: null,
+        type: null,
+        label: 'Новое поле',
+        text: '',
+        help: 'Описание поля можно задать через лексиконы',
+        value: null,
+        handler: null,
+        pricelist_id: this.field.pricelist_id,
+        parent: this.field.id,
+        rank: Object.keys(this.children).length + 1,
+        properties: {custom: true}
+      });
+    },
+    cancelEdit() {
+      this.field = {...this.field, ...this.item};
+    },
+    toggleEdit(edit) {
+      this.edit = edit;
+    },
+    addAttribute() {
+      this.$emit('attribute:created', {
+        id: null,
+        field_id: this.field.id,
+        handler: null,
+        label: 'Новый атрибут',
+        name: '',
+        value: null,
+        type: 0,
+        properties: {
+          custom: true
+        },
+      });
+    },
+  },
+
 }
 </script>
 
+<!--suppress CssUnusedSymbol -->
 <style>
-.yandexmarket-shop-field {
+.yandexmarket-field {
+  position: relative;
+  margin-right: -1px;
+  margin-top: -1px;
+}
+
+.yandexmarket-field-fieldset {
+  border-width: 1px;
+  border-color: #ddd;
+  border-style: solid;
+  padding-left: 10px;
+  margin-bottom: 10px;
   position: relative;
 }
+
+.yandexmarket-field-fieldset legend {
+  font-size: 16px;
+}
+
+.yandexmarket-fieldset-actions {
+  position: absolute;
+  top: -24px;
+  right: 10px;
+  background: #fff;
+  padding: 0 4px;
+}
+
+.yandexmarket-fieldset-legend-bottom {
+  position: absolute;
+  font-size: 14px !important;
+  bottom: 0;
+  background: #fff;
+  right: 10px;
+  transform: translateY(50%);
+  padding: 0 5px;
+  line-height: 1;
+}
+
+.yandexmarket-field-type {
+  /*max-width: 200px !important;*/
+  /*font-size: 0.875em !important;*/
+}
+
+.yandexmarket-field-tag {
+  /*max-width: 180px !important;*/
+}
+
+.yandexmarket-field-tag .v-select__slot input {
+  /*display: none;*/
+}
+
+.v-select.v-select--is-menu-active .v-input__append-inner .icon {
+  transform: rotate(0deg);
+}
+
+.yandexmarket-field-tag .v-select__slot input {
+  text-align: center;
+}
+
+.yandexmarket-field .v-expansion-panel-header > *:not(.v-expansion-panel-header__icon) {
+  flex-grow: 0;
+}
+
 </style>

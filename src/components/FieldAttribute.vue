@@ -1,5 +1,5 @@
 <template>
-  <v-col :md="edit ? 12 : 4" :sm="edit ? 12 : 6"  cols="12" class="yandexmarket-offer-field-attribute">
+  <v-col :md="edit ? 12 : 4" :sm="edit ? 12 : 6"  cols="12" class="yandexmarket-field-attribute">
     <component
         v-if="!edit"
         :is="item.values ? 'v-select' : 'v-text-field'"
@@ -12,13 +12,13 @@
         :attach="true"
         :menu-props="{offsetY: true}"
         :label="label"
-        class="yandexmarket-offer-field-attribute"
+        class="yandexmarket-field-attribute"
         dense
         outlined
     >
-      <template v-slot:append v-if="edited">
-        <v-icon @click="cancelChanges" title="Отменить изменения" color="orange darken-1">icon-rotate-left</v-icon>
-      </template>
+<!--      <template v-slot:append-outer v-if="edited">-->
+<!--        <v-icon @click="cancelChanges" title="Отменить изменения" color="orange darken-1">icon-rotate-left</v-icon>-->
+<!--      </template>-->
       <template v-slot:append>
         <v-btn small v-if="!edited" icon :title="'Отредактировать свойства '+item.name" @click.stop="editAttr"
                class="mt-n1 mr-n2">
@@ -92,7 +92,7 @@
               hide-details
               :attach="true"
               :menu-props="{offsetY: true}"
-              class="yandexmarket-offer-field-attribute"
+              class="yandexmarket-field-attribute"
               dense
           >
             <template v-slot:append-outer v-if="item.type !== 3">
@@ -129,7 +129,7 @@ import {codemirror} from 'vue-codemirror';
 import api from "@/api";
 
 export default {
-  name: 'OfferFieldAttribute',
+  name: 'FieldAttribute',
   components: {
     VSelect,
     VCombobox,
@@ -197,7 +197,7 @@ export default {
               this.$nextTick().then(() => this.$emit('attribute:updated', data.object));
             })
             .catch(error => console.error(error))
-      }, 50);
+      }, 10);
     },
     cancelChanges() {
       this.item = {...this.item, ...this.attribute};

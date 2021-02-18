@@ -25,6 +25,10 @@ class ymFieldUpdateProcessor extends modObjectUpdateProcessor
             $this->modx->error->addField('name', $this->modx->lexicon('ym_field_err_valid'));
         }
         $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
+        if (is_array($this->getProperty('value'))) {
+            $this->setProperty('value', json_encode($this->getProperty('value')));
+        }
+        $this->unsetProperty('created_on');
 
         return parent::beforeSet();
     }

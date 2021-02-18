@@ -103,17 +103,6 @@ class Pricelist extends BaseObject
         return $this->fieldsAttributes;
     }
 
-    public function getRootNode(): ?Field
-    {
-        foreach ($this->getFields(true) as $field) {
-            if (!$field->parent) {
-                return $field;
-            }
-        }
-
-        return null;
-    }
-
     public function getFieldByType(int $type): ?Field
     {
         foreach ($this->getFields(true) as $field) {
@@ -136,46 +125,11 @@ class Pricelist extends BaseObject
         return $this->categories;
     }
 
-    protected function prepareField(Field $field): array
-    {
-        return [
-            'name'       => $field->name,
-            'type'       => $field->type,
-            'parent'     => $field->parent,
-            'value'      => $field->value,
-            'handler'    => $field->handler,
-            'properties' => $field->properties,
-            'rank'       => $field->rank,
-            'active'     => $field->active
-        ];
-    }
-
-    public function makeFieldsTree(?int $parentId): array
-    {
-        $branch = [];
-
-        foreach ($this->getFields(true) as $field) {
-            if ($field->parent === $parentId) {
-                $preparedField = $this->prepareField($field);
-                if ($children = $this->makeFieldsTree($field->id)) {
-                    $preparedField['children'] = $children;
-                }
-                $branch[] = $preparedField;
-            }
-        }
-
-        return $branch;
-    }
-
-    public function toArray(bool $withFields = false): array
+    public function toArray(bool $withValues = false): array
     {
         $data = parent::toArray();
 
-        if ($withFields) {
-            // if ($shopField = $this->getFieldByName('shop')) {
-            //     $data['tree'] = $this->makeFieldsTree($shopField->id);
-            // }
-
+        if ($withValues) {
             // TODO: потом перенести возможные поля на фронт в объект маркетплейсов (в VueX)
             $data['shop_fields'] = $this->marketplace::getShopFields();
             $data['offer_fields'] = $this->marketplace::getOfferFields();
@@ -191,12 +145,6 @@ class Pricelist extends BaseObject
             $data['categories'] = array_map(static function (Category $categoryObject) {
                 return $categoryObject->resource_id;
             }, array_values($this->getCategories()));
-
-            // $data['values'] = [
-            //     'shop'       => $this->getShopValues(),
-            //     'offer'      => $this->getOfferValues(),
-            //     'categories' => ,
-            // ];
         }
 
         return $data;
@@ -211,12 +159,4 @@ class Pricelist extends BaseObject
         return $field->toFrontend(false, [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS]);
     }
 
-    public function getOfferValues(): array
-    {
-        if (!$field = $this->getFieldByType(Field::TYPE_OFFER)) {
-            return [];
-        }
-
-        return $field->toFrontend(true);
-    }
 }

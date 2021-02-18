@@ -66,7 +66,7 @@
 </template>
 
 <script>
-import {TYPE_BOOLEAN, TYPE_CURRENCIES} from "@/components/FieldTypes";
+import {TYPE_BOOLEAN, TYPE_CURRENCIES} from "@/store/modules/field";
 
 export default {
   name: 'PricelistShopField',

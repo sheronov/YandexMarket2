@@ -90,7 +90,7 @@ class YandexMarket extends Marketplace
                 'type' => Field::TYPE_FEATURE
             ],
             'enable_auto_discounts' => [
-                'type' => Field::TYPE_BOOLEAN,
+                'type' => Field::TYPE_OPTION,
             ],
             'offers'                => [
                 'type'     => Field::TYPE_OFFERS,

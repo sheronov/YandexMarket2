@@ -55,73 +55,14 @@ class Field extends BaseObject
         return ymField::class;
     }
 
-    /**
-     * It means you can edit tag, type
-     */
-    public function isEditable(): bool
-    {
-        return !($this->getProperties()['required'] ?? false)
-            && ($this->getProperties()['editable'] ?? true)
-            && in_array($this->type, [
-                self::TYPE_STRING,
-                self::TYPE_CDATA,
-                self::TYPE_NUMBER,
-                self::TYPE_BOOLEAN,
-                self::TYPE_PARAM,
-                self::TYPE_PICTURES,
-                self::TYPE_OPTION,
-                self::TYPE_CURRENCIES
-            ], true);
-    }
-
-    /**
-     * It means you can delete field
-     */
-    public function isDeletable(): bool
-    {
-        return !($this->getProperties()['required'] ?? false)
-            && !in_array($this->type, [
-                self::TYPE_ROOT,
-                self::TYPE_SHOP,
-                self::TYPE_OFFER,
-                self::TYPE_OFFERS,
-            ], true);
-    }
-
-    public function isAttributable(): bool
-    {
-        return true;
-    }
-
-    public function isParent(): bool
-    {
-        return in_array($this->type, [self::TYPE_OFFER, self::TYPE_ROOT, self::TYPE_PARENT, self::TYPE_SHOP], true);
-    }
-
     public function isArrayValue(): bool
     {
         return $this->type === self::TYPE_CURRENCIES;
     }
 
-    protected function isUnique(): bool
-    {
-        return in_array($this->type,
-            [
-                self::TYPE_CATEGORIES,
-                self::TYPE_OFFERS,
-                self::TYPE_OFFER,
-                self::TYPE_SHOP,
-                self::TYPE_ROOT,
-                self::TYPE_CURRENCIES
-            ],
-            true);
-    }
-
-    protected function isRoot(): bool
-    {
-        return in_array($this->type, [self::TYPE_OFFER, self::TYPE_SHOP, self::TYPE_ROOT], true);
-    }
-
+    /**
+     * @return array|string|null
+     */
     public function getValue()
     {
         return $this->isArrayValue() ? json_decode($this->value, true) : $this->value;
@@ -200,13 +141,7 @@ class Field extends BaseObject
     public function toArray(): array
     {
         $data = parent::toArray();
-        $data['is_editable'] = $this->isEditable(); //можно ли редактировать
-        $data['is_deletable'] = $this->isDeletable(); //можно ли удалять
         $data['is_array_value'] = $this->isArrayValue(); //в значении хранится массив
-        $data['is_attributable'] = $this->isAttributable(); //может иметь атрибуты
-        $data['is_parent'] = $this->isParent(); //может иметь дочерние узлы
-        $data['is_unique'] = $this->isUnique(); // специальный типы
-        $data['is_root'] = $this->isRoot(); //корневые узлы (один на уровне), которым не нужно менять приоритет
         $data['label'] = $this->getLabel($this->getParent()->name ?? null);
         $data['help'] = $this->getHelp($this->getParent()->name ?? null);
         $data['properties'] = $this->getProperties();
@@ -228,30 +163,26 @@ class Field extends BaseObject
         $data = [];
         if ($withItself) {
             $data = $this->toArray();
-            if ($this->isAttributable()) {
-                $data['attributes'] = [];
-                if ($attributes = $this->getAttributes()) {
-                    foreach ($attributes as $attribute) {
-                        $data['attributes']['attr'.$attribute->id] = $attribute->toArray();
-                    }
+            $data['attributes'] = [];
+            if ($attributes = $this->getAttributes()) {
+                foreach ($attributes as $attribute) {
+                    $data['attributes']['attr'.$attribute->id] = $attribute->toArray();
                 }
             }
         }
 
-        if ($this->isParent()) {
-            if ($withItself) {
-                $data['fields'] = [];
-                $fields = &$data['fields'];
-            } else {
-                $fields = &$data;
-            }
+        if ($withItself) {
+            $data['fields'] = [];
+            $fields = &$data['fields'];
+        } else {
+            $fields = &$data;
+        }
 
-            foreach ($this->getChildren() as $child) {
-                if (in_array($child->type, $skipChildrenTypes, true)) {
-                    continue;
-                }
-                $fields['field'.$child->id] = $child->toFrontend(true, $skipChildrenTypes);
+        foreach ($this->getChildren() as $child) {
+            if (in_array($child->type, $skipChildrenTypes, true)) {
+                continue;
             }
+            $fields['field'.$child->id] = $child->toFrontend(true, $skipChildrenTypes);
         }
 
         return $data;

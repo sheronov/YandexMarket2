@@ -16,9 +16,8 @@
 </template>
 
 <script>
-import PricelistOfferField from "@/components/PricelistOfferField";
-
-const {TYPE_OFFER} = require("@/components/FieldTypes");
+import PricelistOfferField from "@/components/PricelistField";
+import {TYPE_OFFER} from "@/store/modules/field";
 
 export default {
   name: 'PriceListOffer',

@@ -27,10 +27,9 @@
 
 <script>
 
-import PricelistOfferField from "@/components/PricelistOfferField";
+import PricelistOfferField from "@/components/PricelistField";
 // import PricelistShopField from "@/components/PricelistShopField";
-
-const {TYPE_SHOP} = require("@/components/FieldTypes");
+import {TYPE_SHOP} from "@/store/modules/field";
 
 export default {
   name: 'PriceListShop',
