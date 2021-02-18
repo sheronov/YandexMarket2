@@ -19,19 +19,24 @@
                 v-if="pricelist"
                 v-bind="{pricelist:pricelist}"
                 @preview:xml="previewXml"
-                @input="pricelistUpdated"
+                @field:created="fieldUpdated($event, true)"
+                @field:updated="fieldUpdated"
+                @field:deleted="fieldDeleted"
+                @attribute:created="attributeUpdated($event, true)"
+                @attribute:updated="attributeUpdated"
+                @attribute:deleted="attributeDeleted"
             ></router-view>
             <v-card-actions class="px-0" v-if="false">
               <v-btn v-if="!hasChanges" :to="{name: 'pricelists'}" exact title="Ко всем прайс-листам">
                 <v-icon left>icon-arrow-left</v-icon>
                 Вернуться
               </v-btn>
-              <v-btn v-else @click="cancelChanges" title="Отменить все изменения">
+              <v-btn v-else title="Отменить все изменения">
                 <v-icon left>icon-undo</v-icon>
                 Отменить
               </v-btn>
               <v-spacer/>
-              <v-btn :disabled="!hasChanges" @click="saveChanges" color="secondary">
+              <v-btn :disabled="!hasChanges" color="secondary">
                 <v-icon left>icon-save</v-icon>
                 Сохранить
               </v-btn>
@@ -89,16 +94,37 @@ export default {
     }
   },
   methods: {
+    fieldUpdated(field, created = false) {
+      let fields = this.pricelist.fields.slice();
+      if (created) {
+        fields.push(field);
+      } else {
+        fields.splice(fields.findIndex(item => item.id ? item.id === field.id : item.parent === field.parent), 1, field);
+      }
+      this.pricelistUpdated({fields});
+    },
+    fieldDeleted(field) {
+      let fields = this.pricelist.fields.slice();
+      fields.splice(fields.findIndex(item => item.id === field.id), 1);
+      this.pricelistUpdated({fields: fields});
+    },
+    attributeUpdated(attr, created = false) {
+      let attributes = this.pricelist.attributes.slice();
+      if (created) {
+        attributes.push(attr);
+      } else {
+        attributes.splice(attributes.findIndex(item => item.id ? item.id === attr.id : item.field_id === attr.field_id), 1, attr);
+      }
+      this.pricelistUpdated( {attributes});
+    },
+    attributeDeleted(attribute) {
+      let attributes = this.pricelist.attributes.slice();
+      attributes.splice(attributes.findIndex(item => item.id === attribute.id), 1);
+      this.pricelistUpdated({attributes});
+    },
     pricelistUpdated(pricelist) {
       this.pricelist = {...this.pricelist, ...pricelist};
       this.getXmlPreview()
-    },
-    // TODO: сделать предупреждение при переходе по вкладкам при неотправленных изменениях
-    cancelChanges() {
-
-    },
-    saveChanges() {
-
     },
     togglePreview() {
       this.preview = !this.preview;

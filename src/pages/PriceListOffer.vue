@@ -9,12 +9,7 @@
           :fields="pricelist.fields"
           :attributes="pricelist.attributes"
           :lighten="3"
-          @field:created="fieldUpdated($event, true)"
-          @field:updated="fieldUpdated"
-          @field:deleted="fieldDeleted"
-          @attribute:created="attributeUpdated($event, true)"
-          @attribute:updated="attributeUpdated"
-          @attribute:deleted="attributeDeleted"
+          v-on="$listeners"
       />
     </v-expansion-panels>
   </div>
@@ -38,34 +33,6 @@ export default {
   methods: {
     previewXml() {
       this.$emit('preview:xml', 'offers');
-    },
-    fieldUpdated(field, created = false) {
-      let fields = this.pricelist.fields.slice();
-      if (created) {
-        fields.push(field);
-      } else {
-        fields.splice(fields.findIndex(item => item.id ? item.id === field.id : item.parent === field.parent), 1, field);
-      }
-      this.$emit('input', {fields});
-    },
-    fieldDeleted(field) {
-      let fields = this.pricelist.fields.slice();
-      fields.splice(fields.findIndex(item => item.id === field.id), 1);
-      this.$emit('input', {fields: fields});
-    },
-    attributeUpdated(attr, created = false) {
-      let attributes = this.pricelist.attributes.slice();
-      if (created) {
-        attributes.push(attr);
-      } else {
-        attributes.splice(attributes.findIndex(item => item.id ? item.id === attr.id : item.field_id === attr.field_id), 1, attr);
-      }
-      this.$emit('input', {attributes});
-    },
-    attributeDeleted(attribute) {
-      let attributes = this.pricelist.attributes.slice();
-      attributes.splice(attributes.findIndex(item => item.id === attribute.id), 1);
-      this.$emit('input', {attributes});
     },
   },
   mounted() {

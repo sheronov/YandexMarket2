@@ -2,14 +2,14 @@
   <v-expansion-panel class="yandexmarket-offer-field" :ref="'panel'+field.id" readonly>
     <!--  TODO: переделать панели на обычные div, чтобы не закрывались самостоятельно (бесит)  -->
     <v-expansion-panel-header :color="`grey lighten-${lighten}`" hide-actions class="pr-2 pb-1">
-      <inline-edit-dialog v-if="item.type !== offerType">
+      <inline-edit-dialog v-if="!item.is_root">
         <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
           #{{ field.rank }}
         </v-btn>
         <template v-slot:input>
           <v-text-field
               :value="field.rank"
-              @input="field.rank = parseInt($event)"
+              @input="field.rank = $event ? parseInt($event) : 0"
               label="Приоритет"
               single-line
               type="number"
@@ -79,11 +79,12 @@
       <template v-if="attrs.length">
         <div class="grey--text mb-1" style="font-size: 13px;">Атрибуты:</div>
         <v-row dense class="mb-1">
-          <offer-field-attribute v-for="attribute in attrs" :key="attribute.id" :attribute="attribute" v-on="$listeners"/>
+          <offer-field-attribute v-for="attribute in attrs" :key="attribute.id" :attribute="attribute"
+                                 v-on="$listeners"/>
         </v-row>
       </template>
       <v-row class="px-0 pb-3" v-if="edit" dense>
-        <v-col cols="12">
+        <v-col cols="12" md="6">
           <v-combobox
               v-model="field.name"
               :items="tags"
@@ -107,7 +108,7 @@
             </template>
           </v-combobox>
         </v-col>
-        <v-col cols="12">
+        <v-col cols="12" md="6">
           <v-select
               v-model="field.type"
               :items="selectableTypes"
@@ -229,12 +230,18 @@
 import OfferFieldAttribute from "@/components/OfferFieldAttribute";
 import InlineEditDialog from "@/components/InlineEditDialog";
 import {codemirror} from 'vue-codemirror';
-import FieldTypes, {TYPE_OFFER} from "@/components/FieldTypes";
+import FieldTypes, {TYPE_OFFER, TYPE_OPTION} from "@/components/FieldTypes";
 import api from '@/api';
+import VTextField from "vuetify/lib/components/VTextField/VTextField";
+import VSelect from "vuetify/lib/components/VSelect/VSelect";
+import VCombobox from "vuetify/lib/components/VCombobox/VCombobox";
 
 export default {
   name: 'PricelistOfferField',
   components: {
+    VTextField,
+    VSelect,
+    VCombobox,
     OfferFieldAttribute,
     InlineEditDialog,
     VueCodemirror: codemirror
@@ -320,6 +327,9 @@ export default {
       };
     },
     valuePrepend() {
+      if (this.field.type === TYPE_OPTION) {
+        return 'Текст';
+      }
       if (this.value && this.value.value !== this.value.text) {
         return this.value.value;
       }

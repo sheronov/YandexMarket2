@@ -24,6 +24,7 @@ class ymFieldCreateProcessor extends modObjectCreateProcessor
             $this->modx->error->addField('name', $this->modx->lexicon('ym_field_err_valid'));
         }
         $this->setProperty('created_on', new DateTimeImmutable());
+        $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
 
         return parent::beforeSet();
     }

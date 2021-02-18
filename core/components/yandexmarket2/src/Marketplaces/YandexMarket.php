@@ -105,7 +105,7 @@ class YandexMarket extends Marketplace
                                 'type'     => Attribute::TYPE_STRING,
                             ],
                             'type' => [
-                                'type'     => Attribute::TYPE_STRING,
+                                'type'     => Attribute::TYPE_RAW,
                                 'required' => true,
                                 'values'   => [
                                     self::TYPE_SIMPLE,

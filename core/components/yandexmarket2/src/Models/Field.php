@@ -103,10 +103,23 @@ class Field extends BaseObject
         return $this->type === self::TYPE_CURRENCIES;
     }
 
-    protected function isHidden(): bool
+    protected function isUnique(): bool
     {
-        return in_array($this->type, [self::TYPE_CATEGORIES, self::TYPE_OFFERS, self::TYPE_SHOP, self::TYPE_ROOT],
+        return in_array($this->type,
+            [
+                self::TYPE_CATEGORIES,
+                self::TYPE_OFFERS,
+                self::TYPE_OFFER,
+                self::TYPE_SHOP,
+                self::TYPE_ROOT,
+                self::TYPE_CURRENCIES
+            ],
             true);
+    }
+
+    protected function isRoot(): bool
+    {
+        return in_array($this->type, [self::TYPE_OFFER, self::TYPE_SHOP, self::TYPE_ROOT], true);
     }
 
     public function getValue()
@@ -192,7 +205,8 @@ class Field extends BaseObject
         $data['is_array_value'] = $this->isArrayValue(); //в значении хранится массив
         $data['is_attributable'] = $this->isAttributable(); //может иметь атрибуты
         $data['is_parent'] = $this->isParent(); //может иметь дочерние узлы
-        $data['is_hidden'] = $this->isHidden(); //может иметь дочерние узлы
+        $data['is_unique'] = $this->isUnique(); // специальный типы
+        $data['is_root'] = $this->isRoot(); //корневые узлы (один на уровне), которым не нужно менять приоритет
         $data['label'] = $this->getLabel($this->getParent()->name ?? null);
         $data['help'] = $this->getHelp($this->getParent()->name ?? null);
         $data['properties'] = $this->getProperties();

@@ -38,6 +38,7 @@ class Preview
         $data = array_filter(array_merge($this->pricelist->getShopValues(), $unsavedData), static function ($item) {
             return ($item['active'] ?? true);
         });
+        // TODO: переделать
         $this->writer->writeShopData($data);
         return $this->writer->getXml();
     }
