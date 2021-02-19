@@ -1,76 +1,128 @@
 <template>
-  <div class="yandexmarket-pricelist-settings">
-    <h4>Категории, используемые в выгрузке</h4>
-    <p class="mb-2">Категориям можно указать название для лучшего сопоставления в агрегаторе</p>
+  <div class="yandexmarket-pricelist-categories">
+    <div class="yandexmarket-pricelist-where mb-4">
+      <v-row class="ma-0 align-center">
+        <h4 class="mb-1">Условия по товарам</h4>
+        <v-tooltip bottom :max-width="400" :close-delay="200" :attach="true">
+          <template v-slot:activator="{ on }">
+            <v-btn small icon v-on="on" class="ml-1">
+              <v-icon>
+                icon-question-circle
+              </v-icon>
+            </v-btn>
+          </template>
+          <div class="text-caption" style="white-space: pre-line;">Доступны все поля товаров, включая ТВ-поля, опции
+            ms2. Компонент автоматически присоединит указанные столбцы. Если нужно присоединить сторонние компоненты -
+            обратитесь в поддержку
+          </div>
+        </v-tooltip>
+        <v-spacer/>
+        <template v-if="editedWhere">
+          <v-btn @click="resetWhere" small icon title="Отменить изменения" class="ml-1" color="orange darken-1">
+            <v-icon>icon-rotate-left</v-icon>
+          </v-btn>
+          <v-btn @click="saveWhere" :disabled="hasErrors"
+                 small title="Сохранить изменения" class="ml-2 mb-1" color="secondary" height="26">
+            <v-icon left>icon-save</v-icon>
+            Сохранить
+          </v-btn>
+        </template>
+        <span v-else>в JSON формате</span>
+      </v-row>
+
+      <vue-codemirror
+          ref="whereCode"
+          :value="where"
+          @input="changedWhere"
+          :options="cmOptions"
+          placeholder='Пример: {"Data.price:>":0, "Vendor.name:IN":["Apple","Samsung"], "Option.tags:IN":["телефон","планшет"]}'
+      ></vue-codemirror>
+    </div>
+
+    <h4>Категории, участвующие в выгрузке - вложенные тоже нужно выбирать</h4>
+    <p class="mb-2">Скоро можно будет указать название категориям для лучшего сопоставления в агрегаторе</p>
     <CategoriesTree
         :selected="selected"
         :categories="categories"
-        :where="where"
+        :where="{pricelist_id: pricelist.id}"
+        v-on="$listeners"
         @contexts:loaded="categories = $event"
-        @category:add="categoryAdd"
-        @category:remove="categoryRemove"
         @tree:reload="treeReload"
     />
-    {{ selected }}
+    <code>ids: {{ selected.join(',') }}</code>
   </div>
 </template>
 
 <script>
-// TODO: add here save or cancel changes
 import CategoriesTree from "@/components/CategoriesTree";
-import api from "@/api";
+import {codemirror} from 'vue-codemirror';
+import '@/plugins/jsonlint'
+import 'codemirror/addon/lint/lint.css'
+import 'codemirror/addon/lint/lint'
+import 'codemirror/addon/lint/json-lint'
 
 export default {
   name: 'PriceListCategories',
   props: {
     pricelist: {type: Object, required: true}
   },
-  components: {CategoriesTree},
+  components: {CategoriesTree, VueCodemirror: codemirror},
+  data: () => ({
+    selected: [],
+    categories: [],
+    where: '',
+    hasErrors: true,
+    cmOptions: {
+      lineNumbers: true,
+      mode: 'application/json',
+      gutters: ["CodeMirror-lint-markers"],
+      lint: false,
+      lineWrapping: true
+    }
+  }),
   watch: {
+    where(value) {
+      this.$nextTick().then(() => this.$refs.whereCode.codemirror.setOption("lint", !!value))
+    },
     'pricelist.categories': {
       immediate: true,
       handler: function (categories) {
         this.selected = categories || [];
       }
-    }
+    },
+    'pricelist.where': {
+      immediate: true,
+      handler: function (where) {
+        this.where = where;
+      },
+    },
   },
-  data: () => ({
-    selected: [],
-    categories: []
-  }),
   computed: {
-    where() {
-      return this.pricelist.id ? {pricelist_id: this.pricelist.id} : {};
-    }
+    editedWhere() {
+      return (this.where || '') !== (this.pricelist.where || '')
+    },
   },
   methods: {
     previewXml() {
       this.$emit('preview:xml', 'categories');
     },
-    categoryAdd(resourceId, send = true) {
-      if (this.selected.indexOf(resourceId) === -1) {
-        this.selected.push(resourceId);
-      }
-      if (send) {
-        api.post('categories/create', {...this.where, resource_id: resourceId})
-            .then(() => this.previewXml())
-            .catch(() => this.categoryRemove(resourceId, false))
-      }
-    },
-    categoryRemove(resourceId, send = true) {
-      this.selected = this.selected.filter(selected => selected !== resourceId);
-      if (send) {
-        api.post('categories/remove', {...this.where, resource_id: resourceId})
-            .then(() => this.previewXml())
-            .catch(() => {
-              // можно добавлять назад, если по какой-то причине не удалился
-              // this.categoryAdd(categoryId, false);
-            })
-      }
-    },
     treeReload() {
+      // this.reloaded = false;
       this.categories = [];
-      this.selected = [];
+      // this.$nextTick().then(() => this.reloaded = true);
+    },
+    changedWhere(where) {
+      this.where = where;
+      setTimeout(() => {
+        let state = this.$refs.whereCode.codemirror.state;
+        this.hasErrors = !!(state.lint && state.lint.marked.length);
+      }, 610); //lint in CM has 600ms timeout
+    },
+    saveWhere() {
+      this.$emit('pricelist:updated', {where: this.where ? this.where : null});
+    },
+    resetWhere() {
+      this.where = this.pricelist.where || ''
     }
   },
   mounted() {
@@ -78,3 +130,14 @@ export default {
   }
 }
 </script>
+
+<style>
+.yandexmarket-pricelist-where .CodeMirror {
+  height: auto;
+  min-height: 60px;
+}
+
+.yandexmarket-pricelist-where .CodeMirror pre.CodeMirror-placeholder {
+  color: #999;
+}
+</style>

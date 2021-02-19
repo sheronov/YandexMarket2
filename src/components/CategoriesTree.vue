@@ -1,16 +1,16 @@
 <template>
   <v-card :loading="loading" flat tile>
-    <v-toolbar flat color="grey lighten-2" dense>
+    <v-toolbar flat color="grey lighten-2" dense height="40">
       <span v-if="!selected.length">Выберите категории для выгрузки</span>
       <span v-else>Выбрано {{ declension(selected.length, ['категория', 'категории', 'категорий']) }}</span>
       <v-spacer/>
-      <v-btn icon title="Раскрыть все категории" @click="expandTree">
+      <v-btn small icon title="Раскрыть все категории" @click="expandTree">
         <v-icon>icon icon-expand</v-icon>
       </v-btn>
-      <v-btn icon title="Свернуть все категории" @click="collapseTree">
+      <v-btn small icon title="Свернуть все категории" @click="collapseTree">
         <v-icon>icon icon-compress</v-icon>
       </v-btn>
-      <v-btn icon title="Обновить дерево" @click="reloadTree">
+      <v-btn  small icon title="Обновить дерево" @click="reloadTree">
         <v-icon>icon icon-refresh</v-icon>
       </v-btn>
     </v-toolbar>
@@ -86,9 +86,9 @@ export default {
     },
     selectCategory(value, category) {
       if (value) {
-        this.$emit('category:add', category[this.itemKey]);
+        this.$emit('category:added', category[this.itemKey]);
       } else {
-        this.$emit('category:remove', category[this.itemKey]);
+        this.$emit('category:removed', category[this.itemKey]);
       }
     },
     loadCategories(item) {
@@ -101,7 +101,7 @@ export default {
             item.children = data;
             data.forEach((child) => {
               if (child.selected) {
-                this.$emit('category:add', child[this.itemKey], false);
+                this.$emit('category:added', child[this.itemKey], false);
               }
               if (child.hasChildren) {
                 this.awaitChildren[child[this.itemKey]] = true;

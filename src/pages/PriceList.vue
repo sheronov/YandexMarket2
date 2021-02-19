@@ -25,6 +25,9 @@
                 @attribute:created="attributeUpdated($event, true)"
                 @attribute:updated="attributeUpdated"
                 @attribute:deleted="attributeDeleted"
+                @category:added="categoryAdded"
+                @category:removed="categoryRemoved"
+                @pricelist:updated="pricelistUpdated"
             ></router-view>
             <v-card-actions class="px-0" v-if="false">
               <v-btn v-if="!hasChanges" :to="{name: 'pricelists'}" exact title="Ко всем прайс-листам">
@@ -65,6 +68,7 @@ import {codemirror} from 'vue-codemirror';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/xml/xml';
+import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/smarty/smarty';
 import 'codemirror/addon/display/placeholder';
 
@@ -94,6 +98,27 @@ export default {
     }
   },
   methods: {
+    categoryAdded(resourceId, send = true) {
+      if (this.pricelist.categories.indexOf(resourceId) === -1) {
+        this.pricelist.categories.push(resourceId);
+      }
+      if (send) {
+        api.post('categories/create', {pricelist_id: this.pricelist.id, resource_id: resourceId})
+            .then(() => this.getXmlPreview())
+            .catch(error => {
+              console.error(error);
+              this.categoryRemoved(resourceId, false)
+            })
+      }
+    },
+    categoryRemoved(resourceId, send = true) {
+      this.pricelist.categories = this.pricelist.categories.filter(selected => selected !== resourceId);
+      if (send) {
+        api.post('categories/remove', {pricelist_id: this.pricelist.id, resource_id: resourceId})
+            .then(() => this.getXmlPreview())
+            .catch(error => console.error(error)) // можно добавлять назад, если по какой-то причине не удалился
+      }
+    },
     fieldUpdated(field, created = false) {
       let fields = this.pricelist.fields.slice();
       if (created) {
@@ -101,12 +126,12 @@ export default {
       } else {
         fields.splice(fields.findIndex(item => item.id ? item.id === field.id : item.parent === field.parent), 1, field);
       }
-      this.pricelistUpdated({fields});
+      this.pricelistUpdated({fields}, false);
     },
     fieldDeleted(field) {
       let fields = this.pricelist.fields.slice();
       fields.splice(fields.findIndex(item => item.id === field.id), 1);
-      this.pricelistUpdated({fields: fields});
+      this.pricelistUpdated({fields: fields}, false);
     },
     attributeUpdated(attr, created = false) {
       let attributes = this.pricelist.attributes.slice();
@@ -115,16 +140,12 @@ export default {
       } else {
         attributes.splice(attributes.findIndex(item => item.id ? item.id === attr.id : item.field_id === attr.field_id), 1, attr);
       }
-      this.pricelistUpdated( {attributes});
+      this.pricelistUpdated({attributes}, false);
     },
     attributeDeleted(attribute) {
       let attributes = this.pricelist.attributes.slice();
       attributes.splice(attributes.findIndex(item => item.id === attribute.id), 1);
-      this.pricelistUpdated({attributes});
-    },
-    pricelistUpdated(pricelist) {
-      this.pricelist = {...this.pricelist, ...pricelist};
-      this.getXmlPreview()
+      this.pricelistUpdated({attributes}, false);
     },
     togglePreview() {
       this.preview = !this.preview;
@@ -161,6 +182,22 @@ export default {
             console.error(error.message);
             setTimeout(() => this.$router.push({name: 'pricelists'}), 3000);
           })
+    },
+    pricelistUpdated(pricelist, save = true) {
+      this.pricelist = {...this.pricelist, ...pricelist};
+      if (save) {
+        this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
+        // eslint-disable-next-line no-unused-vars
+        let {fields, categories, attributes, shop_fields, offer_field, ...pricelist} = this.pricelist;
+        api.post('pricelists/update', {...pricelist})
+            .then(({data}) => {
+              this.pricelist = {...this.pricelist, ...data.object};
+              this.getXmlPreview()
+            })
+            .catch(error => console.error(error));
+      } else {
+        this.getXmlPreview()
+      }
     },
   },
   mounted() {

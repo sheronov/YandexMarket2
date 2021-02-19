@@ -134,9 +134,6 @@
 </template>
 
 <script>
-// import VSelect from "vuetify/lib/components/VSelect/VSelect";
-// import VCombobox from "vuetify/lib/components/VCombobox/VCombobox";
-// import VTextField from "vuetify/lib/components/VTextField/VTextField";
 import {codemirror} from 'vue-codemirror';
 import {mapGetters} from 'vuex';
 

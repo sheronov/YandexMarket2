@@ -1,16 +1,9 @@
 <template>
   <div class="yandexmarket-pricelist-settings">
-    <h4>Настройки магазина</h4>
-    <p class="mb-2">Обязательные поля отмечены звёздочкой. Пустые поля не попадут в выгрузку.</p>
-<!--    <pricelist-shop-field-->
-<!--        v-for="(field,key) in sortedFields"-->
-<!--        :key="field.id"-->
-<!--        :field="field"-->
-<!--        :marketplace="pricelist.type"-->
-<!--        @input="changedValue(key,$event)"-->
-<!--    />-->
+    <h4>Настройки основных полей магазина</h4>
+    <p class="mb-2">Обязательные поля отмечены звёздочкой. Не забывайте сохранять изменения.</p>
     <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
-      <pricelist-offer-field
+      <pricelist-field
           :item="pricelist.fields.find(field => field.type === shopType)"
           :fields="pricelist.fields"
           :attributes="pricelist.attributes"
@@ -18,24 +11,19 @@
           v-on="$listeners"
       />
     </v-expansion-panels>
-    <p>
-      TODO: Тут нужно сделать добавление новых полей и перемещение порядка
-      Тут будет название, компания, урл, платформа, версия, агентство, емайл, валюта, показывать ли скидки, доставка
-    </p>
+    <p>Пустые поля не попадут в выгрузку. Сохранение каждого поля появляется после изменений.</p>
   </div>
 </template>
 
 <script>
 
-import PricelistOfferField from "@/components/PricelistField";
-// import PricelistShopField from "@/components/PricelistShopField";
+import PricelistField from "@/components/PricelistField";
 import {TYPE_SHOP} from "@/store/modules/field";
 
 export default {
   name: 'PriceListShop',
   components: {
-  //   PricelistShopField,
-    PricelistOfferField
+    PricelistField
   },
   props: {
     pricelist: {type: Object, required: true}
@@ -48,16 +36,6 @@ export default {
     previewXml() {
       this.$emit('preview:xml', 'shop')
     },
-    // reset() {
-    //   let shopField = this.pricelist.fields.find(field => field.type === TYPE_SHOP);
-    //   if (shopField) {
-    //     this.fields = this.pricelist.fields.filter(field => !field.is_hidden && field.parent === shopField.id).slice();
-    //   }
-    // },
-    // changedValue(id, value) {
-    //   this.$set(this.fields, id, value);
-    //   this.previewXml();
-    // }
   },
   mounted() {
     this.previewXml();

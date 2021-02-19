@@ -111,30 +111,30 @@ abstract class Marketplace
     {
         return [
             Field::TYPE_SHOP  => [
-                'name'                  => $this->defaultOption('shop_name', $this->modx->getOption('site_name')),
-                'url'                   => $this->defaultOption('shop_url', $this->modx->getOption('site_url')),
-                'platform'              => $this->defaultOption('shop_platform', 'MODX Revolution'),
-                'version'               => $this->defaultOption('shop_version',
+                'name'                  => $this->getOption('shop_name', $this->modx->getOption('site_name')),
+                'url'                   => $this->getOption('shop_url', $this->modx->getOption('site_url')),
+                'platform'              => $this->getOption('shop_platform', 'MODX Revolution'),
+                'version'               => $this->getOption('shop_version',
                     $this->modx->getOption('settings_version')),
                 'currencies'            => [
-                    'value' => explode(',', $this->defaultOption('shop_currencies', 'RUB'))
+                    'value' => explode(',', $this->getOption('shop_currencies', 'RUB'))
                 ],
-                'enable_auto_discounts' => $this->defaultOption('shop_enable_auto_discounts', true) ? 'true' : 'false'
+                'enable_auto_discounts' => $this->getOption('shop_enable_auto_discounts', true) ? 'true' : 'false'
             ],
             Field::TYPE_OFFER => [
-                'name'        => $this->defaultOption('offer_name', 'modResource.pagetitle'),
-                'url'         => $this->defaultOption('offer_url', 'Offer.url'), // Offer собирающий класс
-                'price'       => $this->defaultOption('offer_price', 'Offer.price'), // Offer собирающий класс
+                'name'        => $this->getOption('offer_name', 'modResource.pagetitle'),
+                'url'         => $this->getOption('offer_url', 'Offer.url'), // Offer собирающий класс
+                'price'       => $this->getOption('offer_price', 'Offer.price'), // Offer собирающий класс
                 'currencyId'  => [
-                    'handler' => $this->defaultOption('offer_currency_id', 'RUB')
+                    'handler' => $this->getOption('offer_currency_id', 'RUB')
                 ],
                 'delivery'    => [
-                    'handler' => $this->defaultOption('offer_delivery', 'true')
+                    'handler' => $this->getOption('offer_delivery', 'true')
                 ],
                 'pickup'      => [
-                    'handler' => $this->defaultOption('offer_pickup', 'true')
+                    'handler' => $this->getOption('offer_pickup', 'true')
                 ],
-                'description' => $this->defaultOption('offer_description', 'modResource.introtext'),
+                'description' => $this->getOption('offer_description', 'modResource.introtext'),
             ]
         ];
     }
@@ -143,11 +143,11 @@ abstract class Marketplace
     {
         return [
             Field::TYPE_ROOT  => [
-                'date' => $this->defaultOption('yml_catalog_attr_date', 'Pricelist.generated_on')
+                'date' => $this->getOption('yml_catalog_attr_date', 'Pricelist.generated_on')
             ],
             Field::TYPE_OFFER => [
-                'id'   => $this->defaultOption('offer_attr_id', 'modResource.id'),
-                'type' => $this->defaultOption('offer_attr_type', YandexMarket::TYPE_SIMPLE)
+                'id'   => $this->getOption('offer_attr_id', 'modResource.id'),
+                'type' => $this->getOption('offer_attr_type', YandexMarket::TYPE_SIMPLE)
             ],
         ];
     }
@@ -158,7 +158,7 @@ abstract class Marketplace
      *
      * @return mixed
      */
-    protected function defaultOption(string $key, $default = null)
+    protected function getOption(string $key, $default = null)
     {
         return $this->modx->getOption('ym_default_'.$key, null, $default);
     }

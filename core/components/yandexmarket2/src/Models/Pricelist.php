@@ -52,6 +52,11 @@ class Pricelist extends BaseObject
         return ymPricelist::class;
     }
 
+    public function getWhere(): array
+    {
+        return empty($this->where) ? [] : json_decode($this->where, true);
+    }
+
     public function getFields(bool $withAttributes = true): array
     {
         if (!isset($this->fields)) {
@@ -128,6 +133,9 @@ class Pricelist extends BaseObject
     public function toArray(bool $withValues = false): array
     {
         $data = parent::toArray();
+        if (!empty($data['where']) && is_array($data['where'])) {
+            $data['where'] = json_encode($data['where']);
+        }
 
         if ($withValues) {
             // TODO: потом перенести возможные поля на фронт в объект маркетплейсов (в VueX)

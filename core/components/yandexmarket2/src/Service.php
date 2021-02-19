@@ -2,9 +2,7 @@
 
 namespace YandexMarket;
 
-use modResource;
 use modX;
-use msProduct;
 use xPDO;
 use xPDOQuery;
 use YandexMarket\Models\Category;
@@ -17,6 +15,8 @@ class Service
     protected $config       = [];
     public    $hasMS2       = false;
     public    $pricePlugins = false;
+
+    protected $offerClass;
 
     public function __construct(modX $modx, array $config = [])
     {
@@ -37,15 +37,16 @@ class Service
         $this->modx->addPackage('yandexmarket2', $this->config['modelPath']);
         $this->modx->lexicon->load('yandexmarket2:default');
 
+        $defaultOfferClass = 'modDocument';
         if ($this->hasMS2 = self::hasMiniShop2()) {
-            $c = $modx->newQuery('modPluginEvent', ['event:IN' => ['msOnGetProductPrice', 'msOnGetProductWeight']]);
+            $defaultOfferClass = 'msProduct';
+            $c = $modx->newQuery('modPluginEvent', ['ezvent:IN' => ['msOnGetProductPrice', 'msOnGetProductWeight']]);
             $c->innerJoin('modPlugin', 'modPlugin', 'modPlugin.id = modPluginEvent.pluginid');
             $c->where('modPlugin.disabled = 0');
             $this->pricePlugins = $modx->getOption('ms2_price_snippet', null, false, true)
                 || $modx->getCount('modPluginEvent', $c);
-            // $modx->addPackage('minishop2', $modx->getOption('minishop2_core_path', null,
-            //         $modx->getOption('core_path').'components/minishop2/').'model/');
         }
+        $this->offerClass = $modx->getOption('ym_option_offer_class_key', null, $defaultOfferClass);
     }
 
     public static function debugInfo(xPDO $xpdo): ?array
@@ -69,7 +70,7 @@ class Service
     // TODO: тут получить товары со всеми возможными опциями и тв полями
     public function queryForPricelist(Pricelist $pricelist, array $data = [])
     {
-        $class = $this->hasMS2 ? msProduct::class : modResource::class;
+        $class = $this->offerClass ?: 'modResource';
         $q = $this->modx->newQuery($class);
         $q->select($this->modx->getSelectColumns($class, $class, ''));
 
@@ -81,11 +82,19 @@ class Service
             ]);
         }
 
+        if (!empty($this->offerClass)) {
+            $q->where(['class_key' => $this->offerClass]);
+        }
+
         if ($this->hasMS2) {
             $q->leftJoin('msProductData', 'Data');
             $q->leftJoin('msVendor', 'Vendor', 'Data.vendor=Vendor.id');
             $q->select($this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true));
             $q->select($this->modx->getSelectColumns('msVendor', 'Vendor', 'vendor.', ['id'], true));
+        }
+
+        if(!empty($pricelist->getWhere())) {
+            $q->where($pricelist->getWhere());
         }
 
         // TODO: тут изучить все значения (и их хэнделры в выбранных полях)
