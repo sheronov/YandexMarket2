@@ -1,7 +1,7 @@
 <template>
   <div class="yandexmarket-pricelist">
     <v-tabs v-if="id" class="yandexmarket-pricelist-tabs pr-15" background-color="transparent" :height="40">
-      <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Настройки прайс-листа</v-tab>
+      <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Настройки магазина</v-tab>
       <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>Категории и условия</v-tab>
       <v-tab :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>Поля предложений</v-tab>
       <v-tab :to="{name: 'pricelist.generate', params: {id: id}}" :ripple="false" exact>Выгрузка и параметры</v-tab>
@@ -49,7 +49,6 @@
             <div class="yandexmarket-xml-preview">
               <h4><label for="yandexmarket-preview">Предпросмотр XML элемента &lt;{{ previewType }}&gt;</label></h4>
               <p class="mb-2">Автоматически обновляется при любом изменении</p>
-              <!--              <textarea ref="textarea" id="yandexmarket-preview"></textarea>-->
               <codemirror id="yandexmarket-preview" v-model="code" :options="cmOptions"></codemirror>
             </div>
             <pre v-if="debug && Object.keys(debug).length">{{ debug }}</pre>
@@ -176,10 +175,14 @@ export default {
       api.post('pricelists/get', {id: this.id})
           .then(({data}) => {
             this.pricelist = data.object;
+            let route = this.$route.matched.find(r => r.meta && r.meta.replaceable);
+            if (route) {
+              this.$set(route, 'meta', {...route.meta, title: `${data.object.name} (${data.object.id})`});
+            }
           })
           .catch(error => {
             // TODO: тут может уведомление всплывающее сделать и возвращать в общий список
-            console.error(error.message);
+            console.error(error);
             setTimeout(() => this.$router.push({name: 'pricelists'}), 3000);
           })
     },

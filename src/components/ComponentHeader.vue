@@ -1,7 +1,7 @@
 <template>
   <h2 class="mb-5 mt-5 yandexmarket-component-name">
     YandexMarket
-    <v-breadcrumbs v-if="items.length > 1" class="yandexmarket-breadcrumbs" :items="items"/>
+    <v-breadcrumbs v-if="breadcrumbs.length > 1" class="yandexmarket-breadcrumbs" :items="breadcrumbs"/>
     <span class="subtitle-1" v-else> &nbsp;-&nbsp; выгрузка предложений в XML для Яндекс Маркет и не только</span>
   </h2>
 </template>
@@ -12,15 +12,14 @@ export default {
   data: () => ({
     items: []
   }),
-  methods: {
-    updateBreadcrumbs() {
-      const params = Object.assign({}, this.$route.params);
-      this.items = this.$route.matched
+  computed: {
+    breadcrumbs() {
+      return this.$route.matched
           .filter(item => item.meta && item.meta.title && (item.name || item.meta.to))
           .map(item => {
             return {
               text: item.meta.title,
-              to: {name: item.name || item.meta.to, params: params},
+              to: {name: item.name || item.meta.to, params: this.$route.params || {}},
               exact: true,
               disabled: false
             };
@@ -28,12 +27,13 @@ export default {
     }
   },
   watch: {
-    '$route'() {
-      this.updateBreadcrumbs();
+    '$route.matched'(matched) {
+      console.log(matched);
+      // this.updateBreadcrumbs();
     }
   },
   mounted() {
-    this.updateBreadcrumbs();
+    // this.updateBreadcrumbs();
   }
 }
 </script>

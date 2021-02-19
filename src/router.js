@@ -22,7 +22,7 @@ const routes = [
         }, {
             path: ':id',
             component: PriceList,
-            meta: {title: 'Настройки прайс-листа', to: 'pricelist'},
+            meta: {title: 'Настройки прайс-листа', to: 'pricelist', replaceable: true},
             children: [{
                 path: '',
                 component: PriceListShop,
