@@ -26,15 +26,6 @@ export default {
           })
     }
   },
-  watch: {
-    '$route.matched'(matched) {
-      console.log(matched);
-      // this.updateBreadcrumbs();
-    }
-  },
-  mounted() {
-    // this.updateBreadcrumbs();
-  }
 }
 </script>
 

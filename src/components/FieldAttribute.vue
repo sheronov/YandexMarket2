@@ -1,5 +1,5 @@
 <template>
-  <v-col :md="edit ? 12 : 4" :sm="edit ? 12 : 6"  cols="12" class="yandexmarket-field-attribute">
+  <v-col :md="edit ? 12 : 4" :sm="edit ? 12 : 6" cols="12" class="yandexmarket-field-attribute">
     <component
         v-if="!edit"
         :is="item.values ? 'v-select' : 'v-text-field'"
@@ -14,19 +14,21 @@
         :label="label"
         class="yandexmarket-field-attribute"
         dense
-        outlined
+        filled
     >
-<!--      <template v-slot:append-outer v-if="edited">-->
-<!--        <v-icon @click="cancelChanges" title="Отменить изменения" color="orange darken-1">icon-rotate-left</v-icon>-->
-<!--      </template>-->
       <template v-slot:append>
         <v-btn small v-if="!edited" icon :title="'Отредактировать свойства '+item.name" @click.stop="editAttr"
                class="mt-n1 mr-n2">
           <v-icon>icon-pencil</v-icon>
         </v-btn>
-        <v-btn v-else small icon @click.stop="saveChanges" title="Сохранить изменения" class="mt-n1 mr-n2"
+        <v-btn v-else small icon @click.stop="saveChanges" title="Сохранить изменения" class="mt-1 mr-n2"
                color="secondary">
           <v-icon>icon-save</v-icon>
+        </v-btn>
+      </template>
+      <template v-slot:append-outer v-if="edited">
+        <v-btn fab x-small absolute depressed width="24" height="24" style="top:-5px;right:0" color="grey lighten-2">
+          <v-icon size="14" @click="cancelChanges" title="Отменить изменения" color="orange">icon-rotate-left</v-icon>
         </v-btn>
       </template>
     </component>
@@ -55,7 +57,8 @@
           </v-btn>
         </template>
         <template v-else>
-          <v-btn v-if="item.id" small icon title="Отменить редактирование" @click="editAttr" class="ml-1" color="secondary">
+          <v-btn v-if="item.id" small icon title="Отменить редактирование" @click="editAttr" class="ml-1"
+                 color="secondary">
             <v-icon>icon-pencil</v-icon>
           </v-btn>
           <v-btn small icon title="Удалить поле" @click="deleteAttribute" class="ml-1">
