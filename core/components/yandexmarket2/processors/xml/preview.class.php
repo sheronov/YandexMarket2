@@ -17,7 +17,7 @@ class ymXmlPreviewProcessor extends modProcessor
     {
         /** @var ymPricelist $pricelist */
         if ((!$id = $this->getProperty('id')) || !$pricelist = $this->modx->getObject(ymPricelist::class, $id)) {
-            return $this->modx->lexicon('yandexmarket_pricelist_err_nfs', ['id' => $id]);
+            return $this->modx->lexicon('ym_pricelist_err_nfs', ['id' => $id]);
         }
 
         $this->xml = new Preview(new Pricelist($this->modx, $pricelist));
@@ -40,7 +40,7 @@ class ymXmlPreviewProcessor extends modProcessor
                 $xml = $this->xml->previewShop();
                 break;
             default:
-                return $this->failure($this->modx->lexicon('yandexmarket2_pricelist_err_method'));
+                return $this->failure($this->modx->lexicon('ym_pricelist_err_method'));
         }
 
         return $this->success($xml, Service::debugInfo($this->modx));

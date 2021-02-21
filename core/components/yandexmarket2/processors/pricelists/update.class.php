@@ -46,6 +46,7 @@ class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
         $this->unsetProperty('created_on');
         $this->setProperty('edited_on', date('Y-m-d H:i:s'));
         $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
+        $this->unsetProperty('need_generate');
 
         return parent::beforeSet();
     }
