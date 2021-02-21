@@ -181,7 +181,6 @@ export default {
             }
           })
           .catch(error => {
-            // TODO: тут может уведомление всплывающее сделать и возвращать в общий список
             console.error(error);
             setTimeout(() => this.$router.push({name: 'pricelists'}), 3000);
           })

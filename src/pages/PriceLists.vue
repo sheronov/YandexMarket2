@@ -16,19 +16,20 @@
         </template>
         <v-card :loading="loading">
           <v-card-title>
-            <span class="headline">Создание прайс-листа</span>
+            <span class="headline">Добавление прайс-листа</span>
           </v-card-title>
           <v-card-text class="pb-1">
             <v-select
                 v-model="pricelist.type"
-                hint="Пока только Яндекс Маркет"
+                hint="Вы можете добавить новые, см. документацию"
                 persistent-hint
                 class="mb-5"
-                readonly
-                :items="types"
+                :items="marketplaces"
                 :error="!!errors['type']"
                 :error-messages="errors['type']"
-                label="Тип прайс-листа"
+                label="Маркетплейс"
+                :menu-props="{offsetY: true}"
+                :attach="true"
             ></v-select>
             <v-text-field
                 v-model="pricelist.name"
@@ -49,7 +50,7 @@
             </v-btn>
             <v-spacer></v-spacer>
             <v-btn color="secondary" @click="createPricelist">
-              Создать
+              Добавить
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -80,10 +81,17 @@
         {{ value ? value : 'Файл ещё не сгенерирован' }}
       </template>
       <template v-slot:item.type="{ value }">
-        {{ types.filter(type => type['value'] === value)[0]['text'] || value }}
+        {{ marketplaceText(value) || value }}
       </template>
       <template v-slot:item.actions="{ item }">
         <v-spacer/>
+        <v-btn
+            :to="{name:'pricelist.generate', params: {id: item.id}}"
+            title="Сгенерировать файл"
+            icon
+        >
+          <v-icon>icon icon-print</v-icon>
+        </v-btn>
         <v-btn
             :to="{name:'pricelist', params: {id: item.id}}"
             title="Редактировать прайс-лист"
@@ -96,7 +104,7 @@
             title="Удалить прайс-лист"
             icon
         >
-          <v-icon color="red">icon icon-trash</v-icon>
+          <v-icon>icon icon-trash</v-icon>
         </v-btn>
       </template>
     </v-data-table>
@@ -109,15 +117,12 @@
 <script>
 import api, {ValidationError} from "./../api";
 import {declension} from "@/helpers";
+import {mapGetters, mapState} from 'vuex';
 
 export default {
   name: 'PriceLists',
   data() {
     return {
-      types: [
-          //TODO: сделать подгрузку маркетплейсов с сервера вместе с полями
-        {text: 'Яндекс Маркет', value: 'yandex.market'}
-      ],
       defaultItem: {
         file: 'goods.xml',
         name: 'Все товары',
@@ -132,12 +137,12 @@ export default {
       loading: false,
       lists: [],
       headers: [
-        {text: 'ID', value: 'id'},
-        {text: 'Название', value: 'name'},
-        {text: 'Тип прайс-листа', value: 'type'},
-        {text: 'Файл', value: 'file'},
-        {text: 'Обновлён', value: 'generated_on'},
-        {text: 'Активен', value: 'active'},
+        {text: 'ID', value: 'id', sortable: false},
+        {text: 'Название', value: 'name', sortable: false},
+        {text: 'Тип прайс-листа', value: 'type', sortable: false},
+        {text: 'Файл', value: 'file', sortable: false},
+        {text: 'Обновлён', value: 'generated_on', sortable: false},
+        {text: 'Активен', value: 'active', sortable: false},
         {text: 'Действия', value: 'actions', sortable: false, align: 'end'}
       ],
       errors: {},
@@ -147,6 +152,10 @@ export default {
         limit: 20
       },
     }
+  },
+  computed: {
+    ...mapState('marketplace', ['marketplaces']),
+    ...mapGetters('marketplace', ['marketplaceText'])
   },
   methods: {
     decl(number, titles, withNum = true) {

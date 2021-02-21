@@ -1,6 +1,5 @@
 <template>
   <v-expansion-panel class="yandexmarket-field" :ref="'panel'+field.id" readonly>
-    <!--  TODO: переделать панели на обычные div, чтобы не закрывались самостоятельно (бесит)  -->
     <field-header
         :field="field"
         :item="item"

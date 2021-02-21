@@ -211,7 +211,7 @@ export default {
       } else if (typeof val === 'object') {
         value = val.value;
       } else { //новое значение текстом
-        value = val; // TODO: добавить в store VUEX ко всем колонкам товара
+        value = val; // TODO: добавить новую колонку в store VUEX ко всем колонкам товара
       }
       this.$emit('input', value);
       // if it will be wrong, see https://github.com/vuetifyjs/vuetify/issues/5479#issuecomment-672300135
@@ -245,6 +245,8 @@ export default {
 }
 </script>
 
+
+<!--suppress CssUnusedSymbol -->
 <style>
 .yandexmarket-field-value .CodeMirror {
   height: auto;
