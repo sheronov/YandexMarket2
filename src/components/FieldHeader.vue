@@ -21,9 +21,7 @@
     </span>
     <span class="pl-1 grey--text">
       <span v-if="item.label.replace(' *','') !== item.name">{{ item.label.replace(' *', '') }}</span>
-      <small v-if="!isUnique(item) && !isSimpleString(item)"> ({{
-          typeText(item) || item.type || 'выберите тип'
-        }})</small>
+      <small v-if="!item.id"> (выберите тип)</small>
     </span>
     <v-tooltip v-if="item.help" bottom :max-width="400" :close-delay="200" :attach="true">
       <template v-slot:activator="{ on }">

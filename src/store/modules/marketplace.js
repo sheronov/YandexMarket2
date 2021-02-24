@@ -12,13 +12,16 @@ export default {
             let found = state.marketplaces.find(m => m.value === value);
             return found ? found.text : null;
         },
-        getFields: state => (type, group) => {
-            let marketplace = state.marketplaces.find(m => m.value === type);
+        availableFields: state => (group, pricelist) => {
+            let marketplace = state.marketplaces.find(m => m.value === pricelist.type);
             let fields = [];
             if (marketplace && marketplace[group + '_fields']) {
                 fields = marketplace[group + '_fields'];
             }
-            return fields;
+            let parent = pricelist.fields.find(p => p.type === (group === 'offer' ? 6 : 2));
+            return fields.filter(field => field.multiple ||
+                !pricelist.fields.find(pf => pf.name === field.value && pf.parent === parent.id)
+            );
         }
     },
     mutations: {

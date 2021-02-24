@@ -32,7 +32,7 @@ class YandexMarket extends Marketplace
                 'type'       => Field::TYPE_ROOT,
                 'attributes' => [
                     'date' => [
-                        'type'     => Attribute::TYPE_DATE,
+                        'type'     => Attribute::TYPE_VALUE,
                         'required' => true,
                     ]
                 ],
@@ -52,27 +52,27 @@ class YandexMarket extends Marketplace
         return [
             'name'                  => [
                 'required' => true,
-                'type'     => Field::TYPE_OPTION,
+                'type'     => Field::TYPE_TEXT,
             ],
             'company'               => [
                 'required' => true,
-                'type'     => Field::TYPE_OPTION,
+                'type'     => Field::TYPE_TEXT,
             ],
             'url'                   => [
                 'required' => true,
-                'type'     => Field::TYPE_OPTION,
+                'type'     => Field::TYPE_TEXT,
             ],
             'platform'              => [
-                'type' => Field::TYPE_OPTION,
+                'type' => Field::TYPE_TEXT,
             ],
             'version'               => [
-                'type' => Field::TYPE_OPTION,
+                'type' => Field::TYPE_TEXT,
             ],
             'agency'                => [
-                'type' => Field::TYPE_OPTION,
+                'type' => Field::TYPE_TEXT,
             ],
             'email'                 => [
-                'type' => Field::TYPE_OPTION,
+                'type' => Field::TYPE_TEXT,
             ],
             'currencies'            => [
                 'type'     => Field::TYPE_CURRENCIES,
@@ -83,14 +83,14 @@ class YandexMarket extends Marketplace
                 'type'     => Field::TYPE_CATEGORIES,
                 'required' => true,
             ],
-            'delivery_options'      => [
-                'type' => Field::TYPE_FEATURE,
+            'delivery-options'      => [
+                'type' => Field::TYPE_PARENT,
             ],
             'pickup-options'        => [
-                'type' => Field::TYPE_FEATURE
+                'type' => Field::TYPE_PARENT
             ],
             'enable_auto_discounts' => [
-                'type' => Field::TYPE_OPTION,
+                'type' => Field::TYPE_TEXT,
             ],
             'offers'                => [
                 'type'     => Field::TYPE_OFFERS,
@@ -102,10 +102,10 @@ class YandexMarket extends Marketplace
                         'attributes' => [
                             'id'   => [
                                 'required' => true,
-                                'type'     => Attribute::TYPE_STRING,
+                                'type'     => Attribute::TYPE_VALUE,
                             ],
                             'type' => [
-                                'type'     => Attribute::TYPE_RAW,
+                                'type'     => Attribute::TYPE_TEXT,
                                 'required' => true,
                                 'values'   => [
                                     self::TYPE_SIMPLE,
@@ -120,7 +120,7 @@ class YandexMarket extends Marketplace
                                 ],
                             ],
                             'bid'  => [
-                                'type'     => Attribute::TYPE_STRING,
+                                'type'     => Attribute::TYPE_VALUE,
                                 'optional' => true,
                             ]
                         ],
@@ -129,10 +129,10 @@ class YandexMarket extends Marketplace
                 ]
             ],
             'gifts'                 => [
-                'component' => Field::TYPE_FEATURE,
+                'type' => Field::TYPE_PARENT,
             ],
             'promos'                => [
-                'component' => Field::TYPE_FEATURE,
+                'type' => Field::TYPE_PARENT,
             ]
         ];
     }
@@ -163,81 +163,81 @@ class YandexMarket extends Marketplace
                 'required' => true,
             ],
             'price'                 => [
-                'type'       => Field::TYPE_NUMBER,
+                'type'       => Field::TYPE_VALUE,
                 'required'   => true,
                 'attributes' => [
                     'from' => [
-                        'type'     => Attribute::TYPE_BOOLEAN,
+                        'type'     => Attribute::TYPE_TEXT,
                         'optional' => true,
                     ]
                 ],
             ],
             'param'                 => [
-                'type'       => Field::TYPE_DEFAULT, // TODO: тут убрать тип, так как можно выбирать
+                'type'       => Field::TYPE_DEFAULT,
                 'multiple'   => true,
                 'attributes' => [
                     'name' => [
-                        'type'     => Attribute::TYPE_STRING,
+                        'type'     => Attribute::TYPE_TEXT,
                         'required' => true,
                     ],
                     'unit' => [
-                        'type' => Attribute::TYPE_STRING
+                        'type' => Attribute::TYPE_TEXT
                     ]
                 ]
             ],
             'oldprice'              => [
-                'type'     => Field::TYPE_NUMBER,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true,
             ],
             'purchase_price'        => [
-                'type'     => Field::TYPE_NUMBER,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'enable_auto_discount'  => [
-                'type'     => Field::TYPE_BOOLEAN,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'currencyId'            => [
-                'type'     => Field::TYPE_DEFAULT,
+                'type'     => Field::TYPE_TEXT,
                 'required' => true,
             ],
             'categoryId'            => [
-                'type'     => Field::TYPE_NUMBER,
+                'type'     => Field::TYPE_VALUE,
                 'required' => true,
             ],
             'picture'               => [
                 'type' => Field::TYPE_PICTURES,
             ],
             'supplier'              => [
-                'type'       => Field::TYPE_DEFAULT,
+                'type'       => Field::TYPE_EMPTY,
                 'optional'   => true,
                 'attributes' => [
                     'ogrn' => [
                         'required' => true,
-                        'type'     => Attribute::TYPE_STRING
+                        'type'     => Attribute::TYPE_VALUE
                     ]
                 ]
             ],
             'delivery'              => [
-                'type' => Field::TYPE_BOOLEAN,
+                'type' => Field::TYPE_TEXT,
             ],
             'pickup'                => [
-                'type' => Field::TYPE_BOOLEAN,
+                'type' => Field::TYPE_TEXT,
             ],
             'delivery-options'      => [
-                'type'     => Field::TYPE_FEATURE,
+                'type'     => Field::TYPE_PARENT,
                 'optional' => true
             ],
             'pickup-options'        => [
-                'type'     => Field::TYPE_FEATURE,
+                'type'     => Field::TYPE_PARENT,
                 'optional' => true
             ],
             'store'                 => [
-                'type'     => Field::TYPE_BOOLEAN,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'description'           => [
-                'type'   => Field::TYPE_CDATA,
+                'type'   => Field::TYPE_CDATA_VALUE,
                 'length' => 3000
             ],
             'sales_notes'           => [
@@ -245,11 +245,11 @@ class YandexMarket extends Marketplace
                 'length' => 50
             ],
             'min-quantity'          => [
-                'type'     => Field::TYPE_NUMBER,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'manufacturer_warranty' => [
-                'type'     => Field::TYPE_BOOLEAN,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'country_of_origin'     => [
@@ -257,7 +257,7 @@ class YandexMarket extends Marketplace
                 'optional' => true
             ],
             'adult'                 => [
-                'type'     => Field::TYPE_BOOLEAN,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'barcode'               => [
@@ -265,31 +265,31 @@ class YandexMarket extends Marketplace
                 'optional' => true
             ],
             'condition'             => [
-                'type'     => Field::TYPE_FEATURE,
+                'type'     => Field::TYPE_PARENT,
                 'optional' => true
             ],
             'credit-template'       => [
-                'type'     => Field::TYPE_FEATURE,
+                'type'     => Field::TYPE_EMPTY,
                 'optional' => true
             ],
             'expiry'                => [
-                'type'     => Field::TYPE_FEATURE,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'weight'                => [
-                'type'     => Field::TYPE_NUMBER,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'dimensions'            => [
-                'type'     => Field::TYPE_FEATURE,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'downloadable'          => [
-                'type'     => Field::TYPE_BOOLEAN,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
             'age'                   => [
-                'type'     => Field::TYPE_FEATURE,
+                'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
         ];

@@ -1,6 +1,6 @@
 <?php
 
-// TODO: do not forget to remove it
+// TODO: do not forget to remove it when building
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Authorization, Cookie, Content-Type, Accept, modAuth, modCookie');
 header('Access-Control-Allow-Methods: OPTIONS, HEAD, POST, GET, PUT, DELETE');

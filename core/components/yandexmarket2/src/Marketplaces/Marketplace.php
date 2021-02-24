@@ -76,8 +76,6 @@ abstract class Marketplace
     }
 
     /**
-     * @TODO Сделать тут автозагрузку всех маркетплейсов из этой папки method listMarketplaces()
-     *
      * @param  string  $type
      * @param  modX  $modx
      *
@@ -111,8 +109,7 @@ abstract class Marketplace
                 'name'                  => $this->getOption('shop_name', $this->modx->getOption('site_name')),
                 'url'                   => $this->getOption('shop_url', $this->modx->getOption('site_url')),
                 'platform'              => $this->getOption('shop_platform', 'MODX Revolution'),
-                'version'               => $this->getOption('shop_version',
-                    $this->modx->getOption('settings_version')),
+                'version'               => $this->getOption('shop_version', $this->modx->getOption('settings_version')),
                 'currencies'            => [
                     'value' => explode(',', $this->getOption('shop_currencies', 'RUB'))
                 ],
@@ -122,15 +119,10 @@ abstract class Marketplace
                 'name'        => $this->getOption('offer_name', 'pagetitle'),
                 'url'         => $this->getOption('offer_url', 'Offer.url'), // Offer собирающий класс
                 'price'       => $this->getOption('offer_price', 'Offer.price'), // Offer собирающий класс
-                'currencyId'  => [
-                    'handler' => $this->getOption('offer_currency_id', 'RUB')
-                ],
-                'delivery'    => [
-                    'handler' => $this->getOption('offer_delivery', 'true')
-                ],
-                'pickup'      => [
-                    'handler' => $this->getOption('offer_pickup', 'true')
-                ],
+                'currencyId'  => $this->getOption('offer_currency_id', 'RUB'),
+                'categoryId'  => $this->getOption('offer_parent', 'parent'),
+                'delivery'    => $this->getOption('offer_delivery', 'true'),
+                'pickup'      => $this->getOption('offer_pickup', 'true'),
                 'description' => $this->getOption('offer_description', 'introtext'),
             ]
         ];

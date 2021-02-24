@@ -2,7 +2,6 @@
 
 namespace YandexMarket\Xml;
 
-use DateTimeImmutable;
 use Exception;
 use Jevix;
 use modResource;
@@ -24,6 +23,8 @@ class PricelistWriter
         $this->initializeJevix();
         $this->xml = new XMLWriter();
         $this->xml->openMemory();
+        $this->xml->startDocument('1.0', 'UTF-8');
+
         $this->xml->setIndent(true);
         $this->xml->setIndentString("\t");
     }
@@ -42,8 +43,6 @@ class PricelistWriter
                     }
                     $this->xml->endElement();
                 }
-            } elseif ((int)$value['type'] === Field::TYPE_BOOLEAN) {
-                $this->xml->text(filter_var($value['value'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false');
             } elseif (($value['properties']['required'] ?? false) && ($value['value'] === null || $value['value'] === '')) {
                 $this->writeComment('Это обязательное поле. Заполните его!');
             } else {
@@ -56,6 +55,7 @@ class PricelistWriter
 
     public function writeCategories(array $categories): void
     {
+        // TODO: сделать здесь вложенность
         $this->xml->startElement('categories');
         if (count($categories)) {
             /** @var Category $category */
@@ -65,7 +65,7 @@ class PricelistWriter
                 }
             }
         } else {
-            $this->xml->writeComment('Выберите категории');
+            $this->xml->writeComment('Если не выбрать категории - то все товары будут выгружены');
         }
         $this->xml->endElement();
     }
@@ -108,11 +108,8 @@ class PricelistWriter
                     $this->writeOfferField($offer, $child);
                 }
                 break;
-            case Field::TYPE_STRING:
-            case Field::TYPE_ARRAY:
-            case Field::TYPE_NUMBER:
-            case Field::TYPE_BOOLEAN:
-            case Field::TYPE_CDATA:
+            case Field::TYPE_VALUE:
+            case Field::TYPE_CDATA_VALUE:
                 if (isset($field->value)) {
                     $value = $offer->get($field->value);
                 }
@@ -120,17 +117,8 @@ class PricelistWriter
                     $value = $field->handler; // TODO: тут обработка Fenom из pdoTools
                 }
                 if (isset($value) && $value !== '') {
-                    if ($field->type === Field::TYPE_BOOLEAN) {
-                        $this->xml->text(filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false');
-                    } elseif ($field->type === Field::TYPE_NUMBER) {
-                        $this->xml->text((float)$value);
-                    } elseif ($field->type === Field::TYPE_CDATA) {
+                    if ($field->type === Field::TYPE_CDATA_VALUE) {
                         $this->xml->writeCdata($this->jevix ? $this->jevix->parse($value, $this->errors) : $value);
-                    } elseif ($field->type === Field::TYPE_ARRAY) {
-                        if (!is_array($value)) {
-                            $value = json_decode($value, true);
-                        }
-                        $this->xml->text(implode(', ', $value));
                     } else {
                         $this->xml->text($value);
                     }
@@ -150,16 +138,7 @@ class PricelistWriter
     {
         // TODO: добавить обработку значения через handler, если присутствует
         switch ($attribute->getType()) {
-            case Attribute::TYPE_BOOLEAN:
-                if ($value = $offer->get($attribute->value)) {
-                    $this->xml->writeAttribute($attribute->name, $value ? 'true' : 'false');
-                }
-                break;
-            case Attribute::TYPE_DATE:
-                // TODO: тут значение дёрнуть откуда нужно
-                $this->xml->writeAttribute($attribute->name, (new DateTimeImmutable())->format(DATE_ATOM));
-                break;
-            case Attribute::TYPE_RAW:
+            case Attribute::TYPE_TEXT:
                 if (!empty($attribute->value)) {
                     $this->xml->writeAttribute($attribute->name, $attribute->value);
                 }

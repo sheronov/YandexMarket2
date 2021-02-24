@@ -22,24 +22,36 @@ use ymFieldAttribute;
 class Field extends BaseObject
 {
     //любое значение может быть записано в value и дополнительно обработано в handler
-    public const TYPE_ROOT       = 0;
-    public const TYPE_PARENT     = 1; //обёртка без своего собственного значения
-    public const TYPE_SHOP       = 2; // поле магазин (сюда будут прокинуты SHOP_FIELDS)
-    public const TYPE_CURRENCIES = 4; // валюта
-    public const TYPE_CATEGORIES = 5; // категории
-    public const TYPE_OFFERS     = 6; // предложения (почти бесполезно, но нужно, чтобы пропускать)
-    public const TYPE_OFFER      = 7; // предложение
-    public const TYPE_OPTION     = 8; // чисто текстовое значение (не будет как-либо обрабатываться)
-    public const TYPE_FEATURE    = 9; // ещё не реализовано
+    public const TYPE_TEXT       = 0; //текстовое значение (не будет как-либо обрабатываться)
+    public const TYPE_ROOT       = 1; //корневой элемент
+    public const TYPE_SHOP       = 2; //поле магазин (сюда будут прокинуты SHOP_FIELDS)
+    public const TYPE_CURRENCIES = 3; //валюта
+    public const TYPE_CATEGORIES = 4; //категории
+    public const TYPE_OFFERS     = 5; //предложения
+    public const TYPE_OFFER      = 6; //предложение
 
-    public const TYPE_STRING   = 10; //просто строковое поле (подходит всегда)
-    public const TYPE_CDATA    = 11; //большой текст, обернуть в CDATA
-    public const TYPE_NUMBER   = 12; //числовое предложения
-    public const TYPE_BOOLEAN  = 13; //выбор да/нет (игнорировать null - intermediate)
-    public const TYPE_ARRAY    = 14; // массив через запятую
-    public const TYPE_PICTURES = 15; // изображения предложения
+    public const TYPE_PARENT      = 10; //обёртка без своего собственного значения
+    public const TYPE_VALUE       = 11; //значение из поля товара (подходит всегда)
+    public const TYPE_CDATA_VALUE = 12; //значение из поля товара обернуть в CDATA
+    public const TYPE_PICTURES    = 13; //изображения предложения
 
-    public const TYPE_DEFAULT = self::TYPE_STRING; //поле по умолчанию
+    public const TYPE_EMPTY = 20; //пустой, только для атрибутов
+
+    public const TYPE_DEFAULT = self::TYPE_VALUE; //поле по умолчанию
+    public const TYPES_DATA   = [
+        Field::TYPE_VALUE       => ['group' => ['offer']],
+        Field::TYPE_CDATA_VALUE => ['group' => ['offer']],
+        Field::TYPE_TEXT        => ['group' => ['offer', 'shop']],
+        Field::TYPE_PARENT      => ['group' => ['offer', 'shop']],
+        Field::TYPE_EMPTY       => ['group' => ['offer', 'shop']],
+        Field::TYPE_PICTURES    => ['group' => ['offer'], 'unique' => true],
+        Field::TYPE_CURRENCIES  => ['group' => ['shop'], 'unique' => true],
+        Field::TYPE_CATEGORIES  => ['group' => ['shop'], 'unique' => true],
+        Field::TYPE_OFFERS      => ['group' => ['shop'], 'unique' => true],
+        Field::TYPE_ROOT        => ['hidden' => true, 'root' => true],
+        Field::TYPE_OFFER       => ['hidden' => true, 'root' => true],
+        Field::TYPE_SHOP        => ['hidden' => true, 'root' => true],
+    ];
 
     /** @var null|Field */
     protected $parentField;

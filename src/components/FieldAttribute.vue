@@ -12,7 +12,6 @@
         :attach="true"
         :menu-props="{offsetY: true}"
         :label="label"
-        class="yandexmarket-field-attribute"
         dense
         filled
     >
@@ -95,10 +94,9 @@
               hide-details
               :attach="true"
               :menu-props="{offsetY: true}"
-              class="yandexmarket-field-attribute"
               dense
           >
-            <template v-slot:append-outer v-if="item.type !== 3">
+            <template v-slot:append-outer v-if="item.type !== 0">
               <v-btn
                   :title="openedCode ? 'Для закрытия очистите введённый код' :'Добавить код-обработчик значения'"
                   :color="openedCode ? 'secondary' : 'accent'"
@@ -147,10 +145,8 @@ export default {
     item: {},
     edit: false,
     items: [
-      {value: 0, text: 'строка (из объекта)'},
-      {value: 1, text: 'дата (из объекта)'},
-      {value: 2, text: 'да/нет (из объекта)'},
-      {value: 3, text: 'без подстановки'},
+      {value: 0, text: 'текст (без обработки)'},
+      {value: 1, text: 'значение из столбца'},
     ],
     cmOptions: {
       taSize: 4,
@@ -221,9 +217,6 @@ export default {
         return;
       }
       this.code = !this.code;
-      if (!this.code) {
-        this.item.handler = null;
-      }
     },
   },
   mounted() {
@@ -233,3 +226,11 @@ export default {
   }
 }
 </script>
+
+<!--suppress CssUnusedSymbol -->
+<style>
+.yandexmarket-field-attribute .CodeMirror {
+  height: auto;
+  min-height: 30px;
+}
+</style>

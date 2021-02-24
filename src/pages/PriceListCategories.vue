@@ -1,8 +1,19 @@
 <template>
   <div class="yandexmarket-pricelist-categories">
-    <div class="yandexmarket-pricelist-where mb-4">
+    <h4>Категории, участвующие в выгрузке - вложенные тоже нужно выбирать</h4>
+    <p class="mb-2">Скоро можно будет указать название категориям для лучшего сопоставления в агрегаторе</p>
+    <CategoriesTree
+        :selected="selected"
+        :categories="categories"
+        :where="{pricelist_id: pricelist.id}"
+        v-on="$listeners"
+        @contexts:loaded="categories = $event"
+        @tree:reload="treeReload"
+    />
+    <!--    <code>ids: {{ selected.join(',') }}</code>-->
+    <div class="yandexmarket-pricelist-where mb-4 mt-2">
       <v-row class="ma-0 align-center">
-        <h4 class="mb-1">Условия по товарам</h4>
+        <h4>Условия по товарам</h4>
         <v-tooltip bottom :max-width="400" :close-delay="200" :attach="true">
           <template v-slot:activator="{ on }">
             <v-btn small icon v-on="on" class="ml-1">
@@ -38,18 +49,6 @@
           placeholder='Пример: {"Data.price:>":0, "Vendor.name:IN":["Apple","Samsung"], "Option.tags:IN":["телефон","планшет"]}'
       ></vue-codemirror>
     </div>
-
-    <h4>Категории, участвующие в выгрузке - вложенные тоже нужно выбирать</h4>
-    <p class="mb-2">Скоро можно будет указать название категориям для лучшего сопоставления в агрегаторе</p>
-    <CategoriesTree
-        :selected="selected"
-        :categories="categories"
-        :where="{pricelist_id: pricelist.id}"
-        v-on="$listeners"
-        @contexts:loaded="categories = $event"
-        @tree:reload="treeReload"
-    />
-    <code>ids: {{ selected.join(',') }}</code>
   </div>
 </template>
 
@@ -131,6 +130,7 @@ export default {
 }
 </script>
 
+<!--suppress CssUnusedSymbol -->
 <style>
 .yandexmarket-pricelist-where .CodeMirror {
   height: auto;

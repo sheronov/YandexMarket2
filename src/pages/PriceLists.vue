@@ -199,7 +199,6 @@ export default {
           });
     },
     removePricelist(pricelist) {
-      // TODO: когда-нибудь красивым подтверждение сделать
       if (confirm(`Вы действительно хотите удалить прайс-лист ${pricelist.id} ? Это действие безвозвратное`)) {
         this.loading = true;
         api.post('pricelists/remove', {ids: JSON.stringify([pricelist.id])})

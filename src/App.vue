@@ -10,8 +10,9 @@
 export default {
   name: 'yandexmarket-app',
   created() {
-    this.$store.dispatch('loadClassKeys');
     this.$store.dispatch('marketplace/loadList');
+    this.$store.dispatch('loadClassKeys');
+    this.$store.dispatch('field/loadListTypes');
   }
 };
 </script>

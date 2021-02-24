@@ -118,7 +118,7 @@ class Service
         $classKeys = [];
 
         foreach ($fields as $field) {
-            if (in_array($field->type, [Field::TYPE_OPTION, Field::TYPE_CURRENCIES, Field::TYPE_CATEGORIES], true)) {
+            if (in_array($field->type, [Field::TYPE_TEXT, Field::TYPE_CURRENCIES, Field::TYPE_CATEGORIES], true)) {
                 continue;
             }
             if (!empty($field->value) && mb_strpos($field->value, '.') !== false) {
@@ -155,6 +155,20 @@ class Service
         }
 
         return null;
+    }
+
+    public function getAvailableFields(): array
+    {
+        $fields = [];
+
+        foreach (Field::TYPES_DATA as $field => $data) {
+            $fields[] = array_merge($data, [
+                'value' => $field,
+                'text'  => $this->getLexicon('ym_field_type_'.$field) ?: $field,
+            ]);
+        }
+
+        return $fields;
     }
 
     /**

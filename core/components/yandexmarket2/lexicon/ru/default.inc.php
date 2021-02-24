@@ -33,6 +33,19 @@ $_lang = array_merge($_lang ?? [], [
     'yandexmarket2_grid_actions' => 'Действия',
     'yandexmarket_test_lang'     => 'Тест лексиконов',
 
+    'ym_field_type_0'  => 'текст (без обработки)',
+    'ym_field_type_1'  => 'корневой элемент',
+    'ym_field_type_2'  => 'элемент магазина',
+    'ym_field_type_3'  => 'список валют',
+    'ym_field_type_4'  => 'список категорий',
+    'ym_field_type_5'  => 'список предложений',
+    'ym_field_type_6'  => 'элемент предложения',
+    'ym_field_type_10' => 'родительский элемент',
+    'ym_field_type_11' => 'значение из столбца',
+    'ym_field_type_12' => 'столбец в CDATA (с html тегами)',
+    'ym_field_type_13' => 'изображения товара',
+    'ym_field_type_20' => 'пустой элемент (только для атрибутов)',
+
     'ym_marketplace_yandex.market' => 'Яндекс Маркет',
 
     'ym_yandex.market_name'                       => 'Короткое название магазина',
@@ -85,10 +98,12 @@ $_lang = array_merge($_lang ?? [], [
     'ym_yandex.market_offer_name_help'  => "Полное название предложения, в которое входит: тип товара, производитель, модель и название товара, важные характеристики. \nСоставляйте по схеме: что (тип товара) + кто (производитель) + товар (модель, название) + важные характеристики. \n\nДанные в name влияют на привязку к карточке товара.",
     'ym_yandex.market_offer_url'        => 'URL страницы товара на сайте магазина.',
     'ym_yandex.market_offer_url_help'   => 'Максимальная длина ссылки — 2048 символов',
-    'ym_yandex.market_offer_param'      => 'Все важные характеристики товара',
+    'ym_yandex.market_offer_param'      => 'Важные характеристики товара',
     'ym_yandex.market_offer_param_help' => "Цвет, размер, объем, материал, вес, возраст, пол, и т. д. Элемент не должен быть пустым.\n\nВ YML элемент offer может содержать несколько элементов param (один элемент param — одна характеристика).",
 
-    'ym_yandex.market_offer_param_attr_name' => 'Название параметра',
-    'ym_yandex.market_offer_param_attr_unit' => 'Единица измерения (для числовых)',
+    'ym_yandex.market_param_attr_name' => 'Название параметра',
+    'ym_yandex.market_param_attr_unit' => 'Единица измерения (для числовых)',
+
+    //TODO: дописать тут по основным полям
 
 ]);

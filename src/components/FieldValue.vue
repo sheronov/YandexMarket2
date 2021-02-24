@@ -1,6 +1,6 @@
 <template>
   <div class="yandexmarket-field-value">
-    <v-card-title class="pa-0 flex-nowrap" v-if="!isParent(field)">
+    <v-card-title class="pa-0 flex-nowrap">
       <template v-if="isSimpleString(field)">
         <v-text-field
             :value="field.value"
@@ -166,7 +166,6 @@ export default {
     ...mapGetters(['dataColumns', 'columnText']),
     ...mapGetters('field', [
       'isSimpleString',
-      'isParent',
       'isCurrencies',
       'isCategories',
       'isOffers',
@@ -215,9 +214,6 @@ export default {
         return;
       }
       this.code = !this.code;
-      if (!this.code) {
-        this.field.handler = null;
-      }
     },
     removeChip(item) {
       let values = [...this.field.value];
@@ -238,7 +234,6 @@ export default {
   }
 }
 </script>
-
 
 <!--suppress CssUnusedSymbol -->
 <style>

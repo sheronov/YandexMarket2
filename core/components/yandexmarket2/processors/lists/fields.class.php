@@ -5,7 +5,7 @@ use YandexMarket\Service;
 /** @noinspection PhpIncludeInspection */
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
-class ymListMarketplacesProcessor extends modProcessor
+class ymListFieldsProcessor extends modProcessor
 {
 
     /** @var Service */
@@ -19,9 +19,9 @@ class ymListMarketplacesProcessor extends modProcessor
 
     public function process(): string
     {
-        return $this->outputArray($this->service->getMarketplaces());
+        return $this->outputArray($this->service->getAvailableFields());
     }
 
 }
 
-return ymListMarketplacesProcessor::class;
+return ymListFieldsProcessor::class;

@@ -9,8 +9,8 @@
           :attributes="pricelist.attributes"
           :lighten="3"
           v-on="$listeners"
-          :availableFields="getFields(pricelist.type,'shop')"
-          :available-types="fieldsForGroup('shop')"
+          :available-fields="availableFields('shop',pricelist)"
+          :available-types="availableTypes('shop',pricelist)"
       />
     </v-expansion-panels>
     <p>Пустые поля не попадут в выгрузку. Сохранение каждого поля появляется после изменений.</p>
@@ -20,7 +20,6 @@
 <script>
 
 import PricelistField from "@/components/PricelistField";
-import {TYPE_SHOP} from "@/store/modules/field";
 import {mapGetters} from 'vuex';
 
 export default {
@@ -33,11 +32,11 @@ export default {
   },
   data: () => ({
     openedFields: [0],
-    shopType: TYPE_SHOP
+    shopType: 2
   }),
   computed: {
-    ...mapGetters('marketplace', ['getFields']),
-    ...mapGetters('field', ['fieldsForGroup']),
+    ...mapGetters('marketplace', ['availableFields']),
+    ...mapGetters('field', ['availableTypes']),
   },
   methods: {
     previewXml() {

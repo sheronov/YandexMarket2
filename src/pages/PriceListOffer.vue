@@ -4,12 +4,12 @@
     <p class="mb-2">Интерактивный режим добавления и редактирования полей</p>
     <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
       <pricelist-offer-field
-          :item="pricelist.fields.find(field => field.type === offerType)"
+          :item="pricelist.fields.find(field => field.type === 6)"
           :fields="pricelist.fields"
           :attributes="pricelist.attributes"
           :lighten="3"
-          :available-fields="getFields(pricelist.type,'offer')"
-          :available-types="fieldsForGroup('offer')"
+          :available-fields="availableFields('offer',pricelist)"
+          :available-types="availableTypes('offer',pricelist)"
           v-on="$listeners"
       />
     </v-expansion-panels>
@@ -18,7 +18,6 @@
 
 <script>
 import PricelistOfferField from "@/components/PricelistField";
-import {TYPE_OFFER} from "@/store/modules/field";
 import {mapGetters} from "vuex";
 
 export default {
@@ -29,11 +28,11 @@ export default {
   },
   data: () => ({
     openedFields: [0],
-    offerType: TYPE_OFFER,
+    offerType: 6,
   }),
   computed: {
-    ...mapGetters('marketplace', ['getFields']),
-    ...mapGetters('field', ['fieldsForGroup']),
+    ...mapGetters('marketplace', ['availableFields']),
+    ...mapGetters('field', ['availableTypes']),
   },
   methods: {
     previewXml() {

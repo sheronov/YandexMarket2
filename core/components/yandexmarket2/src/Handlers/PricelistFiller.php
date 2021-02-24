@@ -52,7 +52,7 @@ class PricelistFiller
                 $field->properties = $properties;
             }
             if ($parent && $value = $this->marketplace->defaultValues()[$parent->type][$name] ?? null) {
-                if (is_array($value)) {
+                if (is_array($value) && array_values($value) !== $value) {
                     if (isset($value['handler'])) {
                         $field->handler = $value['handler'];
                     }
@@ -60,7 +60,7 @@ class PricelistFiller
                         $field->value = is_array($value['value']) ? json_encode($value['value']) : $value['value'];
                     }
                 } else {
-                    $field->value = $value;
+                    $field->value = is_array($value) ? json_encode($value) : $value;
                 }
             }
             $field->save();

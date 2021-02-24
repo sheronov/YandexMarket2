@@ -10,7 +10,7 @@
         @edit:toggle="toggleEdit"
         @edit:cancel="cancelEdit"
         @field:deleted="$emit('field:deleted',$event)"
-        @field:updated="$emit('field:updated',$event)"
+        @field:updated="fieldUpdated"
     />
     <v-expansion-panel-content :color="`grey lighten-${lighten}`" eager>
       <template v-if="attrs.length">
@@ -71,7 +71,7 @@
           </v-select>
         </v-col>
       </v-row>
-      <field-value :field="field" @input="field.value = $event"/>
+      <field-value :field="field" @input="field.value = $event" v-if="!isParent(field) && !isEmptyType(field)"/>
       <v-card-text class="pa-0" v-if="isParent(field)">
         <template v-if="children.length">
           <div class="grey--text" style="font-size: 13px;">Дочерние элементы:</div>
@@ -135,6 +135,7 @@ export default {
     opened: [],
     edit: false,
     code: false,
+    attributesToAdd: []
   }),
   watch: {
     item: {
@@ -161,9 +162,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('marketplace', ['getFields']),
     ...mapGetters('field', [
       'isParent',
+      'isEmptyType'
     ]),
   },
   mounted() {
@@ -172,15 +173,29 @@ export default {
     }
   },
   methods: {
+    fieldUpdated(field) {
+      this.$emit('field:updated', field);
+      if (Object.keys(this.attributesToAdd).length) {
+        for (let name in this.attributesToAdd) {
+          if (Object.prototype.hasOwnProperty.call(this.attributesToAdd, name) && this.attributesToAdd[name].required) {
+            this.addAttribute(field.id, name, this.attributesToAdd[name].type);
+          }
+        }
+      }
+    },
     changedName(val) {
       let value;
       if (val === null) {
         value = null;
       } else if (typeof val === 'object') {
         value = val.value;
-        if (val.type) {
+        if (val.type !== 'undefined') {
           this.field.type = val.type;
-          // TODO: здесь не только сеттить type, а ещё атрибуты добавить, после сохранения (если есть в поле-объекте)
+          if (val.attributes) {
+            this.attributesToAdd = val.attributes;
+          } else {
+            this.attributesToAdd = [];
+          }
         }
       } else { //новое значение текстом
         value = val;
@@ -209,15 +224,15 @@ export default {
     toggleEdit(edit) {
       this.edit = edit;
     },
-    addAttribute() {
+    addAttribute(field_id = this.field.id, name = '', type = 0, label = 'Новый атрибут') {
       this.$emit('attribute:created', {
         id: null,
-        field_id: this.field.id,
+        field_id: field_id,
         handler: null,
-        label: 'Новый атрибут',
-        name: '',
+        label: label,
+        name: name,
         value: null,
-        type: 0,
+        type: type,
         properties: {
           custom: true
         },
