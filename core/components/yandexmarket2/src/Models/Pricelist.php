@@ -138,10 +138,6 @@ class Pricelist extends BaseObject
         }
 
         if ($withValues) {
-            // TODO: потом перенести возможные поля на фронт в объект маркетплейсов (в VueX)
-            $data['shop_fields'] = $this->marketplace::getShopFields();
-            $data['offer_fields'] = $this->marketplace::getOfferFields();
-
             $data['fields'] = array_map(static function (Field $field) {
                 return $field->toArray();
             }, array_values($this->getFields(false)));

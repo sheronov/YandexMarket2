@@ -147,9 +147,9 @@ export default {
     item: {},
     edit: false,
     items: [
-      {value: 0, text: 'строка'},
-      {value: 1, text: 'дата'},
-      {value: 2, text: 'да/нет'},
+      {value: 0, text: 'строка (из объекта)'},
+      {value: 1, text: 'дата (из объекта)'},
+      {value: 2, text: 'да/нет (из объекта)'},
       {value: 3, text: 'без подстановки'},
     ],
     cmOptions: {

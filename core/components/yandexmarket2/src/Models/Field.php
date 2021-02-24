@@ -36,7 +36,7 @@ class Field extends BaseObject
     public const TYPE_CDATA    = 11; //большой текст, обернуть в CDATA
     public const TYPE_NUMBER   = 12; //числовое предложения
     public const TYPE_BOOLEAN  = 13; //выбор да/нет (игнорировать null - intermediate)
-    public const TYPE_PARAM    = 14; // параметр предложения TODO: может и не нужно, иначе будет неудобно обрабатывать по типу
+    public const TYPE_ARRAY    = 14; // массив через запятую
     public const TYPE_PICTURES = 15; // изображения предложения
 
     public const TYPE_DEFAULT = self::TYPE_STRING; //поле по умолчанию

@@ -16,7 +16,6 @@ abstract class BaseObject
     protected const DATETIME_FIELDS = ['created_on', 'edited_on', 'generated_on'];
     protected const ARRAY_FIELDS    = ['properties'];
 
-    // TODO: подумать над тем, чтобы объект MODX передавать
     public function __construct(modX $modx, xPDOObject $object = null)
     {
         $objectClass = static::getObjectClass();
@@ -94,6 +93,12 @@ abstract class BaseObject
             }
         }
         return $data;
+    }
+
+    public static function getById(int $id, modX $modX): ?self
+    {
+        $object = $modX->getObject(static::getObjectClass(),$id);
+        return $object ? new static($modX,$object) : null;
     }
 
     public function getObject(): xPDOObject

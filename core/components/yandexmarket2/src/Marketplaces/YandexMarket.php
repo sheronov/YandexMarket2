@@ -173,7 +173,7 @@ class YandexMarket extends Marketplace
                 ],
             ],
             'param'                 => [
-                'type'       => Field::TYPE_PARAM, // TODO: тут убрать тип, так как можно выбирать
+                'type'       => Field::TYPE_DEFAULT, // TODO: тут убрать тип, так как можно выбирать
                 'multiple'   => true,
                 'attributes' => [
                     'name' => [

@@ -1,11 +1,10 @@
 <?php
 
-/** @noinspection PhpIncludeInspection */
-
 use YandexMarket\Models\Pricelist;
-use YandexMarket\Xml\Preview;
 use YandexMarket\Service;
+use YandexMarket\Xml\Preview;
 
+/** @noinspection PhpIncludeInspection */
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymXmlPreviewProcessor extends modProcessor

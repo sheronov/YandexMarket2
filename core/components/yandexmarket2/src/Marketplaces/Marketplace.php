@@ -52,7 +52,7 @@ abstract class Marketplace
     abstract public static function getOfferFields(): array;
 
     /**
-     * @return array<string,string>
+     * @return array<string,array>
      * @throws Exception
      */
     public static function listMarketplaces(): array
@@ -63,15 +63,12 @@ abstract class Marketplace
         foreach ($classes as $class) {
             /** @noinspection SelfClassReferencingInspection */
             if (is_subclass_of($class, Marketplace::class)) {
-                $marketplaces[$class::getKey()] = $class;
-                // [
-                // 'class' => $class,
-                // 'key'   => $class::getKey(),
-                // 'fields' => [
-                //     self::NODE_SHOP  => $class::getShopFields(),
-                //     self::NODE_OFFER => $class::getOfferFields()
-                //    ]
-                // ];
+                $marketplaces[$class::getKey()] = [
+                    'class'        => $class,
+                    'key'          => $class::getKey(),
+                    'shop_fields'  => $class::getShopFields(),
+                    'offer_fields' => $class::getOfferFields()
+                ];
             }
         }
 
@@ -94,7 +91,7 @@ abstract class Marketplace
             $marketplaces = [];
         }
         /** @noinspection SelfClassReferencingInspection */
-        if (($class = $marketplaces[$type] ?? null) && is_subclass_of($class, Marketplace::class)) {
+        if (($class = $marketplaces[$type]['class'] ?? null) && is_subclass_of($class, Marketplace::class)) {
             return new $class($modx);
         }
 
@@ -122,7 +119,7 @@ abstract class Marketplace
                 'enable_auto_discounts' => $this->getOption('shop_enable_auto_discounts', true) ? 'true' : 'false'
             ],
             Field::TYPE_OFFER => [
-                'name'        => $this->getOption('offer_name', 'modResource.pagetitle'),
+                'name'        => $this->getOption('offer_name', 'pagetitle'),
                 'url'         => $this->getOption('offer_url', 'Offer.url'), // Offer собирающий класс
                 'price'       => $this->getOption('offer_price', 'Offer.price'), // Offer собирающий класс
                 'currencyId'  => [
@@ -134,7 +131,7 @@ abstract class Marketplace
                 'pickup'      => [
                     'handler' => $this->getOption('offer_pickup', 'true')
                 ],
-                'description' => $this->getOption('offer_description', 'modResource.introtext'),
+                'description' => $this->getOption('offer_description', 'introtext'),
             ]
         ];
     }

@@ -21,7 +21,9 @@
     </span>
     <span class="pl-1 grey--text">
       <span v-if="item.label.replace(' *','') !== item.name">{{ item.label.replace(' *', '') }}</span>
-      <small v-if="!isUnique(item)"> ({{ typeText(item) || item.type || 'выберите тип' }})</small>
+      <small v-if="!isUnique(item) && !isSimpleString(item)"> ({{
+          typeText(item) || item.type || 'выберите тип'
+        }})</small>
     </span>
     <v-tooltip v-if="item.help" bottom :max-width="400" :close-delay="200" :attach="true">
       <template v-slot:activator="{ on }">
@@ -98,7 +100,8 @@ export default {
     ...mapGetters('field', [
       'isRoot',
       'typeText',
-      'isUnique'
+      'isUnique',
+      'isSimpleString'
     ]),
     edited() {
       return JSON.stringify(this.item) !== JSON.stringify(this.field);

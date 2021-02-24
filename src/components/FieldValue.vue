@@ -71,7 +71,7 @@
             :value="value"
             @input="changedValue"
             :filter="valueSearch"
-            :items="columns"
+            :items="dataColumns"
             :attach="true"
             label="Выберите поле товара"
             placeholder='или введите в формате "Class.key" и нажмите Enter'
@@ -89,7 +89,9 @@
             </div>
           </template>
           <template v-slot:item="{item}">
-            <code>{{ item.value }}</code><span class="pl-1">{{ item.text }}</span>
+            <code>{{ item.value }}</code>
+            <span class="pl-1">{{ item.text }}</span>
+            <small v-if="item.help" class="pl-1 grey--text">&nbsp;({{item.help}})</small>
           </template>
         </v-combobox>
         <v-btn
@@ -147,6 +149,7 @@ export default {
   },
   data: () => ({
     rerender: true,
+    code: false,
     cmOptions: {
       taSize: 4,
       mode: {
@@ -158,17 +161,9 @@ export default {
       lineNumbers: true,
       lineWrapping: true
     },
-    //TODO: всё ниже нужно грузить из Vuex
-    columns: [
-      {header: 'Поля ресурса'},
-      {value: 'modResource.pagetitle', text: 'Заголовок ресурса'},
-      {value: 'longtitle', text: 'Расширенный заголовок'},
-      {divider: true},
-      {header: 'Поля товара'},
-      {value: 'Data.price', text: 'Цена товара'},
-    ],
   }),
   computed: {
+    ...mapGetters(['dataColumns', 'columnText']),
     ...mapGetters('field', [
       'isSimpleString',
       'isParent',
@@ -181,10 +176,9 @@ export default {
       if (typeof this.field.value === 'object') {
         return this.field.value;
       }
-      let column = this.columns.find(column => column.value === this.field.value);
       return {
         value: this.field.value,
-        text: column ? column.text : this.field.value
+        text: this.columnText(this.field.value) || this.field.value
       };
     },
     valuePrepend() {
@@ -211,7 +205,7 @@ export default {
       } else if (typeof val === 'object') {
         value = val.value;
       } else { //новое значение текстом
-        value = val; // TODO: добавить новую колонку в store VUEX ко всем колонкам товара
+        value = val;
       }
       this.$emit('input', value);
       // if it will be wrong, see https://github.com/vuetifyjs/vuetify/issues/5479#issuecomment-672300135

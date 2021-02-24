@@ -19,7 +19,7 @@ export class ValidationError extends ErrorException {
 }
 
 export default {
-    post(action, params) {
+    post(action, params = {}) {
         return axios.request({
             method: 'POST',
             data: this.prepareData(params, action)

@@ -2,9 +2,13 @@
 
 namespace YandexMarket;
 
+use Exception;
+use modTemplateVar;
 use modX;
+use msOption;
 use xPDO;
 use xPDOQuery;
+use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Models\Category;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
@@ -93,7 +97,7 @@ class Service
             $q->select($this->modx->getSelectColumns('msVendor', 'Vendor', 'vendor.', ['id'], true));
         }
 
-        if(!empty($pricelist->getWhere())) {
+        if (!empty($pricelist->getWhere())) {
             $q->where($pricelist->getWhere());
         }
 
@@ -138,6 +142,248 @@ class Service
         }
 
         return $q;
+    }
+
+    protected function getLexicon(string $key, ?string $fallbackKey = null): ?string
+    {
+        if (($key !== $lexicon = $this->modx->lexicon($key))) {
+            return $lexicon;
+        }
+
+        if ($fallbackKey && $fallbackKey !== $key && $fallbackKey !== $lexicon = $this->modx->lexicon($fallbackKey)) {
+            return $lexicon;
+        }
+
+        return null;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getMarketplaces(): array
+    {
+        return array_map(function (array $marketplace) {
+            $type = $marketplace['key'];
+            $marketplace['value'] = $type;
+            $marketplace['text'] = $this->getLexicon('ym_marketplace_'.$type) ?: $type;
+            unset($marketplace['class'], $marketplace['key']);
+
+            $marketplace['shop_fields'] = $this->prepareFields($marketplace['shop_fields'], $type, 'shop');
+            $marketplace['offer_fields'] = $this->prepareFields($marketplace['offer_fields'], $type, 'offer');
+
+            return $marketplace;
+        }, array_values(Marketplace::listMarketplaces()));
+    }
+
+    protected function prepareFields(array $keyFields, string $marketplace, string $parent = ''): array
+    {
+        $fields = [
+            ['header' => 'Возможные элементы']
+        ];
+
+        foreach ($keyFields as $key => $data) {
+            $fields[] = array_merge($data, [
+                'value' => $key,
+                'text'  => $this->getLexicon('ym_'.$marketplace.'_'.$parent.'_'.$key,
+                    'ym_'.$marketplace.'_'.$key) ?: $key,
+                'type'  => $data['type'] ?? Field::TYPE_DEFAULT,
+            ]);
+        }
+        $fields[] = ['divider' => true];
+        $fields[] = ['header' => 'Вы также можете ввести любое название'];
+
+        return $fields;
+    }
+
+    public function listClassKeys(bool $withHeaders = false, bool $withDividers = false): array
+    {
+        $list = [];
+        if ($resourceFields = $this->getModResourceFields()) {
+            $list = array_merge($list,
+                $withHeaders ? [['header' => 'Поля ресурса']] : [],
+                $resourceFields,
+                $withDividers ? [['divider' => true]] : []
+            );
+        }
+
+        $list = array_merge($list,
+            $withHeaders ? [['header' => 'Вспомогательные поля компонента']] : [],
+            $this->getOfferFields(),
+            $withDividers ? [['divider' => true]] : []
+        );
+
+        if ($this->hasMS2) {
+            if ($productFields = $this->getMsProductFields()) {
+                $list = array_merge($list,
+                    $withHeaders ? [['header' => 'Поля товара miniShop2']] : [],
+                    $productFields,
+                    $withDividers ? [['divider' => true]] : []
+                );
+            }
+
+            if ($optionFields = $this->getMsOptionFields()) {
+                $list = array_merge($list,
+                    $withHeaders ? [['header' => 'Опции miniShop2']] : [],
+                    $optionFields,
+                    $withDividers ? [['divider' => true]] : []
+                );
+            }
+
+            if ($vendorFields = $this->getMsVendorFields()) {
+                $list = array_merge($list,
+                    $withHeaders ? [['header' => 'Производитель miniShop2']] : [],
+                    $vendorFields,
+                    $withDividers ? [['divider' => true]] : []
+                );
+            }
+        }
+
+        if ($tvFields = $this->getTvFields()) {
+            $list = array_merge($list,
+                $withHeaders ? [['header' => 'Дополнительные поля (TV)']] : [],
+                $tvFields,
+                $withDividers ? [['divider' => true]] : []
+            );
+        }
+
+        if ($withDividers) {
+            array_pop($list); //remove last divider
+        }
+
+        return $list;
+    }
+
+    protected function getModResourceFields(
+        string $columnPrefix = '',
+        array $skip = [
+            'type',
+            'contentType',
+            'alias_visible',
+            'link_attributes',
+            'pub_date',
+            'unpub_date',
+            'isfolder',
+            'richtext',
+            'menuindex',
+            'searchable',
+            'cacheable',
+            'createdby',
+            'createdon',
+            'editedby',
+            'editedon',
+            'deleted',
+            'deletedon',
+            'deletedby',
+            'publishedon',
+            'publishedby',
+            'donthit',
+            'privateweb',
+            'privatemgr',
+            'content_dispo',
+            'hidemenu',
+            'class_key',
+            'hide_children_in_tree',
+            'show_in_tree',
+            'properties',
+            'context_key',
+            'content_type',
+            'uri_override'
+        ]
+    ): array {
+        $fields = $this->modx->getFields('modResource');
+
+        $this->modx->lexicon->load('resource');
+
+        return array_map(function (string $key) use ($columnPrefix, $skip) {
+            return [
+                'value'   => $columnPrefix.$key,
+                'text'    => $this->getLexicon('resource_'.$key, $key) ?: $key,
+                'skipped' => in_array($key, $skip, true)
+            ];
+        }, array_keys($fields));
+    }
+
+    protected function getOfferFields(string $columnPrefix = 'Offer.'): array
+    {
+        return [
+            ['value' => $columnPrefix.'url', 'text' => 'Полная ссылка на товар'], //TODO: может через Fenom? {$id|url}
+            ['value' => $columnPrefix.'price', 'text' => 'Цена с учётом плагинов miniShop2']
+        ];
+    }
+
+    protected function getMsProductFields(
+        string $columnPrefix = 'Data.',
+        array $skip = ['id', 'source', 'color', 'size', 'tags']
+    ): array {
+        $fields = $this->modx->getFields('msProductData');
+
+        $this->modx->lexicon->load('minishop2:product');
+
+        return array_map(function (string $key) use ($columnPrefix, $skip) {
+            return [
+                'value'   => $columnPrefix.$key,
+                'text'    => $this->getLexicon('ms2_product_'.$key, 'resource_'.$key) ?: $key,
+                'skipped' => in_array($key, $skip, true)
+            ];
+        }, array_keys($fields));
+    }
+
+    protected function getMsVendorFields(string $columnPrefix = 'Vendor.', array $skip = ['id', 'properties']): array
+    {
+        $fields = $this->modx->getFields('msVendor');
+
+        $this->modx->lexicon->load('minishop2:manager');
+
+        return array_map(function (string $key) use ($columnPrefix, $skip) {
+            return [
+                'value'   => $columnPrefix.$key,
+                'text'    => $this->getLexicon('ms2_'.$key, 'ms2_product_'.$key) ?: $key,
+                'skipped' => in_array($key, $skip, true)
+            ];
+        }, array_keys($fields));
+    }
+
+    protected function getMsOptionFields(string $columnPrefix = 'Option.', array $skip = []): array
+    {
+        $fields = [];
+        foreach (['color', 'size', 'tags'] as $key) {
+            $fields[] = [
+                'value'   => $columnPrefix.$key,
+                'text'    => $this->getLexicon('ms2_product_'.$key, 'resource_'.$key),
+                'skipped' => in_array($key, $skip, true)
+            ];
+        }
+
+        foreach ($this->modx->getIterator('msOption') as $option) {
+            /** @var msOption $option */
+            $fields[] = [
+                'value'   => $columnPrefix.$option->get('key'),
+                'text'    => $option->get('caption'),
+                'help'    => $this->getLexicon('ms2_ft_'.$option->get('type')),
+                'skipped' => in_array($option->get('key'), $skip, true)
+            ];
+        }
+        return $fields;
+    }
+
+    protected function getTvFields(string $columnPrefix = 'Tv.', array $skip = []): array
+    {
+        $fields = [];
+
+        $this->modx->lexicon->load('tv_input_types');
+        $this->modx->lexicon->load('tv_widget');
+
+        foreach ($this->modx->getIterator('modTemplateVar') as $tv) {
+            /** @var modTemplateVar $tv */
+            $fields[] = [
+                'value'   => $columnPrefix.$tv->get('name'),
+                'text'    => $tv->get('caption'),
+                'help'    => $this->getLexicon($tv->get('type')),
+                'skipped' => in_array($tv->get('name'), $skip, true)
+            ];
+        }
+
+        return $fields;
     }
 
 }

@@ -109,7 +109,7 @@ class PricelistWriter
                 }
                 break;
             case Field::TYPE_STRING:
-            case Field::TYPE_PARAM:
+            case Field::TYPE_ARRAY:
             case Field::TYPE_NUMBER:
             case Field::TYPE_BOOLEAN:
             case Field::TYPE_CDATA:
@@ -126,6 +126,11 @@ class PricelistWriter
                         $this->xml->text((float)$value);
                     } elseif ($field->type === Field::TYPE_CDATA) {
                         $this->xml->writeCdata($this->jevix ? $this->jevix->parse($value, $this->errors) : $value);
+                    } elseif ($field->type === Field::TYPE_ARRAY) {
+                        if (!is_array($value)) {
+                            $value = json_decode($value, true);
+                        }
+                        $this->xml->text(implode(', ', $value));
                     } else {
                         $this->xml->text($value);
                     }
@@ -140,7 +145,6 @@ class PricelistWriter
 
         $this->xml->endElement();
     }
-
 
     protected function writeOfferAttribute(Offer $offer, Attribute $attribute): void
     {

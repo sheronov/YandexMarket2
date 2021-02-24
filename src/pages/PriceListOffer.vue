@@ -8,6 +8,8 @@
           :fields="pricelist.fields"
           :attributes="pricelist.attributes"
           :lighten="3"
+          :available-fields="getFields(pricelist.type,'offer')"
+          :available-types="fieldsForGroup('offer')"
           v-on="$listeners"
       />
     </v-expansion-panels>
@@ -17,6 +19,7 @@
 <script>
 import PricelistOfferField from "@/components/PricelistField";
 import {TYPE_OFFER} from "@/store/modules/field";
+import {mapGetters} from "vuex";
 
 export default {
   name: 'PriceListOffer',
@@ -28,6 +31,10 @@ export default {
     openedFields: [0],
     offerType: TYPE_OFFER,
   }),
+  computed: {
+    ...mapGetters('marketplace', ['getFields']),
+    ...mapGetters('field', ['fieldsForGroup']),
+  },
   methods: {
     previewXml() {
       this.$emit('preview:xml', 'offers');

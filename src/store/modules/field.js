@@ -11,33 +11,32 @@ export const TYPE_STRING = 10; //просто строковое поле (по�
 export const TYPE_CDATA = 11; //большой текст, обернуть в CDATA
 export const TYPE_NUMBER = 12; //числовое предложения
 export const TYPE_BOOLEAN = 13; //выбор да/нет (игнорировать null - intermediate)
-export const TYPE_PARAM = 14; // параметр предложения
+export const TYPE_ARRAY = 14; // массив через запятую
 export const TYPE_PICTURES = 15; // изображения предложения
 
 export default {
     namespaced: true,
     state: {
+        // тут надо бы поаккуратнее всё сделать
         types: [
-            {header: 'Для товара'},
-            {value: TYPE_STRING, text: 'строковое'},
-            {value: TYPE_CDATA, text: 'текст в CDATA'},
-            {value: TYPE_NUMBER, text: 'числовое'},
-            {value: TYPE_BOOLEAN, text: 'да/нет'},
-            {value: TYPE_PARAM, text: 'параметр'}, //TODO: можно убрать
-            {value: TYPE_PICTURES, text: 'изображения', unique: true},
-            {value: TYPE_PARENT, text: 'родительский', parent: true},
-            {divider: true},
-            {header: 'Для настроек'},
-            {value: TYPE_OPTION, text: 'текст без обработки'},
-            {divider: true},
-            {header: 'Специальные поля'},
-            {value: TYPE_ROOT, text: 'корневой', disabled: true, unique: true, root: true, parent: true, hidden: true},
-            {value: TYPE_SHOP, text: 'магазин', disabled: true, unique: true, root: true, parent: true, hidden: true},
-            {value: TYPE_CURRENCIES, text: 'список валют', disabled: true, unique: true, required: true},
-            {value: TYPE_CATEGORIES, text: 'категории', disabled: true, unique: true, required: true},
-            {value: TYPE_OFFERS, text: 'предложения', disabled: true, unique: true, required: true},
-            {value: TYPE_OFFER, text: 'оффер', disabled: true, unique: true, root: true, parent: true, hidden: true},
-            {value: TYPE_FEATURE, text: 'ещё не реализовано', disabled: true, hidden: true},
+            {header: 'Обработчики полей товара', group: 'offer'},
+            {value: TYPE_STRING, text: 'строковый', group: 'offer'},
+            {value: TYPE_CDATA, text: 'текст в CDATA', group: 'offer'},
+            {value: TYPE_NUMBER, text: 'числовой', group: 'offer'},
+            {value: TYPE_BOOLEAN, text: 'да/нет', group: 'offer'},
+            {value: TYPE_ARRAY, text: 'массив через запятую', group: 'offer'},
+            {value: TYPE_PICTURES, text: 'изображения', unique: true, group: 'offer'},
+            {divider: true, group: 'offer'},
+            {header: 'Специальные поля', group: ['shop','offer']},
+            {value: TYPE_OPTION, text: 'простой текст', group: 'shop'},
+            {value: TYPE_PARENT, text: 'родительский элемент', parent: true, group: ['shop','offer']},
+            {value: TYPE_ROOT, text: 'корневой элемент', disabled: true, unique: true, root: true, parent: true, hidden: true, group: 'shop'},
+            {value: TYPE_SHOP, text: 'элемент магазина', disabled: true, unique: true, root: true, parent: true, hidden: true, group: 'shop'},
+            {value: TYPE_CURRENCIES, text: 'список валют', disabled: true, unique: true, required: true, group: 'shop'},
+            {value: TYPE_CATEGORIES, text: 'список категорий', disabled: true, unique: true, required: true, group: 'shop'},
+            {value: TYPE_OFFERS, text: 'список предложений', disabled: true, unique: true, required: true, group: 'shop'},
+            {value: TYPE_OFFER, text: 'элемент оффера', disabled: true, unique: true, root: true, parent: true, hidden: true, group: 'shop'},
+            {value: TYPE_FEATURE, text: 'ещё не реализованный', disabled: true, hidden: true, group: ['shop','offer']},
         ]
     },
     getters: {
@@ -54,6 +53,15 @@ export default {
         isCurrencies: () => ({type}) => type === TYPE_CURRENCIES, //простое текстовое поле без подстановки значений
         isOffers: () => ({type}) => type === TYPE_OFFERS, //простое текстовое поле без подстановки значений
         isPictures: () => ({type}) => type === TYPE_PICTURES, //простое текстовое поле без подстановки значений
+        fieldsForGroup: (state, getters) => group => {
+            return getters.selectableTypes.filter(type => {
+                let typeGroup = type.group || [];
+                if (!Array.isArray(typeGroup)) {
+                    typeGroup = [typeGroup];
+                }
+                return typeGroup.indexOf(group) !== -1;
+            })
+        }
     },
     mutations: {},
     actions: {},

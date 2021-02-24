@@ -22,13 +22,14 @@
       <v-row class="px-0 pb-3" v-if="edit" dense>
         <v-col cols="12" md="6">
           <v-combobox
-              v-model="field.name"
-              :items="tags"
-              class="yandexmarket-field-tag text-center mr-2"
+              :value="field.name"
+              @input="changedName"
+              :items="availableFields"
+              class="yandexmarket-field-tag mr-2"
               placeholder="Введите или выберите из списка"
               :attach="true"
               item-value="value"
-              item-text="text"
+              item-text="value"
               hide-details
               solo
               dense
@@ -36,18 +37,22 @@
             <template v-slot:prepend-inner>
               <div class="text-no-wrap">
                 <code class="mr-2 mt-1 d-inline-block">Элемент:</code>
-                <v-icon>icon-angle-left</v-icon>
+                <v-icon class="mr-1">icon-angle-left</v-icon>
               </div>
             </template>
             <template v-slot:append>
               <v-icon>icon-angle-right</v-icon>
+            </template>
+            <template v-slot:item="{item}">
+              <code>{{ item.value }}</code>
+              <small class="pl-1 grey--text" v-if="item.value !== item.text">{{ item.text }}</small>
             </template>
           </v-combobox>
         </v-col>
         <v-col cols="12" md="6">
           <v-select
               v-model="field.type"
-              :items="selectableTypes"
+              :items="availableTypes"
               class="yandexmarket-field-type"
               :full-width="false"
               label="Тип элемента"
@@ -69,7 +74,7 @@
       <field-value :field="field" @input="field.value = $event"/>
       <v-card-text class="pa-0" v-if="isParent(field)">
         <template v-if="children.length">
-         <div class="grey--text" style="font-size: 13px;">Дочерние элементы:</div>
+          <div class="grey--text" style="font-size: 13px;">Дочерние элементы:</div>
           <v-expansion-panels :value="opened" multiple accordion :key="field.name">
             <pricelist-field
                 v-for="child in children"
@@ -78,6 +83,8 @@
                 :fields="fields"
                 :attributes="attributes"
                 :lighten="lighten+1"
+                :available-fields="availableFields"
+                :available-types="availableTypes"
                 v-on="$listeners"
             />
           </v-expansion-panels>
@@ -117,8 +124,18 @@ export default {
     item: {required: true, type: [Object]},
     attributes: {type: Array, default: () => ([])},
     fields: {type: Array, default: () => ([])},
-    lighten: {type: Number, default: 2}
+    lighten: {type: Number, default: 2},
+    availableFields: {type: Array, default: () => ([])},
+    availableTypes: {type: Array, default: () => ([])},
   },
+  data: () => ({
+    field: {},
+    attrs: [],
+    children: [],
+    opened: [],
+    edit: false,
+    code: false,
+  }),
   watch: {
     item: {
       immediate: true,
@@ -143,22 +160,9 @@ export default {
       }
     }
   },
-  data: () => ({
-    field: {},
-    attrs: [],
-    children: [],
-    opened: [],
-    edit: false,
-    code: false,
-    //TODO: всё ниже нужно грузить из бэкенда вместе с тегами
-    tags: [
-      'test',
-      'yes'
-    ],
-  }),
   computed: {
+    ...mapGetters('marketplace', ['getFields']),
     ...mapGetters('field', [
-      'selectableTypes',
       'isParent',
     ]),
   },
@@ -168,6 +172,21 @@ export default {
     }
   },
   methods: {
+    changedName(val) {
+      let value;
+      if (val === null) {
+        value = null;
+      } else if (typeof val === 'object') {
+        value = val.value;
+        if (val.type) {
+          this.field.type = val.type;
+          // TODO: здесь не только сеттить type, а ещё атрибуты добавить, после сохранения (если есть в поле-объекте)
+        }
+      } else { //новое значение текстом
+        value = val;
+      }
+      this.field.name = value;
+    },
     addField() {
       this.$emit('field:created', {
         id: null,
@@ -247,19 +266,6 @@ export default {
   transform: translateY(50%);
   padding: 0 5px;
   line-height: 1;
-}
-
-.yandexmarket-field-type {
-  /*max-width: 200px !important;*/
-  /*font-size: 0.875em !important;*/
-}
-
-.yandexmarket-field-tag {
-  /*max-width: 180px !important;*/
-}
-
-.yandexmarket-field-tag .v-select__slot input {
-  /*display: none;*/
 }
 
 .v-select.v-select--is-menu-active .v-input__append-inner .icon {
