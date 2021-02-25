@@ -25,7 +25,7 @@ export default {
             data: this.prepareData(params, action)
         })
             .then(response => {
-                if (('success' in response.data) && !response.data.success) {
+                if (Object.prototype.hasOwnProperty.call(response.data, 'success') && !response.data.success) {
                     if (response.data.data && response.data.data.length) {
                         throw new ValidationError(response.data);
                     } else {

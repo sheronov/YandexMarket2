@@ -239,4 +239,24 @@ class Field extends BaseObject
         return null;
     }
 
+    /**
+     * Узлы не могут содержать своего значения, только дочерние поля или атрибуты
+     *
+     * @return bool
+     */
+    public function isValueless(): bool
+    {
+        return in_array($this->type, [
+            self::TYPE_ROOT,
+            self::TYPE_SHOP,
+            self::TYPE_OFFERS,
+            self::TYPE_CURRENCIES,
+            self::TYPE_CATEGORIES,
+            self::TYPE_OFFER,
+            self::TYPE_PICTURES,
+            self::TYPE_PARENT,
+            self::TYPE_EMPTY
+        ]);
+    }
+
 }

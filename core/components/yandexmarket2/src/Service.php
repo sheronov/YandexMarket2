@@ -7,11 +7,8 @@ use modTemplateVar;
 use modX;
 use msOption;
 use xPDO;
-use xPDOQuery;
 use YandexMarket\Marketplaces\Marketplace;
-use YandexMarket\Models\Category;
 use YandexMarket\Models\Field;
-use YandexMarket\Models\Pricelist;
 
 class Service
 {
@@ -20,37 +17,23 @@ class Service
     public    $hasMS2       = false;
     public    $pricePlugins = false;
 
-    protected $offerClass;
-
     public function __construct(modX $modx, array $config = [])
     {
         $this->modx = $modx;
         $corePath = $modx->getOption('yandexmarket2_core_path', null,
             $modx->getOption('core_path').'components/yandexmarket2/');
-        $assetsUrl = $modx->getOption('yandexmarket2_assets_url', null,
-            $modx->getOption('assets_url').'components/yandexmarket2/');
 
-        $this->config = array_merge([
-            'corePath'       => $corePath,
-            'modelPath'      => $corePath.'model/',
-            'processorsPath' => $corePath.'processors/',
-            'assetsUrl'      => $assetsUrl,
-            'mgrAssetsUrl'   => $assetsUrl.'mgr/',
-        ], $config);
+        $this->config = array_merge($config, [
+            'corePath'  => $corePath,
+            'modelPath' => $corePath.'model/',
+            'filesPath' => $this->preparePath($this->modx->getOption('yandexmarket2_files_path', null,
+                '{assets_path}yandexmarket/')),
+            'filesUrl'  => $this->preparePath($this->modx->getOption('yandexmarket2_files_url', null,
+                '{assets_url}yandexmarket/')),
+        ]);
 
-        $this->modx->addPackage('yandexmarket2', $this->config['modelPath']);
+        $this->modx->addPackage('yandexmarket2', $corePath.'model/');
         $this->modx->lexicon->load('yandexmarket2:default');
-
-        $defaultOfferClass = 'modDocument';
-        if ($this->hasMS2 = self::hasMiniShop2()) {
-            $defaultOfferClass = 'msProduct';
-            $c = $modx->newQuery('modPluginEvent', ['ezvent:IN' => ['msOnGetProductPrice', 'msOnGetProductWeight']]);
-            $c->innerJoin('modPlugin', 'modPlugin', 'modPlugin.id = modPluginEvent.pluginid');
-            $c->where('modPlugin.disabled = 0');
-            $this->pricePlugins = $modx->getOption('ms2_price_snippet', null, false, true)
-                || $modx->getCount('modPluginEvent', $c);
-        }
-        $this->offerClass = $modx->getOption('ym_option_offer_class_key', null, $defaultOfferClass);
     }
 
     public static function debugInfo(xPDO $xpdo): ?array
@@ -66,82 +49,14 @@ class Service
         ];
     }
 
-    protected static function hasMiniShop2(): bool
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
+    public static function hasMiniShop2(): bool
     {
         return file_exists(MODX_CORE_PATH.'components/minishop2/model/minishop2/msproduct.class.php');
-    }
-
-    // TODO: тут получить товары со всеми возможными опциями и тв полями
-    public function queryForPricelist(Pricelist $pricelist, array $data = [])
-    {
-        $class = $this->offerClass ?: 'modResource';
-        $q = $this->modx->newQuery($class);
-        $q->select($this->modx->getSelectColumns($class, $class, ''));
-
-        if (!empty($pricelist->getCategories())) {
-            $q->where([
-                'parent:IN' => array_map(static function (Category $category) {
-                    return $category->resource_id;
-                }, $pricelist->getCategories())
-            ]);
-        }
-
-        if (!empty($this->offerClass)) {
-            $q->where(['class_key' => $this->offerClass]);
-        }
-
-        if ($this->hasMS2) {
-            $q->leftJoin('msProductData', 'Data');
-            $q->leftJoin('msVendor', 'Vendor', 'Data.vendor=Vendor.id');
-            $q->select($this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true));
-            $q->select($this->modx->getSelectColumns('msVendor', 'Vendor', 'vendor.', ['id'], true));
-        }
-
-        if (!empty($pricelist->getWhere())) {
-            $q->where($pricelist->getWhere());
-        }
-
-        // TODO: тут изучить все значения (и их хэнделры в выбранных полях)
-        $this->joinPricelistFields($q, $pricelist->getFields(true));
-
-        return $q;
-    }
-
-    /**
-     * @param  xPDOQuery  $q
-     * @param  Field[]  $fields
-     *
-     * @return xPDOQuery
-     */
-    protected function joinPricelistFields(xPDOQuery $q, array $fields): xPDOQuery
-    {
-        $classKeys = [];
-
-        foreach ($fields as $field) {
-            if (in_array($field->type, [Field::TYPE_TEXT, Field::TYPE_CURRENCIES, Field::TYPE_CATEGORIES], true)) {
-                continue;
-            }
-            if (!empty($field->value) && mb_strpos($field->value, '.') !== false) {
-                [$class, $key] = explode('.', $field->value, 2);
-                if (!isset($classKeys[$class])) {
-                    $classKeys[$class] = [];
-                }
-                if (!in_array($key, $classKeys[$class], true)) {
-                    $classKeys[$class][] = $key;
-                }
-            }
-            // TODO if(!empty($field->handler)) с регулярками найти {$Option.color} или {$TV.size} или [[+tv.size]]
-        }
-
-        $this->modx->log(1, 'class keys '.var_export($classKeys, true));
-
-        // TODO: приджойнить другие классы (с моделями что-то придумать нужно)
-        foreach ($classKeys as $class => $keys) {
-            switch ($class) {
-            }
-        }
-
-        return $q;
     }
 
     protected function getLexicon(string $key, ?string $fallbackKey = null): ?string
@@ -398,6 +313,18 @@ class Service
         }
 
         return $fields;
+    }
+
+    public function preparePath(string $path): string
+    {
+        $paths = [
+            '{core_path}'   => $this->modx->getOption('core_path', null, MODX_CORE_PATH),
+            '{base_path}'   => $this->modx->getOption('base_path', null, MODX_BASE_PATH),
+            '{assets_path}' => $this->modx->getOption('assets_path', null, MODX_ASSETS_PATH),
+            '{assets_url}'  => $this->modx->getOption('assets_url', null, MODX_ASSETS_URL),
+        ];
+
+        return str_replace(array_keys($paths), array_values($paths), $path);
     }
 
 }

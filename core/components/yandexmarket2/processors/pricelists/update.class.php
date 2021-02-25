@@ -34,14 +34,15 @@ class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
     {
         $id = (int)$this->getProperty('id');
         $name = trim($this->getProperty('name'));
+        $file = trim($this->getProperty('file'));
         if (empty($id)) {
             return $this->modx->lexicon('ym_pricelist_err_ns');
         }
 
-        if (empty($name)) {
+        if (empty($name) || empty($file)) {
             $this->modx->error->addField('name', $this->modx->lexicon('ym_pricelist_err_name'));
-        } elseif ($this->modx->getCount($this->classKey, ['name' => $name, 'id:!=' => $id])) {
-            $this->modx->error->addField('name', $this->modx->lexicon('ym_pricelist_err_ae'));
+        } elseif ($this->modx->getCount($this->classKey, ['file' => $file, 'id:!=' => $id])) {
+            $this->modx->error->addField('file', $this->modx->lexicon('ym_pricelist_err_ae'));
         }
         $this->unsetProperty('created_on');
         $this->setProperty('edited_on', date('Y-m-d H:i:s'));

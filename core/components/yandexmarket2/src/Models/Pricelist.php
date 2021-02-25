@@ -5,7 +5,9 @@ namespace YandexMarket\Models;
 use DateTimeImmutable;
 use modX;
 use xPDOObject;
+use xPDOQuery;
 use YandexMarket\Marketplaces\Marketplace;
+use YandexMarket\Service;
 use ymFieldAttribute;
 use ymPricelist;
 
@@ -163,4 +165,78 @@ class Pricelist extends BaseObject
         return $field->toFrontend(false, [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS]);
     }
 
+    // TODO: тут получить товары со всеми возможными опциями и тв полями
+    public function queryForOffers(array $data = [])
+    {
+        $hasMs2 = Service::hasMiniShop2();
+        $offerClass = $this->modx->getOption('ym_option_offer_class', null, $hasMs2 ? 'msProduct' : 'modDocument');
+        $class = $offerClass ?: 'modResource'; //если настройку пустой сделать
+        $q = $this->modx->newQuery($class);
+        $q->select($this->modx->getSelectColumns($class, $class, ''));
+
+        if (!empty($this->getCategories())) {
+            $q->where([
+                'parent:IN' => array_map(static function (Category $category) {
+                    return $category->resource_id;
+                }, $this->getCategories())
+            ]);
+        }
+
+        if (!empty($offerClass)) {
+            $q->where(['class_key' => $offerClass]);
+        }
+
+        if ($hasMs2) {
+            $q->leftJoin('msProductData', 'Data');
+            $q->leftJoin('msVendor', 'Vendor', 'Data.vendor=Vendor.id');
+            $q->select($this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true));
+            $q->select($this->modx->getSelectColumns('msVendor', 'Vendor', 'vendor.', ['id'], true));
+        }
+
+        if (!empty($this->getWhere())) {
+            $q->where($this->getWhere());
+        }
+
+        // TODO: тут изучить все значения (и их хэнделры в выбранных полях)
+        $this->joinPricelistFields($q, $this->getFields(true));
+
+        return $q;
+    }
+
+    /**
+     * @param  xPDOQuery  $q
+     * @param  Field[]  $fields
+     *
+     * @return xPDOQuery
+     */
+    protected function joinPricelistFields(xPDOQuery $q, array $fields): xPDOQuery
+    {
+        $classKeys = [];
+
+        foreach ($fields as $field) {
+            if (in_array($field->type, [Field::TYPE_TEXT, Field::TYPE_CURRENCIES, Field::TYPE_CATEGORIES], true)) {
+                continue;
+            }
+            if (!empty($field->value) && mb_strpos($field->value, '.') !== false) {
+                [$class, $key] = explode('.', $field->value, 2);
+                if (!isset($classKeys[$class])) {
+                    $classKeys[$class] = [];
+                }
+                if (!in_array($key, $classKeys[$class], true)) {
+                    $classKeys[$class][] = $key;
+                }
+            }
+            // TODO if(!empty($field->handler)) с регулярками найти {$Option.color} или {$TV.size} или [[+tv.size]]
+        }
+
+        $this->modx->log(1, 'class keys '.var_export($classKeys, true));
+
+        // TODO: приджойнить другие классы (с моделями что-то придумать нужно)
+        foreach ($classKeys as $class => $keys) {
+            switch ($class) {
+            }
+        }
+
+        return $q;
+    }
 }

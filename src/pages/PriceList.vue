@@ -197,7 +197,7 @@ export default {
               this.getXmlPreview()
             })
             .catch(error => console.error(error));
-      } else {
+      } else if (this.showPreview) {
         this.getXmlPreview()
       }
     },

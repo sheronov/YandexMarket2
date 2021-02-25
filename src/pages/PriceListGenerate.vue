@@ -151,11 +151,11 @@ export default {
     generateFile() {
       if (!this.pricelist.generated_on || confirm('Вы действительно хотите перегенерировать файл? Старый файл будет перезаписан')) {
         this.loading = true;
-        api.post('pricelists/generate', {id: this.pricelist.id})
+        api.post('xml/generate', {id: this.pricelist.id})
             .then(({data}) => {
               console.log(data);
               this.log = data.message;
-              this.$emit('pricelist:updated', {...data.object});
+              this.$emit('pricelist:updated', {...data.object}, false);
             })
             .catch(error => console.log(error))
             .then(() => this.loading = false);

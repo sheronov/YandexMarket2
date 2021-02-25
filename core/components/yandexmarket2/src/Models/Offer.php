@@ -8,8 +8,6 @@ use YandexMarket\Service;
 
 class Offer extends BaseObject
 {
-    protected $service;
-
     public static function getObjectClass(): string
     {
         return modResource::class;
@@ -57,7 +55,7 @@ class Offer extends BaseObject
     public function getPrice(): float
     {
         $price = (float)$this->object->get('price');
-        if (!$this->getService()->hasMS2 || !$this->getService()->pricePlugins) {
+        if (!Service::hasMiniShop2()) {
             return $price;
         }
 
@@ -77,17 +75,5 @@ class Offer extends BaseObject
         return $price;
     }
 
-    public function setService(Service $service): void
-    {
-        $this->service = $service;
-    }
-
-    public function getService(): Service
-    {
-        if (!isset($this->service)) {
-            $this->service = new Service($this->modx);
-        }
-        return $this->service;
-    }
 
 }

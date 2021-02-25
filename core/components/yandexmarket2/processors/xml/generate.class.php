@@ -7,11 +7,11 @@ use YandexMarket\Xml\Generator;
 
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
-class ymPricelistGenerateProcessor extends modProcessor
+class ymXmlGenerateProcessor extends modProcessor
 {
 
     /** @var Generator */
-    protected $pricelistGenerator;
+    protected $xmlGenerator;
     protected $pricelist;
 
     public function initialize()
@@ -22,18 +22,18 @@ class ymPricelistGenerateProcessor extends modProcessor
         }
 
         $this->pricelist = new Pricelist($this->modx, $pricelist);
-        $this->pricelistGenerator = new Generator($this->pricelist);
+        $this->xmlGenerator = new Generator($this->pricelist);
 
         return true;
     }
 
     public function process()
     {
-        if ($this->pricelistGenerator->makeXml()) {
-            return $this->success($this->pricelistGenerator->getLog(true), $this->pricelist->toArray());
+        if ($this->xmlGenerator->makeFile()) {
+            return $this->success($this->xmlGenerator->getLog(true), $this->pricelist->toArray());
         }
-        return $this->failure($this->pricelistGenerator->getLog(true), $this->pricelist->toArray());
+        return $this->failure($this->xmlGenerator->getLog(true), $this->pricelist->toArray());
     }
 }
 
-return ymPricelistGenerateProcessor::class;
+return ymXmlGenerateProcessor::class;

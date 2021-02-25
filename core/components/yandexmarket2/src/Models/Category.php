@@ -19,6 +19,8 @@ class Category extends BaseObject
 
     protected $pricelist;
 
+    protected $parent; // TODO: продумать здесь, что указать, чтобы строить дерево
+
     public static function getObjectClass(): string
     {
         return ymCategory::class;
@@ -38,6 +40,7 @@ class Category extends BaseObject
 
         return $this->pricelist;
     }
+
 
     public function setResource(modResource $resource): Category
     {
