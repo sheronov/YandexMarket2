@@ -80,7 +80,6 @@ export default {
     type: 'yandexmarket',
     preview: true,
     previewType: null,
-    previewData: {},
     hasChanges: true,
     debug: null,
     code: null,
@@ -155,16 +154,15 @@ export default {
         });
       }
     },
-    previewXml(method, data = {}) {
+    previewXml(method) {
       this.previewType = method;
-      this.previewData = data;
       if (this.preview) {
         this.getXmlPreview();
       }
     },
     getXmlPreview() {
       this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
-      api.post('xml/preview', {id: this.pricelist.id, method: this.previewType, data: this.previewData})
+      api.post('xml/preview', {id: this.pricelist.id, method: this.previewType})
           .then(({data}) => {
             this.code = data.message;
             this.debug = data.object;

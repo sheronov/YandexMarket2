@@ -11,6 +11,7 @@ use xPDOObject;
 abstract class BaseObject
 {
     protected $modx;
+    protected $xpdo = null;
     protected $object;
 
     protected const DATETIME_FIELDS = ['created_on', 'edited_on', 'generated_on'];
@@ -24,10 +25,18 @@ abstract class BaseObject
             $object = $newObj;
         }
         if (!$object || !is_a($object, $objectClass)) {
-            throw new InvalidArgumentException("You should provide ".$objectClass.' entity');
+            throw new InvalidArgumentException("You must provide ".$objectClass.' entity');
         }
         $this->object = $object;
         $this->modx = $modx;
+    }
+
+    abstract public static function getObjectClass(): string;
+
+    public static function getById(int $id, modX $modX): ?self
+    {
+        $object = $modX->getObject(static::getObjectClass(),$id);
+        return $object ? new static($modX,$object) : null;
     }
 
     /**
@@ -73,7 +82,10 @@ abstract class BaseObject
         return $this->object->save();
     }
 
-    abstract public static function getObjectClass(): string;
+    public function remove(): bool
+    {
+        return $this->object->remove();
+    }
 
     public function toArray(): array
     {
@@ -95,20 +107,6 @@ abstract class BaseObject
         return $data;
     }
 
-    public static function getById(int $id, modX $modX): ?self
-    {
-        $object = $modX->getObject(static::getObjectClass(),$id);
-        return $object ? new static($modX,$object) : null;
-    }
 
-    public function getObject(): xPDOObject
-    {
-        return $this->object;
-    }
-
-    public function modX(): modX
-    {
-        return $this->modx;
-    }
 
 }

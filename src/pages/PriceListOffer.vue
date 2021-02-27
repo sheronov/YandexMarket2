@@ -1,7 +1,15 @@
 <template>
   <div class="yandexmarket-pricelist-offers-fields">
+    <v-row class="ma-0">
+      <v-flex>
     <h4>Настройка полей предложений</h4>
     <p class="mb-2">Интерактивный режим добавления и редактирования полей</p>
+      </v-flex>
+      <v-spacer/>
+      <v-btn @click="previewXml" icon title="Поменять предложение в предпросмотре">
+        <v-icon>icon-refresh</v-icon>
+      </v-btn>
+    </v-row>
     <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
       <pricelist-offer-field
           :item="pricelist.fields.find(field => field.type === 6)"

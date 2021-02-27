@@ -3,6 +3,7 @@
 namespace YandexMarket\Models;
 
 use DateTimeImmutable;
+use Generator;
 use modX;
 use xPDOObject;
 use xPDOQuery;
@@ -52,6 +53,12 @@ class Pricelist extends BaseObject
     public static function getObjectClass(): string
     {
         return ymPricelist::class;
+    }
+
+    public function get(string $field)
+    {
+        $field = str_replace(['Pricelist.', 'pricelist.'], '', $field);
+        return parent::get($field);
     }
 
     public function getWhere(): array
@@ -132,12 +139,37 @@ class Pricelist extends BaseObject
         return $this->categories;
     }
 
+    public function getFilePath(bool $withFile = false): string
+    {
+        $path = Service::preparePath($this->modx, $this->modx->getOption('yandexmarket2_files_path', null,
+            '{assets_path}yandexmarket/'));
+        if ($withFile) {
+            $path .= $this->file;
+        }
+
+        return $path;
+    }
+
+    public function getFileUrl(bool $withFile = false): string
+    {
+        $url = Service::preparePath($this->modx, $this->modx->getOption('yandexmarket2_files_url', null,
+            '{site_url}/{assets_url}/yandexmarket/'));
+        if ($withFile) {
+            $url .= $this->file;
+        }
+
+        return preg_replace('/(?<!:)\/+/', '/', $url);
+    }
+
     public function toArray(bool $withValues = false): array
     {
         $data = parent::toArray();
         if (!empty($data['where']) && is_array($data['where'])) {
             $data['where'] = json_encode($data['where']);
         }
+
+        $data['path'] = $this->getFilePath();
+        $data['fileUrl'] = $this->getFileUrl(true);
 
         if ($withValues) {
             $data['fields'] = array_map(static function (Field $field) {
@@ -156,13 +188,22 @@ class Pricelist extends BaseObject
         return $data;
     }
 
-    public function getShopValues(): array
+    public function offersGenerator(array $config = []): Generator
     {
-        if (!$field = $this->getFieldByType(Field::TYPE_SHOP)) {
-            return [];
+        $query = $this->queryForOffers();
+
+        if ($sortBy = $config['sortBy'] ?? null) {
+            $query->sortby($sortBy, $config['sortDir'] ?? 'ASC');
         }
 
-        return $field->toFrontend(false, [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS]);
+        if ($limit = $config['limit'] ?? null) {
+            $query->limit($limit, $config['offset'] ?? 0);
+        }
+
+        $offers = $this->modx->getIterator($query->getClass(), $query);
+        foreach ($offers as $offer) {
+            yield new Offer($this->modx, $offer);
+        }
     }
 
     // TODO: тут получить товары со всеми возможными опциями и тв полями
@@ -238,5 +279,23 @@ class Pricelist extends BaseObject
         }
 
         return $q;
+    }
+
+    public function newField(string $name, int $type = Field::TYPE_DEFAULT, bool $active = true): Field
+    {
+        $field = new Field($this->modx);
+        $field->name = $name;
+        $field->type = $type;
+        $field->pricelist_id = $this->id;
+        $field->created_on = new DateTimeImmutable();
+        $field->active = $active;
+
+        return $field;
+    }
+
+    public function offersCount(): int
+    {
+        $query = $this->queryForOffers();
+        return $this->modx->getCount($query->getClass(), $query);
     }
 }

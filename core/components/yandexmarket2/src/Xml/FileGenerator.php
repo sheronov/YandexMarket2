@@ -2,12 +2,13 @@
 
 namespace YandexMarket\Xml;
 
+use DateTimeImmutable;
+use modX;
 use RuntimeException;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
-use YandexMarket\Service;
 
-class Generator
+class FileGenerator
 {
     protected $writer;
     protected $pricelist;
@@ -15,19 +16,18 @@ class Generator
     protected $log = [];
     protected $start;
 
-    public function __construct(Pricelist $pricelist)
+    public function __construct(Pricelist $pricelist, modX $modX)
     {
         $this->pricelist = $pricelist;
-        $this->writer = new PricelistWriter($pricelist);
-        $this->service = new Service($pricelist->modX());
+        $this->writer = new PricelistWriter($pricelist, $modX);
         $this->start = microtime(true);
 
-        $filesPath = $this->service->getConfig()['filesPath'];
+        $filesPath = $this->pricelist->getFilePath(false);
         if (!is_dir($filesPath) && !mkdir($filesPath, 0755, true) && !is_dir($filesPath)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $filesPath));
         }
 
-        $pricelistFilePath = $filesPath.$this->pricelist->file;
+        $pricelistFilePath = $this->pricelist->getFilePath(true);
         if (file_exists($pricelistFilePath)) {
             $this->log('Файл '.$pricelistFilePath.' уже существует и будет перезаписан');
         } else {
@@ -46,12 +46,16 @@ class Generator
             return false;
         }
 
+        $this->pricelist->need_generate = false;
+        $this->pricelist->save(); //lock для долгого экспорта
+        $this->pricelist->generated_on = new DateTimeImmutable();
+
         $this->writer->writeField($field);
 
         $this->writer->closeDocument();
-        $this->log('Файл успешно записан. Техническая информация: '.print_r(Service::debugInfo($this->pricelist->modX()),
-                true));
-        return true;
+        $this->log('Файл успешно записан. Техническая информация: '.$this->writer->debugInfo(true));
+
+        return $this->pricelist->save();
     }
 
     /**

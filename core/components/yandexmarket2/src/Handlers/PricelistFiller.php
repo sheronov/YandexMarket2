@@ -2,21 +2,17 @@
 
 namespace YandexMarket\Handlers;
 
-use DateTimeImmutable;
-use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
 
 class PricelistFiller
 {
     protected $pricelist;
-    protected $modx;
     protected $marketplace;
 
     public function __construct(Pricelist $pricelist)
     {
         $this->pricelist = $pricelist;
-        $this->modx = $pricelist->modX();
         $this->marketplace = $pricelist->getMarketplace();
     }
 
@@ -38,14 +34,9 @@ class PricelistFiller
 
         $rank = 0;
         foreach ($fields as $name => $data) {
-            $field = new Field($this->modx);
-            $field->name = $name;
+            $field = $this->pricelist->newField($name, $data['type'] ?? Field::TYPE_DEFAULT);
             $field->parent = $parent->id ?? null;
-            $field->type = $data['type'] ?? Field::TYPE_DEFAULT;
-            $field->pricelist_id = $this->pricelist->id;
             $field->rank = ++$rank;
-            $field->created_on = new DateTimeImmutable();
-            $field->active = true;
             if ($properties = array_filter($data, static function (string $key) {
                 return !in_array($key, ['type', 'fields'], true);
             }, ARRAY_FILTER_USE_KEY)) {
@@ -73,16 +64,12 @@ class PricelistFiller
                 return $attribute['required'] ?? false;
             })) {
                 foreach ($attributes as $attrName => $attrData) {
-                    $attribute = new Attribute($this->modx);
-                    $attribute->name = $attrName;
-                    $attribute->field_id = $field->id;
+                    $attribute = $field->newAttribute($attrName);
                     if (isset($this->marketplace->defaultAttributes()[$field->type][$attrName])) {
                         $attribute->value = $this->marketplace->defaultAttributes()[$field->type][$attrName];
                     }
                     $attribute->properties = $attrData;
-                    if ($attribute->save()) {
-                        $field->addAttribute($attribute);
-                    }
+                    $attribute->save();
                 }
             }
 

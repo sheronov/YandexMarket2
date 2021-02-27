@@ -14,26 +14,23 @@ class ymXmlPreviewProcessor extends modProcessor
 
     public function initialize()
     {
-        /** @var ymPricelist $pricelist */
-        if ((!$id = $this->getProperty('id')) || !$pricelist = $this->modx->getObject(ymPricelist::class, $id)) {
+        if ((!$id = $this->getProperty('id')) || !$pricelist = Pricelist::getById($id, $this->modx)) {
             return $this->modx->lexicon('ym_pricelist_err_nfs', ['id' => $id]);
         }
-
-        $this->xml = new Preview(new Pricelist($this->modx, $pricelist));
+        /** @var Pricelist $pricelist */
+        $this->xml = new Preview($pricelist, $this->modx);
 
         return true;
     }
 
     public function process()
     {
-        $additional = $this->getProperty('data', []);
-
         switch ($this->getProperty('method')) {
             case Preview::PREVIEW_CATEGORIES:
-                $xml = $this->xml->previewCategories($additional);
+                $xml = $this->xml->previewCategories();
                 break;
             case Preview::PREVIEW_OFFERS:
-                $xml = $this->xml->previewOffer($additional);
+                $xml = $this->xml->previewOffer();
                 break;
             case Preview::PREVIEW_SHOP:
                 $xml = $this->xml->previewShop();

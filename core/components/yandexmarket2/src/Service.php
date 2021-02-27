@@ -26,10 +26,6 @@ class Service
         $this->config = array_merge($config, [
             'corePath'  => $corePath,
             'modelPath' => $corePath.'model/',
-            'filesPath' => $this->preparePath($this->modx->getOption('yandexmarket2_files_path', null,
-                '{assets_path}yandexmarket/')),
-            'filesUrl'  => $this->preparePath($this->modx->getOption('yandexmarket2_files_url', null,
-                '{assets_url}yandexmarket/')),
         ]);
 
         $this->modx->addPackage('yandexmarket2', $corePath.'model/');
@@ -47,11 +43,6 @@ class Service
             'totalTime' => sprintf("%2.4f s", (microtime(true) - $xpdo->startTime)),
             'memory'    => number_format(memory_get_usage(true) / 1024, 0, ",", " ").' kb'
         ];
-    }
-
-    public function getConfig(): array
-    {
-        return $this->config;
     }
 
     public static function hasMiniShop2(): bool
@@ -315,13 +306,14 @@ class Service
         return $fields;
     }
 
-    public function preparePath(string $path): string
+    public static function preparePath(xPDO $xpdo, string $path): string
     {
         $paths = [
-            '{core_path}'   => $this->modx->getOption('core_path', null, MODX_CORE_PATH),
-            '{base_path}'   => $this->modx->getOption('base_path', null, MODX_BASE_PATH),
-            '{assets_path}' => $this->modx->getOption('assets_path', null, MODX_ASSETS_PATH),
-            '{assets_url}'  => $this->modx->getOption('assets_url', null, MODX_ASSETS_URL),
+            '{site_url}'    => $xpdo->getOption('site_url', null, MODX_SITE_URL),
+            '{core_path}'   => $xpdo->getOption('core_path', null, MODX_CORE_PATH),
+            '{base_path}'   => $xpdo->getOption('base_path', null, MODX_BASE_PATH),
+            '{assets_path}' => $xpdo->getOption('assets_path', null, MODX_ASSETS_PATH),
+            '{assets_url}'  => $xpdo->getOption('assets_url', null, MODX_ASSETS_URL),
         ];
 
         return str_replace(array_keys($paths), array_values($paths), $path);

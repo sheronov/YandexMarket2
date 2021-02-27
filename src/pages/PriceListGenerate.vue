@@ -21,7 +21,7 @@
           filled
           dense
           label="Название файла (укажите вместе с расширением xml)"
-          hint="Сохраняется в pricelist.path - вывести"
+          :hint="`Файл будет сохранён в директорию ${pricelist.path}`"
           v-model="data.file"
       ></v-text-field>
       <v-select
@@ -63,15 +63,15 @@
         Изменились товары. Файл нужно перегенерировать!
       </v-alert>
       <v-alert v-if="pricelist.generated_on" type="info">
-        Предыдущий прайс-лист сформирован в {{ generatedOn }}
+        Предыдущий прайс-лист сформирован {{ generatedOn }}
       </v-alert>
-      <p v-if="pricelist.generated_on">Ссылка на файл: <code>{{ pricelist.fullUrl }}</code></p>
+      <p v-if="pricelist.generated_on">Ссылка на файл: <code>{{ pricelist.fileUrl }}</code></p>
       <h4 v-else class="mb-3">Прайс-лист ещё ни разу не был сформирован</h4>
-      <v-btn @click="generateFile" :disabled="loading" color="accent" class="mb-3"
+      <v-btn @click="generateFile" :disabled="loading" color="secondary" class="mb-3"
              title="Существующий файл будет перезаписан">
         Сформировать новый файл
       </v-btn>
-      <pre>{{ log }}</pre>
+      <pre class="text-pre-wrap">{{ log }}</pre>
     </v-col>
   </v-row>
 </template>
@@ -124,7 +124,7 @@ export default {
   computed: {
     ...mapState('marketplace', ['marketplaces']),
     generatedOn() {
-      return new Date(this.pricelist.generated_on).toLocaleString();
+      return this.pricelist.generated_on.date.replace('.000000', '');
     },
     modeHint() {
       let mode = this.modes.find(m => m.value === parseInt(this.data.generate_mode));

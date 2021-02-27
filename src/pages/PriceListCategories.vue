@@ -10,6 +10,7 @@
         @contexts:loaded="categories = $event"
         @tree:reload="treeReload"
     />
+    <p>Если не выбрать категории - то будут выгружены товары всех категорий</p>
     <!--    <code>ids: {{ selected.join(',') }}</code>-->
     <div class="yandexmarket-pricelist-where mb-4 mt-2">
       <v-row class="ma-0 align-center">

@@ -259,4 +259,15 @@ class Field extends BaseObject
         ]);
     }
 
+    public function newAttribute(string $attrName): Attribute
+    {
+        $attribute = new Attribute($this->modx);
+        $attribute->field_id = $this->id;
+        $attribute->name = $attrName;
+
+        $this->addAttribute($attribute);
+
+        return $attribute;
+    }
+
 }
