@@ -19,7 +19,7 @@ class ymFieldCreateProcessor extends modObjectCreateProcessor
         $name = trim($this->getProperty('name'));
         $type = (int)$this->getProperty('type');
         $pricelist = Pricelist::getById((int)$this->getProperty('pricelist_id'), $this->modx);
-        if (empty($name) || empty($type) || $pricelist === null) {
+        if (empty($name) || $type === null || $pricelist === null) {
             $this->modx->error->addField('name', $this->modx->lexicon('ym_field_err_valid'));
         }
         $this->setProperty('created_on', date('Y-m-d H:i:s'));

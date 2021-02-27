@@ -19,9 +19,9 @@ class ymFieldUpdateProcessor extends modObjectUpdateProcessor
     {
         $id = (int)$this->getProperty('id');
         $name = trim($this->getProperty('name'));
-        $type = (int)$this->getProperty('type');
+        $type = $this->getProperty('type');
         $pricelistId = (int)$this->getProperty('pricelist_id');
-        if (empty($id) || empty($name) || empty($type) || empty($pricelistId)) {
+        if (empty($id) || empty($name) || $type === null || empty($pricelistId)) {
             $this->modx->error->addField('name', $this->modx->lexicon('ym_field_err_valid'));
         }
         $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);

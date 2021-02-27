@@ -131,6 +131,7 @@ class Pricelist extends BaseObject
     {
         if (!isset($this->categories)) {
             $this->categories = [];
+            //TODO: тут бы сортировку по modResource.parent ASC, modResource.menuindex ASC
             foreach ($this->object->getMany('Categories') as $ymCategory) {
                 $category = new Category($this->modx, $ymCategory);
                 $this->categories[$category->id] = $category;

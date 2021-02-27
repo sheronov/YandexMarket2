@@ -65,7 +65,9 @@
       <v-alert v-if="pricelist.generated_on" type="info">
         Предыдущий прайс-лист сформирован {{ generatedOn }}
       </v-alert>
-      <p v-if="pricelist.generated_on">Ссылка на файл: <code>{{ pricelist.fileUrl }}</code></p>
+      <p v-if="pricelist.generated_on">Ссылка на файл:
+        <a :href="pricelist.fileUrl" title="Файл откроется в новом окне" target="_blank">{{pricelist.fileUrl }}</a>
+      </p>
       <h4 v-else class="mb-3">Прайс-лист ещё ни разу не был сформирован</h4>
       <v-btn @click="generateFile" :disabled="loading" color="secondary" class="mb-3"
              title="Существующий файл будет перезаписан">
