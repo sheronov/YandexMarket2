@@ -2,65 +2,82 @@
 
 namespace YandexMarket\Xml;
 
+use Exception;
 use modX;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
 
-class Preview
+class Preview extends PricelistWriter
 {
     public const PREVIEW_CATEGORIES = 'categories';
     public const PREVIEW_OFFERS     = 'offers';
     public const PREVIEW_SHOP       = 'shop';
 
-    protected $writer;
-    protected $pricelist;
+    protected $preview = true;
 
     public function __construct(Pricelist $pricelist, modX $modx)
     {
-        $this->pricelist = $pricelist;
-        $this->writer = (new PricelistWriter($pricelist, $modx))->setPreviewMode();
-        $this->writer->writeHeader();
+        parent::__construct($pricelist,$modx);
+        $this->xml->openMemory();
+        $this->writeHeader();
     }
 
+    /**
+     * @return string
+     * @throws Exception
+     */
     public function previewCategories(): string
     {
         if ($total = $this->pricelist->offersCount()) {
-            $this->writer->writeComment(' Всего подходящих предложений: '.$total.' ');
+            $this->writeComment(' Всего подходящих предложений: '.$total.' ');
         } else {
-            $this->writer->writeComment(' Не найдено подходящих предложений ');
+            $this->writeComment(' Не найдено подходящих предложений ');
         }
 
         if ($categoriesField = $this->pricelist->getFieldByType(Field::TYPE_CATEGORIES)) {
-            $this->writer->writeField($categoriesField);
+            $this->writeField($categoriesField);
         } else {
-            $this->writer->writeComment(' Не найден элемент categories ');
+            $this->writeComment(' Не найден элемент categories ');
         }
 
-        return $this->writer->getPreviewXml();
+        return $this->getPreviewXml();
     }
 
+    /**
+     * @return string
+     * @throws Exception
+     */
     public function previewShop(): string
     {
         if ($shopField = $this->pricelist->getFieldByType(Field::TYPE_SHOP)) {
-            $this->writer->writeField($shopField, [], [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS,]);
+            $this->writeField($shopField, [], [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS,]);
         } else {
-            $this->writer->writeComment(' Не найден элемент shop ');
+            $this->writeComment(' Не найден элемент shop ');
         }
-        return $this->writer->getPreviewXml();
+        return $this->getPreviewXml();
     }
 
+    /**
+     * @return string
+     * @throws Exception
+     */
     public function previewOffer(): string
     {
         if (!$offerField = $this->pricelist->getFieldByType(Field::TYPE_OFFER)) {
-            $this->writer->writeComment(' Не найден элемент offer ');
+            $this->writeComment(' Не найден элемент offer ');
         } else {
             $offers = $this->pricelist->offersGenerator(['sortBy' => 'RAND()', 'limit' => 1]);
 
             foreach ($offers as $offer) {
-                $this->writer->writeField($offerField, ['offer' => $offer]);
+                $this->writeField($offerField, ['offer' => $offer]);
             }
         }
-        return $this->writer->getPreviewXml();
+        return $this->getPreviewXml();
+    }
+
+    protected function getPreviewXml(): string
+    {
+        return $this->xml->outputMemory(true);
     }
 
 }

@@ -13,21 +13,23 @@ use YandexMarket\Models\Category;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Offer;
 use YandexMarket\Models\Pricelist;
-use YandexMarket\Service;
 
-class PricelistWriter
+abstract class PricelistWriter
 {
-    /** @var XMLWriter $xml */
+    /** @var XMLWriter */
     protected $xml;
-    /** @var Jevix $jevix */
+    /** @var Jevix */
     protected $jevix;
-    /** @var Pricelist $pricelist */
+    /** @var Pricelist */
     protected $pricelist;
-    /** @var null|pdoTools $pdoTools */
-    protected $pdoTools = null;
-    protected $errors   = [];
-    protected $preview  = false;
+    /** @var null|pdoTools */
+    protected $pdoTools;
+    /** @var modX */
     protected $modx;
+    protected $errors  = [];
+    protected $start   = 0;
+    protected $preview = false;
+    protected $log     = [];
 
     public function __construct(Pricelist $pricelist, modX $modx)
     {
@@ -35,52 +37,36 @@ class PricelistWriter
         $this->modx = $modx;
         $this->initializeJevix();
         if (!$this->initializePdoTools()) {
-            $this->errorLog('[YandexMarket] Could not load pdoTools. Code handlers will be skipped');
+            $this->errorLog('Could not load pdoTools. Code handlers will be skipped');
         }
         $this->xml = new XMLWriter();
+        $this->start = microtime(true);
     }
 
-    protected function errorLog(string $message): void
+    /**
+     * @param  bool  $asString
+     *
+     * @return string|array
+     */
+    public function getLog(bool $asString = true)
     {
-        $this->modx->log(modX::LOG_LEVEL_ERROR, $message);
+        return $asString ? implode(PHP_EOL, $this->log) : $this->log;
     }
 
-    public function writeHeader(): void
+
+    protected function writeHeader(): void
     {
         $this->xml->startDocument('1.0', 'UTF-8');
         $this->xml->setIndent(true);
         $this->xml->setIndentString("\t");
     }
 
-    public function writeComment(string $comment, bool $indentAfter = true): void
+    protected function writeComment(string $comment, bool $indentAfter = true): void
     {
         $this->xml->writeComment($comment);
         if ($indentAfter) {
             $this->xml->setIndent(true);
         }
-    }
-
-    public function openFile(string $path): bool
-    {
-        return $this->xml->openUri($path);
-    }
-
-    public function closeDocument(): void
-    {
-        $this->xml->endDocument();
-        $this->xml->flush();
-    }
-
-    public function setPreviewMode(): PricelistWriter
-    {
-        $this->xml->openMemory();
-        $this->preview = true;
-        return $this;
-    }
-
-    public function getPreviewXml(): string
-    {
-        return $this->xml->outputMemory(true);
     }
 
     protected function initializeJevix(): void
@@ -93,6 +79,7 @@ class PricelistWriter
             $this->jevix->cfgSetTagNoAutoBr(['ul', 'ol']);
             $this->jevix->cfgSetAutoBrMode(false);
         } catch (Exception $exception) {
+            $this->errorLog($exception->getMessage());
             $this->errors[] = $exception->getMessage();
         }
     }
@@ -104,7 +91,7 @@ class PricelistWriter
      *
      * @throws Exception
      */
-    public function writeField(Field $field, array $pls = [], array $skipTypes = []): void
+    protected function writeField(Field $field, array $pls = [], array $skipTypes = []): void
     {
         if (!empty($skipTypes) && in_array($field->type, $skipTypes, true)) {
             if ($this->preview) {
@@ -308,6 +295,7 @@ class PricelistWriter
 
     protected function writeCategoryTree(Category $category, Field $fieldCategories): void
     {
+        // TODO: сделать как с оффером, добавить тип Field::TYPE_CATEGORY (где разрешить выбрать поле для названия и атрибут)
         /** @var modResource $resource */
         $resource = $category->getResource();
         $this->xml->startElement($fieldCategories->getProperties()['child'] ?? 'category');
@@ -315,7 +303,9 @@ class PricelistWriter
         if ($parentId = $resource->get('parent')) {
             $this->xml->writeAttribute($fieldCategories->getProperties()['parent_attribute'] ?? 'parentId', $parentId);
         }
-        $this->xml->text($resource->get($fieldCategories->getProperties()['resource_column'] ?? 'pagetitle')); //тут формулу нужно
+        // TODO: нужно где-то предложить выбор, чтобы могли указать для родителя не pagetitle, а другое поле (или Fenom)
+        $this->xml->text($resource->get($fieldCategories->getProperties()['resource_column'] ?? 'pagetitle'));
+
         $this->xml->endElement();
     }
 
@@ -337,11 +327,20 @@ class PricelistWriter
         $this->xml->endElement();
     }
 
-    public function debugInfo(bool $asString = false)
+    protected function log(string $message, bool $withTime = true): void
     {
-        $debug = Service::debugInfo($this->modx);
-
-        return $asString ? print_r($debug, true) : $debug;
+        if ($withTime) {
+            $message = sprintf("%2.4f s: %s", (microtime(true) - $this->start), $message);
+        }
+        $this->log[] = $message;
     }
+
+    protected function errorLog(string $message): void
+    {
+        $this->log($message);
+        $this->modx->log(modX::LOG_LEVEL_ERROR, '[YandexMarket2] '.$message);
+    }
+
+
 
 }
