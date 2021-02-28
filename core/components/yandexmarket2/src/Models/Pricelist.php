@@ -189,6 +189,13 @@ class Pricelist extends BaseObject
         return $data;
     }
 
+    /**
+     * Генератор предложений для дальнейшей итерации
+     *
+     * @param  array  $config
+     *
+     * @return Generator
+     */
     public function offersGenerator(array $config = []): Generator
     {
         $query = $this->queryForOffers();
@@ -207,8 +214,23 @@ class Pricelist extends BaseObject
         }
     }
 
-    // TODO: тут получить товары со всеми возможными опциями и тв полями
-    public function queryForOffers()
+    /**
+     * Удобный метод для получения количества предложений
+     *
+     * @return int
+     */
+    public function offersCount(): int
+    {
+        $query = $this->queryForOffers();
+        return $this->modx->getCount($query->getClass(), $query);
+    }
+
+    /**
+     * Подготовка запроса для получения товаров
+     *
+     * @return xPDOQuery
+     */
+    protected function queryForOffers(): xPDOQuery
     {
         $hasMs2 = Service::hasMiniShop2();
         $offerClass = $this->modx->getOption('ym_option_offer_class', null, $hasMs2 ? 'msProduct' : 'modDocument');
@@ -294,12 +316,12 @@ class Pricelist extends BaseObject
         return $field;
     }
 
-    public function offersCount(): int
-    {
-        $query = $this->queryForOffers();
-        return $this->modx->getCount($query->getClass(), $query);
-    }
-
+    /**
+     * Если же категории не выбраны - нужно вернуть все те, что в товарах участвуют (а не все сайта)
+     * Снова генератор для уменьшения памяти
+     *
+     * @return Generator
+     */
     public function suitableOffersCategoriesGenerator(): Generator
     {
         $parentIds = [];

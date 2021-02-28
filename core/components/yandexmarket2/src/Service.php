@@ -226,7 +226,7 @@ class Service
     protected function getOfferFields(string $columnPrefix = 'Offer.'): array
     {
         return [
-            ['value' => $columnPrefix.'url', 'text' => 'Полная ссылка на товар'], //TODO: может через Fenom? {$id|url}
+            ['value' => $columnPrefix.'url', 'text' => 'Полная ссылка на товар'],
             ['value' => $columnPrefix.'price', 'text' => 'Цена с учётом плагинов miniShop2']
         ];
     }

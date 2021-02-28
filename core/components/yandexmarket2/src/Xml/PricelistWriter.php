@@ -117,7 +117,7 @@ abstract class PricelistWriter
                 $this->writeCurrenciesField($field, $pls);
                 break;
             case Field::TYPE_PICTURES:
-                // TODO: implement here !!!
+                // TODO: придумать, что делать с изображениями
                 $this->writeComment(' Изображения товара ');
                 break;
             case Field::TYPE_ROOT:
@@ -334,9 +334,6 @@ abstract class PricelistWriter
         }
 
         if (($children = $field->getChildren()) && $categoryField = reset($children)) {
-            // foreach ($categories as $category) {
-            //     $this->writeCategoryTree($category, $field);
-            // }
             foreach ($categories as $category) {
                 $pls['category'] = $category;
                 $pls['resource'] = $category->getResource();
@@ -345,22 +342,6 @@ abstract class PricelistWriter
         } else {
             $this->errorLog("Empty children for field {$field->name} ({$field->id})");
         }
-
-        $this->xml->endElement();
-    }
-
-    protected function writeCategoryTree(Category $category, Field $fieldCategories): void
-    {
-        // TODO: сделать как с оффером, добавить тип Field::TYPE_CATEGORY (где разрешить выбрать поле для названия и атрибут)
-        /** @var modResource $resource */
-        $resource = $category->getResource();
-        $this->xml->startElement($fieldCategories->getProperties()['child'] ?? 'category');
-        $this->xml->writeAttribute($fieldCategories->getProperties()['id_attribute'] ?? 'id', $resource->get('id'));
-        if ($parentId = $resource->get('parent')) {
-            $this->xml->writeAttribute($fieldCategories->getProperties()['parent_attribute'] ?? 'parentId', $parentId);
-        }
-        // TODO: нужно где-то предложить выбор, чтобы могли указать для родителя не pagetitle, а другое поле (или Fenom)
-        $this->xml->text($resource->get($fieldCategories->getProperties()['resource_column'] ?? 'pagetitle'));
 
         $this->xml->endElement();
     }
