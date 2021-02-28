@@ -165,11 +165,10 @@ export default {
         this.loading = true;
         api.post('xml/generate', {id: this.pricelist.id})
             .then(({data}) => {
-              console.log(data);
               this.log = data.message;
               this.$emit('pricelist:updated', {...data.object}, false);
             })
-            .catch(error => console.log(error))
+            .catch(error => console.error(error))
             .then(() => this.loading = false);
       }
     }
