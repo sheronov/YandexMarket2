@@ -1,25 +1,7 @@
 <template>
   <div class="yandexmarket-field-value">
     <v-card-title class="pa-0 flex-nowrap">
-      <template v-if="isSimpleString(field)">
-        <v-text-field
-            :value="field.value"
-            @input="changedValue"
-            label="Введите значение"
-            placeholder="Попадёт в XML без обработки и замен плейсхолдеров"
-            hide-details
-            solo
-            dense
-        >
-          <template v-slot:prepend-inner>
-            <div class="text-no-wrap mr-2">
-              <v-icon left color="inherit">icon-paragraph</v-icon>
-              <code style="position:relative; top:1px;">Текст</code>
-            </div>
-          </template>
-        </v-text-field>
-      </template>
-      <template v-else-if="isCurrencies(field)">
+      <template v-if="isCurrencies(field)">
         <v-select
             :value="field.value"
             :items="field.values"
@@ -56,15 +38,23 @@
           </template>
         </v-select>
       </template>
-      <template v-else-if="isCategories(field)">
-        <div class="text-body-2">Список категорий выбирается на вкладке&nbsp;
-          <router-link :to="{name:'pricelist.categories', params:this.$route.params}">Категории и условия</router-link>
-        </div>
-      </template>
-      <template v-else-if="isOffers(field)">
-        <div class="text-body-2">Поля товаров настраиваются на вкладке &nbsp;
-          <router-link :to="{name:'pricelist.offers', params:this.$route.params}">Поля предложений</router-link>
-        </div>
+      <template v-else-if="isSimpleString(field)">
+        <v-text-field
+            :value="field.value"
+            @input="changedValue"
+            label="Введите значение"
+            placeholder="Попадёт в XML без обработки и замен плейсхолдеров"
+            hide-details
+            solo
+            dense
+        >
+          <template v-slot:prepend-inner>
+            <div class="text-no-wrap mr-2">
+              <v-icon left color="inherit">icon-paragraph</v-icon>
+              <code style="position:relative; top:1px;">Текст</code>
+            </div>
+          </template>
+        </v-text-field>
       </template>
       <template v-else>
         <v-combobox
@@ -169,6 +159,7 @@ export default {
       'isCurrencies',
       'isCategories',
       'isOffers',
+      'isShop',
       'isPictures'
     ]),
     value() {

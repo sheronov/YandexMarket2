@@ -46,7 +46,8 @@
           v-model="data.generate_interval"
           type="number"
       ></v-text-field>
-      <v-checkbox v-model="data.active" label="Автоматически отслеживать изменения и формировать файл" hide-details dense
+      <v-checkbox v-model="data.active" label="Автоматически отслеживать изменения и формировать файл" hide-details
+                  dense
                   class="mt-0 mb-2"/>
       <v-card-actions class="px-0 align-end">
         <v-btn small v-if="hasChanges" @click="cancelChanges" title="Отменить все изменения">
@@ -59,6 +60,21 @@
           Сохранить
         </v-btn>
       </v-card-actions>
+      <template v-if="rootField">
+        <h4 class="mb-1">Корневой элемент XML-файла</h4>
+        <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
+          <pricelist-field
+              :item="rootField"
+              :fields="pricelist.fields"
+              :attributes="pricelist.attributes"
+              :lighten="3"
+              v-on="$listeners"
+              :available-fields="[]"
+              :available-types="[]"
+              parent="root"
+          />
+        </v-expansion-panels>
+      </template>
     </v-col>
     <v-col cols="12" md="6">
       <v-alert v-if="pricelist.need_generate" type="warning" dense>
@@ -91,13 +107,18 @@
 <script>
 import {mapState} from 'vuex';
 import api from "@/api";
+import PricelistField from "@/components/PricelistField";
 
 export default {
   name: 'PriceListGenerate',
   props: {
     pricelist: {required: true, type: Object}
   },
+  components: {
+    PricelistField
+  },
   data: () => ({
+    openedFields: [0],
     data: {},
     loading: false,
     log: 'Здесь появится лог генерации файла',
@@ -135,6 +156,9 @@ export default {
   },
   computed: {
     ...mapState('marketplace', ['marketplaces']),
+    rootField() {
+      return this.pricelist.fields.find(field => field.type === 1);
+    },
     generatedOn() {
       return this.pricelist.generated_on.date.replace('.000000', '');
     },

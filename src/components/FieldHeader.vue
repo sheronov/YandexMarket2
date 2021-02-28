@@ -1,6 +1,6 @@
 <template>
   <v-expansion-panel-header :color="color" hide-actions class="pr-2 pb-1">
-    <inline-edit-dialog v-if="!isRoot(field)">
+    <inline-edit-dialog v-if="!isSingle(field)">
       <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
         #{{ field.rank }}
       </v-btn>
@@ -57,7 +57,7 @@
         <v-icon class="icon-xs mr-1" color="grey darken-1">icon-plus</v-icon>
         <v-icon class="icon-xs" color="grey darken-1">icon-font</v-icon>
       </v-btn>
-      <v-btn v-if="field.id && !isRoot(field) && !field.properties.required"
+      <v-btn v-if="field.id"
              small icon
              title="Отредактировать название и тип поля"
              @click="$emit('edit:toggle',!edit)"
@@ -69,7 +69,7 @@
       <v-btn small icon
              title="Удалить поле"
              @click="deleteField"
-             v-if="!isRoot(field) && !field.properties.required"
+             v-if="!isSingle(field)"
              class="ml-1">
         <v-icon>icon-trash</v-icon>
       </v-btn>
@@ -97,6 +97,7 @@ export default {
   computed: {
     ...mapGetters('field', [
       'isRoot',
+      'isSingle',
       'typeText',
       'isUnique',
       'isSimpleString'

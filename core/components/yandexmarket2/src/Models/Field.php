@@ -43,16 +43,16 @@ class Field extends BaseObject
         Field::TYPE_VALUE       => ['group' => ['offer']],
         Field::TYPE_CDATA_VALUE => ['group' => ['offer']],
         Field::TYPE_TEXT        => ['group' => ['offer', 'shop']],
-        Field::TYPE_PARENT      => ['group' => ['offer', 'shop']],
+        Field::TYPE_PARENT      => ['group' => ['offer', 'shop'], 'parent' => true],
         Field::TYPE_EMPTY       => ['group' => ['offer', 'shop']],
         Field::TYPE_PICTURES    => ['group' => ['offer'], 'unique' => true],
         Field::TYPE_CURRENCIES  => ['group' => ['shop'], 'unique' => true],
         Field::TYPE_CATEGORIES  => ['group' => ['shop'], 'unique' => true],
         Field::TYPE_OFFERS      => ['group' => ['shop'], 'unique' => true],
-        Field::TYPE_ROOT        => ['hidden' => true, 'root' => true, 'parent' => true],
-        Field::TYPE_OFFER       => ['hidden' => true, 'root' => true, 'parent' => true],
-        Field::TYPE_CATEGORY    => ['group' => ['categories'], 'hidden' => true, 'root' => true],
-        Field::TYPE_SHOP        => ['hidden' => true, 'root' => true, 'parent' => true],
+        Field::TYPE_ROOT        => ['hidden' => true, 'parent' => true, 'single' => true],
+        Field::TYPE_OFFER       => ['hidden' => true, 'parent' => true, 'single' => true],
+        Field::TYPE_CATEGORY    => ['group' => ['categories'], 'hidden' => true, 'single' => true],
+        Field::TYPE_SHOP        => ['hidden' => true, 'parent' => true, 'single' => true],
     ];
 
     /** @var null|Field */

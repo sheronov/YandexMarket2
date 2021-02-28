@@ -13,13 +13,7 @@
         @field:updated="fieldUpdated"
     />
     <v-expansion-panel-content :color="`grey lighten-${lighten}`" eager>
-      <template v-if="attrs.length">
-<!--        <div class="grey&#45;&#45;text mb-1" style="font-size: 13px;">Атрибуты:</div>-->
-        <v-row dense class="mb-1">
-          <field-attribute v-for="attribute in attrs" :key="attribute.id" :attribute="attribute" v-on="$listeners"/>
-        </v-row>
-      </template>
-      <v-row class="px-0 pb-3" v-if="edit" dense>
+      <v-row class="px-0 pb-1 mb-0" v-if="edit" dense>
         <v-col cols="12" md="6">
           <v-combobox
               :value="field.name"
@@ -52,13 +46,14 @@
         <v-col cols="12" md="6">
           <v-select
               v-model="field.type"
-              :items="availableTypes"
+              :items="types"
               class="yandexmarket-field-type"
               :full-width="false"
               label="Тип элемента"
               placeholder="Выберите тип"
               :menu-props="{offsetY: true}"
               :attach="true"
+              :disabled="!!(field.type && !availableType)"
               hide-details
               solo
               dense
@@ -71,8 +66,28 @@
           </v-select>
         </v-col>
       </v-row>
-      <field-value :field="field" @input="field.value = $event" v-if="!isParent(field) && !isEmptyType(field)"/>
-      <v-card-text class="pa-0" v-if="isParent(field)">
+      <template v-if="attrs.length">
+        <!--        <div class="grey&#45;&#45;text mb-1" style="font-size: 13px;">Атрибуты:</div>-->
+        <v-row dense class="mb-1 mt-0">
+          <field-attribute v-for="attribute in attrs" :key="attribute.id" :attribute="attribute" v-on="$listeners"/>
+        </v-row>
+      </template>
+      <template v-if="isCategories(field)">
+        <div class="text-body-2">Список категорий выбирается на вкладке&nbsp;
+          <router-link :to="{name:'pricelist.categories', params:this.$route.params}">Категории и условия</router-link>
+        </div>
+      </template>
+      <template v-else-if="isOffers(field)">
+        <div class="text-body-2">Поля товаров настраиваются на вкладке &nbsp;
+          <router-link :to="{name:'pricelist.offers', params:this.$route.params}">Поля предложений</router-link>
+        </div>
+      </template>
+      <template v-else-if="isShop(field) && parent === 1">
+        <div class="text-body-2">Поля магазина настраиваются на вкладке &nbsp;
+          <router-link :to="{name:'pricelist', params:this.$route.params}">Настройки магазина</router-link>
+        </div>
+      </template>
+      <v-card-text class="pa-0" v-else-if="isParent(field)">
         <template v-if="children.length">
           <div class="grey--text" style="font-size: 13px;">Дочерние элементы:</div>
           <v-expansion-panels :value="opened" multiple accordion :key="field.name">
@@ -86,10 +101,11 @@
                 :available-fields="availableFields"
                 :available-types="availableTypes"
                 v-on="$listeners"
+                :parent="field.type"
             />
           </v-expansion-panels>
         </template>
-        <v-row class="ma-0 align-center">
+        <v-row class="ma-0 align-center" v-if="!isRoot(field)">
           <div v-if="!children.length" class="grey--text">Ещё нет дочерних полей</div>
           <v-spacer/>
           <v-btn small class="mt-4" color="white" @click="addField" :disabled="!!children.filter(f => !f.id).length">
@@ -103,6 +119,11 @@
           </v-btn>
         </v-row>
       </v-card-text>
+      <field-value
+          v-else-if="!isEmptyType(field)"
+          :field="field"
+          @input="field.value = $event"
+      />
     </v-expansion-panel-content>
   </v-expansion-panel>
 </template>
@@ -127,6 +148,7 @@ export default {
     lighten: {type: Number, default: 2},
     availableFields: {type: Array, default: () => ([])},
     availableTypes: {type: Array, default: () => ([])},
+    parent: {default: null}
   },
   data: () => ({
     field: {},
@@ -164,8 +186,26 @@ export default {
   computed: {
     ...mapGetters('field', [
       'isParent',
-      'isEmptyType'
+      'isEmptyType',
+      'findByType',
+      'isRoot',
+      'isShop',
+      'isOffers',
+      'isCategories'
     ]),
+    availableType() {
+      return this.availableTypes.find(type => type.value === this.field.type);
+    },
+    realType() {
+      return this.findByType(this.field.type);
+    },
+    types() {
+      let types = this.availableTypes.slice();
+      if (this.realType && !this.availableType) {
+        types.push(this.realType);
+      }
+      return types;
+    }
   },
   mounted() {
     if (!this.field.id) {
