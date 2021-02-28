@@ -10,7 +10,7 @@
         @contexts:loaded="categories = $event"
         @tree:reload="treeReload"
     />
-    <p>Если не выбрать категории - то будут выгружены товары всех категорий</p>
+    <p>Если не выбрать категории - то будут выгружены все категории подходящих товаров</p>
     <!--    <code>ids: {{ selected.join(',') }}</code>-->
     <template v-if="categoryField">
       <h4>Настройки элемента категории в XML</h4>

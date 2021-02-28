@@ -25,7 +25,7 @@ class Field extends BaseObject
     public const TYPE_TEXT       = 0; //текстовое значение (не будет как-либо обрабатываться)
     public const TYPE_ROOT       = 1; //корневой элемент
     public const TYPE_SHOP       = 2; //поле магазин (сюда будут прокинуты SHOP_FIELDS)
-    public const TYPE_CURRENCIES = 3; //валюта
+    public const TYPE_CURRENCIES = 3; //валюта TODO: подумать заменить на PARENT -> EMPTY (со значениями по умолчанию проблемы могут)
     public const TYPE_CATEGORIES = 4; //категории
     public const TYPE_OFFERS     = 5; //предложения
     public const TYPE_OFFER      = 6; //предложение

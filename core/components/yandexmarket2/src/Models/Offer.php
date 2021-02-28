@@ -4,6 +4,7 @@ namespace YandexMarket\Models;
 
 use miniShop2;
 use modResource;
+use xPDOObject;
 use YandexMarket\Service;
 
 class Offer extends BaseObject
@@ -11,6 +12,24 @@ class Offer extends BaseObject
     public static function getObjectClass(): string
     {
         return modResource::class;
+    }
+
+    /**
+     * @return modResource|xPDOObject
+     */
+    public function getResource(): modResource
+    {
+        return $this->object;
+    }
+
+    public function getLoadedOptions(): array
+    {
+        return []; // TODO: implement here
+    }
+
+    public function getLoadedTVs(): array
+    {
+        return [];// TODO: implement here
     }
 
     public function get(string $field)
@@ -74,6 +93,5 @@ class Offer extends BaseObject
 
         return $price;
     }
-
 
 }

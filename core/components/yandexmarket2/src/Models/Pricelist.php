@@ -132,7 +132,6 @@ class Pricelist extends BaseObject
     {
         if (!isset($this->categories)) {
             $this->categories = [];
-            //TODO: тут бы сортировку по modResource.parent ASC, modResource.menuindex ASC
             foreach ($this->object->getMany('Categories') as $ymCategory) {
                 $category = new Category($this->modx, $ymCategory);
                 $this->categories[$category->id] = $category;
@@ -269,12 +268,12 @@ class Pricelist extends BaseObject
                     $classKeys[$class][] = $key;
                 }
             }
-            // TODO if(!empty($field->handler)) с регулярками найти {$Option.color} или {$TV.size} или [[+tv.size]]
+            // TODO if(!empty($field->handler)) с регулярками найти {$option.color} или {$tv.size} или [[+tv.size]]
         }
 
         $this->modx->log(1, 'class keys '.var_export($classKeys, true));
 
-        // TODO: приджойнить другие классы (с моделями что-то придумать нужно)
+        // TODO: приджойнить выбранные столбцы других классов (с моделями что-то придумать нужно)
         foreach ($classKeys as $class => $keys) {
             switch ($class) {
             }

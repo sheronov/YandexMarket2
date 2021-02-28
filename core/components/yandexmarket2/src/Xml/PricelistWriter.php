@@ -6,6 +6,7 @@ use Exception;
 use Jevix;
 use modResource;
 use modX;
+use msProduct;
 use pdoTools;
 use XMLWriter;
 use YandexMarket\Models\Attribute;
@@ -262,10 +263,27 @@ abstract class PricelistWriter
             if (mb_stripos(trim($handler), '@INLINE') !== 0) {
                 $handler = '@INLINE '.trim($handler);
             }
-            //TODO: все объекты из pls - сделать в toArray() (у кого нет такого метода - удалить)
+            foreach ($pls as $key => $data) {
+                if (is_object($data)) {
+                    if ($data instanceof Offer) {
+                        $pls[$key] = $data->toArray();
+                        $resource = $data->getResource();
+                        $pls['resource'] = $resource->toArray();
+                        if($resource instanceof msProduct) {
+                            $pls['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
+                        }
+                        $pls['option'] = $data->getLoadedOptions();
+                        $pls['tv'] = $data->getLoadedTVs();
+                    } elseif (method_exists($data, 'toArray')) {
+                        $pls[$key] = $data->toArray();
+                    } else {
+                        unset($pls[$key]);
+                    }
+                }
+            }
             $value = $this->pdoTools->getChunk($handler, array_merge($pls, [
                 'input'     => $value,
-                'pricelist' => $this->pricelist
+                'pricelist' => $this->pricelist->toArray()
             ]), true);
         }
         return $value;

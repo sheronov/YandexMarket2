@@ -17,7 +17,7 @@ class Preview extends PricelistWriter
 
     public function __construct(Pricelist $pricelist, modX $modx)
     {
-        parent::__construct($pricelist,$modx);
+        parent::__construct($pricelist, $modx);
         $this->xml->openMemory();
         $this->writeHeader();
     }
@@ -29,7 +29,7 @@ class Preview extends PricelistWriter
     public function previewCategories(): string
     {
         if ($total = $this->pricelist->offersCount()) {
-            $this->writeComment(' Всего подходящих предложений: '.$total.' ');
+            $this->writeComment(' Подходящих предложений: '.$total.' ');
         } else {
             $this->writeComment(' Не найдено подходящих предложений ');
         }
