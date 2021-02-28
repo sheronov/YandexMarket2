@@ -34,7 +34,7 @@ class Field extends BaseObject
     public const TYPE_PARENT      = 10; //обёртка без своего собственного значения
     public const TYPE_VALUE       = 11; //значение из поля товара (подходит всегда)
     public const TYPE_CDATA_VALUE = 12; //значение из поля товара обернуть в CDATA
-    public const TYPE_PICTURES    = 13; //изображения предложения
+    public const TYPE_PICTURE     = 13; //изображения предложения
 
     public const TYPE_EMPTY = 20; //пустой, только для атрибутов
 
@@ -45,7 +45,7 @@ class Field extends BaseObject
         Field::TYPE_TEXT        => ['group' => ['offer', 'shop']],
         Field::TYPE_PARENT      => ['group' => ['offer', 'shop'], 'parent' => true],
         Field::TYPE_EMPTY       => ['group' => ['offer', 'shop']],
-        Field::TYPE_PICTURES    => ['group' => ['offer'], 'unique' => true],
+        Field::TYPE_PICTURE     => ['group' => ['offer']],
         Field::TYPE_CURRENCIES  => ['group' => ['shop'], 'unique' => true],
         Field::TYPE_CATEGORIES  => ['group' => ['shop'], 'unique' => true],
         Field::TYPE_OFFERS      => ['group' => ['shop'], 'unique' => true],
@@ -255,7 +255,7 @@ class Field extends BaseObject
             self::TYPE_CURRENCIES,
             self::TYPE_CATEGORIES,
             self::TYPE_OFFER,
-            self::TYPE_PICTURES,
+            self::TYPE_PICTURE,
             self::TYPE_PARENT,
             self::TYPE_EMPTY
         ]);

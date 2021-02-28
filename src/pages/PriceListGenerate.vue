@@ -49,14 +49,14 @@
       <v-checkbox v-model="data.active" label="Автоматически отслеживать изменения и формировать файл" hide-details
                   dense
                   class="mt-0 mb-2"/>
-      <v-card-actions class="px-0 align-end">
+      <v-card-actions class="px-0">
         <v-btn small v-if="hasChanges" @click="cancelChanges" title="Отменить все изменения">
           <v-icon left>icon-undo</v-icon>
           Отменить изменения
         </v-btn>
         <v-spacer/>
-        <v-btn :disabled="!hasChanges" @click="saveChanges" color="secondary">
-          <v-icon left>icon-save</v-icon>
+        <v-btn :disabled="!hasChanges" @click="saveChanges" color="secondary" small>
+          <v-icon left small>icon-save</v-icon>
           Сохранить
         </v-btn>
       </v-card-actions>
@@ -205,5 +205,6 @@ export default {
   font-family: monospace;
   color: #999 !important;
   font-size: 0.875em;
+  line-height: 1.25rem;
 }
 </style>

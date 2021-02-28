@@ -6,6 +6,7 @@ use Exception;
 use HaydenPierce\ClassFinder\ClassFinder;
 use modX;
 use YandexMarket\Models\Field;
+use YandexMarket\Service;
 
 abstract class Marketplace
 {
@@ -104,7 +105,7 @@ abstract class Marketplace
      */
     public function defaultValues(): array
     {
-        return [
+        $values = [
             Field::TYPE_SHOP       => [
                 'name'                  => $this->getOption('shop_name', $this->modx->getOption('site_name')),
                 'url'                   => $this->getOption('shop_url', $this->modx->getOption('site_url')),
@@ -129,6 +130,15 @@ abstract class Marketplace
                 'category' => $this->getOption('categories_category', 'pagetitle')
             ]
         ];
+
+        if ($this->getOption('ms2gallery_sync_ms2', false, '')) {
+            // интеграция ms2Gallery с ms2
+            $values[Field::TYPE_OFFER]['picture'] = 'msResourceFile.url';
+        } elseif (Service::hasMiniShop2()) {
+            $values[Field::TYPE_OFFER]['picture'] = 'msProductFile.url';
+        }
+
+        return $values;
     }
 
     public function defaultAttributes(): array
@@ -151,11 +161,12 @@ abstract class Marketplace
     /**
      * @param  string  $key
      * @param  null  $default
+     * @param  string  $prefix
      *
      * @return mixed
      */
-    protected function getOption(string $key, $default = null)
+    protected function getOption(string $key, $default = null, string $prefix = 'ym_default_')
     {
-        return $this->modx->getOption('ym_default_'.$key, null, $default);
+        return $this->modx->getOption($prefix.$key, null, $default);
     }
 }

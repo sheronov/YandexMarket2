@@ -22,14 +22,23 @@ class Offer extends BaseObject
         return $this->object;
     }
 
+    public function getPictures(): array
+    {
+        $pictures = [];// TODO: сюда должны попадать все изображения, который приджойнены из поля
+        if ($image = $this->get('Data.image')) {
+            $pictures[] = Service::preparePath($this->modx, '{site_url}'.$image, true);
+        }
+        return $pictures;
+    }
+
     public function getLoadedOptions(): array
     {
-        return []; // TODO: implement here
+        return []; // TODO: сюда должны попадать значения приджойненных опций
     }
 
     public function getLoadedTVs(): array
     {
-        return [];// TODO: implement here
+        return []; // TODO: сюда должны попадать значения приджойненных ТВ-шек
     }
 
     public function get(string $field)

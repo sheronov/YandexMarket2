@@ -1,5 +1,6 @@
 <template>
-  <v-expansion-panel-header :color="color" hide-actions class="pr-2 pb-1">
+  <v-sheet :color="color" class="v-expansion-panel-header pr-2 pb-1">
+<!-- <v-expansion-panel-header :color="color" hide-actions class="pr-2 pb-1">-->
     <inline-edit-dialog v-if="!isSingle(field)">
       <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
         #{{ field.rank }}
@@ -74,7 +75,7 @@
         <v-icon>icon-trash</v-icon>
       </v-btn>
     </template>
-  </v-expansion-panel-header>
+  </v-sheet>
 </template>
 
 <script>

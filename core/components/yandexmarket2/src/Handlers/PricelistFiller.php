@@ -2,6 +2,7 @@
 
 namespace YandexMarket\Handlers;
 
+use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
 
@@ -68,6 +69,7 @@ class PricelistFiller
                     if (isset($this->marketplace->defaultAttributes()[$field->type][$attrName])) {
                         $attribute->value = $this->marketplace->defaultAttributes()[$field->type][$attrName];
                     }
+                    $attribute->type = $attrData['type'] ?? Attribute::TYPE_DEFAULT;
                     $attribute->properties = $attrData;
                     $attribute->save();
                 }

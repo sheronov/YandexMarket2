@@ -13,9 +13,7 @@ use YandexMarket\Models\Field;
 class Service
 {
     protected $modx;
-    protected $config       = [];
-    public    $hasMS2       = false;
-    public    $pricePlugins = false;
+    protected $config = [];
 
     public function __construct(modX $modx, array $config = [])
     {
@@ -48,6 +46,11 @@ class Service
     public static function hasMiniShop2(): bool
     {
         return file_exists(MODX_CORE_PATH.'components/minishop2/model/minishop2/msproduct.class.php');
+    }
+
+    public static function hasMs2Gallery(): bool
+    {
+        return file_exists(MODX_CORE_PATH.'components/ms2gallery/model/ms2gallery/ms2gallery.class.php');
     }
 
     protected function getLexicon(string $key, ?string $fallbackKey = null): ?string
@@ -132,11 +135,19 @@ class Service
             $withDividers ? [['divider' => true]] : []
         );
 
-        if ($this->hasMS2) {
+        if (self::hasMiniShop2()) {
             if ($productFields = $this->getMsProductFields()) {
                 $list = array_merge($list,
                     $withHeaders ? [['header' => 'Поля товара miniShop2']] : [],
                     $productFields,
+                    $withDividers ? [['divider' => true]] : []
+                );
+            }
+
+            if ($galleryFields = $this->getMsGalleryFields()) {
+                $list = array_merge($list,
+                    $withHeaders ? [['header' => 'Галерея товара miniShop2']] : [],
+                    $galleryFields,
                     $withDividers ? [['divider' => true]] : []
                 );
             }
@@ -156,6 +167,14 @@ class Service
                     $withDividers ? [['divider' => true]] : []
                 );
             }
+        }
+
+        if (self::hasMs2Gallery() && $ms2GalleryFields = $this->getMs2GalleryFields()) {
+            $list = array_merge($list,
+                $withHeaders ? [['header' => 'Изображения ms2Gallery']] : [],
+                $ms2GalleryFields,
+                $withDividers ? [['divider' => true]] : []
+            );
         }
 
         if ($tvFields = $this->getTvFields()) {
@@ -248,6 +267,29 @@ class Service
         }, array_keys($fields));
     }
 
+    protected function getMsGalleryFields(string $columnPrefix = 'msProductFile.'): array
+    {
+        return [
+            [
+                'value' => $columnPrefix.'url',
+                'text'  => 'Url изображения',
+            ],
+            [
+                'value' => $columnPrefix.'name',
+                'text'  => 'Название изображения',
+            ],
+            [
+                'value' => $columnPrefix.'file',
+                'text'  => 'Имя файла изображения',
+            ],
+        ];
+    }
+
+    protected function getMs2GalleryFields(string $columnPrefix = 'msResourceFile.'): array
+    {
+        return $this->getMsGalleryFields($columnPrefix);
+    }
+
     protected function getMsVendorFields(string $columnPrefix = 'Vendor.', array $skip = ['id', 'properties']): array
     {
         $fields = $this->modx->getFields('msVendor');
@@ -306,17 +348,29 @@ class Service
         return $fields;
     }
 
-    public static function preparePath(xPDO $xpdo, string $path): string
+    public static function getSitePaths(xPDO $xpdo): array
     {
-        $paths = [
-            '{site_url}'    => $xpdo->getOption('site_url', null, MODX_SITE_URL),
-            '{core_path}'   => $xpdo->getOption('core_path', null, MODX_CORE_PATH),
-            '{base_path}'   => $xpdo->getOption('base_path', null, MODX_BASE_PATH),
-            '{assets_path}' => $xpdo->getOption('assets_path', null, MODX_ASSETS_PATH),
-            '{assets_url}'  => $xpdo->getOption('assets_url', null, MODX_ASSETS_URL),
+        return [
+            'site_url'    => $xpdo->getOption('site_url', null, MODX_SITE_URL),
+            'core_path'   => $xpdo->getOption('core_path', null, MODX_CORE_PATH),
+            'base_path'   => $xpdo->getOption('base_path', null, MODX_BASE_PATH),
+            'assets_path' => $xpdo->getOption('assets_path', null, MODX_ASSETS_PATH),
+            'assets_url'  => $xpdo->getOption('assets_url', null, MODX_ASSETS_URL),
         ];
+    }
 
-        return str_replace(array_keys($paths), array_values($paths), $path);
+    public static function preparePath(xPDO $xpdo, string $path, bool $collapseSlashes = false): string
+    {
+        $paths = self::getSitePaths($xpdo);
+        $path = str_replace(array_map(static function (string $key) {
+            return '{'.$key.'}';
+        }, array_keys($paths)), array_values($paths), $path);
+
+        if ($collapseSlashes) {
+            $path = preg_replace('/(?<!:)\/+/', '/', $path);
+        }
+
+        return $path;
     }
 
 }

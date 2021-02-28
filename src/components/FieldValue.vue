@@ -85,6 +85,21 @@
             <small v-if="item.help" class="pl-1 grey--text">&nbsp;({{ item.help }})</small>
           </template>
         </v-combobox>
+        <v-text-field
+            v-if="isPicture(field)"
+            v-model="field.properties.count"
+            type="number"
+            class="ml-2"
+            title="Количество изображений для каждого товара (10 максимум)"
+            min="0"
+            max="10"
+            label="Кол-во"
+            style="max-width: 100px"
+            solo
+            dense
+            hide-details
+        >
+        </v-text-field>
         <v-btn
             :title="openedCode ? 'Для закрытия очистите введённый код' :'Добавить код-обработчик значения'"
             :color="openedCode ? 'secondary' : 'accent'"
@@ -161,7 +176,7 @@ export default {
       'isCategories',
       'isOffers',
       'isShop',
-      'isPictures'
+      'isPicture'
     ]),
     value() {
       if (typeof this.field.value === 'object') {

@@ -22,7 +22,7 @@ export default {
         isCurrencies: () => ({type}) => parseInt(type) === 3,
         isOffers: () => ({type}) => parseInt(type) === 5,
         isShop: () => ({type}) => parseInt(type) === 2,
-        isPictures: () => ({type}) => parseInt(type) === 13,
+        isPicture: () => ({type}) => parseInt(type) === 13,
         availableTypes: (state, getters) => (group, pricelist) => {
             return getters.selectableTypes.filter(type => {
                 let typeGroup = type.group || [];

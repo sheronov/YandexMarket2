@@ -222,7 +222,9 @@ class YandexMarket extends Marketplace
                 'required' => true,
             ],
             'picture'               => [
-                'type' => Field::TYPE_PICTURES,
+                'type'     => Field::TYPE_PICTURE,
+                'multiple' => true,
+                'count'    => 10
             ],
             'supplier'              => [
                 'type'       => Field::TYPE_EMPTY,

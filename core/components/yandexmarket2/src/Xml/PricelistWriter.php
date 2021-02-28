@@ -14,6 +14,7 @@ use YandexMarket\Models\Category;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Offer;
 use YandexMarket\Models\Pricelist;
+use YandexMarket\Service;
 
 abstract class PricelistWriter
 {
@@ -96,7 +97,7 @@ abstract class PricelistWriter
     {
         if (!empty($skipTypes) && in_array($field->type, $skipTypes, true)) {
             if ($this->preview) {
-                $this->writeComment(" элемент {$field->name} пропущен ");
+                $this->xml->writeElement($field->name);
             }
             return;
         }
@@ -116,9 +117,8 @@ abstract class PricelistWriter
             case Field::TYPE_CURRENCIES:
                 $this->writeCurrenciesField($field, $pls);
                 break;
-            case Field::TYPE_PICTURES:
-                // TODO: придумать, что делать с изображениями
-                $this->writeComment(' Изображения товара ');
+            case Field::TYPE_PICTURE:
+                $this->writeOffersImages($field, $pls);
                 break;
             case Field::TYPE_ROOT:
             case Field::TYPE_SHOP:
@@ -269,7 +269,7 @@ abstract class PricelistWriter
                         $pls[$key] = $data->toArray();
                         $resource = $data->getResource();
                         $pls['resource'] = $resource->toArray();
-                        if($resource instanceof msProduct) {
+                        if ($resource instanceof msProduct) {
                             $pls['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
                         }
                         $pls['option'] = $data->getLoadedOptions();
@@ -281,10 +281,14 @@ abstract class PricelistWriter
                     }
                 }
             }
-            $value = $this->pdoTools->getChunk($handler, array_merge($pls, [
-                'input'     => $value,
-                'pricelist' => $this->pricelist->toArray()
-            ]), true);
+            $value = $this->pdoTools->getChunk($handler, array_merge(
+                Service::getSitePaths($this->modx), //{site_url} и т.д.
+                $pls,
+                [
+                    'input'     => $value,
+                    'pricelist' => $this->pricelist->toArray()
+                ]
+            ), true);
         }
         return $value;
     }
@@ -362,6 +366,19 @@ abstract class PricelistWriter
         }
 
         $this->xml->endElement();
+    }
+
+    protected function writeOffersImages(Field $field, array $pls = []): void
+    {
+        if(($offer = $pls['offer'] ?? null) && $offer instanceof Offer) {
+            foreach ($offer->getPictures() as $picture) {
+                $tmpField = new Field($this->modx);
+                $tmpField->name = $field->name;
+                $tmpField->value = $picture;
+                $tmpField->type = Field::TYPE_TEXT;
+                $this->writeField($tmpField,$pls);
+            }
+        }
     }
 
     protected function log(string $message, bool $withTime = true): void
