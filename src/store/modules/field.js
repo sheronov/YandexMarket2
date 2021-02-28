@@ -12,7 +12,7 @@ export default {
         },
         selectableTypes: state => state.types.filter(type => !type.hidden),
         isRoot: state => ({type}) => !!state.types.find(t => t.root && t.value === type), // одно на уровне
-        isParent: state => ({type}) => !!state.types.find(t => t.value === type && (t.parent || t.root)), //может иметь узлы
+        isParent: state => ({type}) => !!state.types.find(t => t.value === type && t.parent), //может иметь узлы
         isUnique: state => ({type}) => !!state.types.find(t => t.unique && t.value === type), //иной обработчик
         isSimpleString: () => ({type}) => parseInt(type) === 0, //простое текстовое поле без подстановки значений
         isEmptyType: () => ({type}) => parseInt(type) === 20, //пустой элемент только для атрибутов

@@ -73,7 +73,7 @@
             :filter="valueSearch"
             :items="dataColumns"
             :attach="true"
-            label="Выберите поле товара"
+            label="Выберите поле объекта"
             placeholder='или введите в формате "Class.key" и нажмите Enter'
             item-value="value"
             item-text="text"

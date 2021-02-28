@@ -29,6 +29,7 @@ class Field extends BaseObject
     public const TYPE_CATEGORIES = 4; //категории
     public const TYPE_OFFERS     = 5; //предложения
     public const TYPE_OFFER      = 6; //предложение
+    public const TYPE_CATEGORY   = 7; //предложение
 
     public const TYPE_PARENT      = 10; //обёртка без своего собственного значения
     public const TYPE_VALUE       = 11; //значение из поля товара (подходит всегда)
@@ -48,9 +49,10 @@ class Field extends BaseObject
         Field::TYPE_CURRENCIES  => ['group' => ['shop'], 'unique' => true],
         Field::TYPE_CATEGORIES  => ['group' => ['shop'], 'unique' => true],
         Field::TYPE_OFFERS      => ['group' => ['shop'], 'unique' => true],
-        Field::TYPE_ROOT        => ['hidden' => true, 'root' => true],
-        Field::TYPE_OFFER       => ['hidden' => true, 'root' => true],
-        Field::TYPE_SHOP        => ['hidden' => true, 'root' => true],
+        Field::TYPE_ROOT        => ['hidden' => true, 'root' => true, 'parent' => true],
+        Field::TYPE_OFFER       => ['hidden' => true, 'root' => true, 'parent' => true],
+        Field::TYPE_CATEGORY    => ['group' => ['categories'], 'hidden' => true, 'root' => true],
+        Field::TYPE_SHOP        => ['hidden' => true, 'root' => true, 'parent' => true],
     ];
 
     /** @var null|Field */

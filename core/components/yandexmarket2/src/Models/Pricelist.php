@@ -5,6 +5,7 @@ namespace YandexMarket\Models;
 use DateTimeImmutable;
 use Generator;
 use modX;
+use PDO;
 use xPDOObject;
 use xPDOQuery;
 use YandexMarket\Marketplaces\Marketplace;
@@ -208,7 +209,7 @@ class Pricelist extends BaseObject
     }
 
     // TODO: тут получить товары со всеми возможными опциями и тв полями
-    public function queryForOffers(array $data = [])
+    public function queryForOffers()
     {
         $hasMs2 = Service::hasMiniShop2();
         $offerClass = $this->modx->getOption('ym_option_offer_class', null, $hasMs2 ? 'msProduct' : 'modDocument');
@@ -298,5 +299,29 @@ class Pricelist extends BaseObject
     {
         $query = $this->queryForOffers();
         return $this->modx->getCount($query->getClass(), $query);
+    }
+
+    public function suitableOffersCategoriesGenerator(): Generator
+    {
+        $parentIds = [];
+        $q = $this->queryForOffers();
+        $q->query['columns'] = '';
+        $q->select('DISTINCT `'.$q->getClass().'`.`parent`');
+
+        if ($q->prepare() && $q->stmt->execute()) {
+            $parentIds = $q->stmt->fetchAll(PDO::FETCH_COLUMN);
+        }
+
+        if (!empty($parentIds)) {
+            $q = $this->modx->newQuery('modResource');
+            $q->sortby('parent');
+            $q->sortby('id');
+            $q->where(['id:IN' => $parentIds]);
+            foreach ($this->modx->getIterator('modResource', $q) as $resource) {
+                $category = new Category($this->modx);
+                $category->setResource($resource);
+                yield $category;
+            }
+        }
     }
 }

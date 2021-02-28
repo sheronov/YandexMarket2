@@ -2,9 +2,9 @@
   <div class="yandexmarket-pricelist-settings">
     <h4>Настройки основных полей магазина</h4>
     <p class="mb-2">Обязательные поля отмечены звёздочкой. Не забывайте сохранять изменения.</p>
-    <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
+    <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers" v-if="shopField">
       <pricelist-field
-          :item="pricelist.fields.find(field => field.type === shopType)"
+          :item="shopField"
           :fields="pricelist.fields"
           :attributes="pricelist.attributes"
           :lighten="3"
@@ -32,11 +32,13 @@ export default {
   },
   data: () => ({
     openedFields: [0],
-    shopType: 2
   }),
   computed: {
     ...mapGetters('marketplace', ['availableFields']),
     ...mapGetters('field', ['availableTypes']),
+    shopField() {
+      return this.pricelist.fields.find(field => field.type === 2);
+    }
   },
   methods: {
     previewXml() {

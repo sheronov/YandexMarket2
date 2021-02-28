@@ -12,6 +12,20 @@
     />
     <p>Если не выбрать категории - то будут выгружены товары всех категорий</p>
     <!--    <code>ids: {{ selected.join(',') }}</code>-->
+    <template v-if="categoryField">
+      <h4>Настройки элемента категории в XML</h4>
+      <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
+        <pricelist-field
+            :item="categoryField"
+            :fields="pricelist.fields"
+            :attributes="pricelist.attributes"
+            :lighten="3"
+            v-on="$listeners"
+            :available-fields="[]"
+            :available-types="[]"
+        />
+      </v-expansion-panels>
+    </template>
     <div class="yandexmarket-pricelist-where mb-4 mt-2">
       <v-row class="ma-0 align-center">
         <h4>Условия по товарам</h4>
@@ -55,6 +69,7 @@
 
 <script>
 import CategoriesTree from "@/components/CategoriesTree";
+import PricelistField from "@/components/PricelistField";
 import {codemirror} from 'vue-codemirror';
 import '@/plugins/jsonlint'
 import 'codemirror/addon/lint/lint.css'
@@ -66,8 +81,13 @@ export default {
   props: {
     pricelist: {type: Object, required: true}
   },
-  components: {CategoriesTree, VueCodemirror: codemirror},
+  components: {
+    CategoriesTree,
+    VueCodemirror: codemirror,
+    PricelistField
+  },
   data: () => ({
+    openedFields: [0],
     selected: [],
     categories: [],
     where: '',
@@ -98,6 +118,9 @@ export default {
     },
   },
   computed: {
+    categoryField() {
+      return this.pricelist.fields.find(field => field.type === 7);
+    },
     editedWhere() {
       return (this.where || '') !== (this.pricelist.where || '')
     },
@@ -127,6 +150,7 @@ export default {
   },
   mounted() {
     this.previewXml()
+    this.openedFields = [0];
   }
 }
 </script>
@@ -136,6 +160,7 @@ export default {
 .yandexmarket-pricelist-where .CodeMirror {
   height: auto;
   min-height: 60px;
+  z-index: 0;
 }
 
 .yandexmarket-pricelist-where .CodeMirror pre.CodeMirror-placeholder {

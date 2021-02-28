@@ -82,6 +82,22 @@ class YandexMarket extends Marketplace
             'categories'            => [
                 'type'     => Field::TYPE_CATEGORIES,
                 'required' => true,
+                'fields'   => [
+                    'category' => [
+                        'type'       => Field::TYPE_CATEGORY,
+                        'required'   => true,
+                        'attributes' => [
+                            'id'       => [
+                                'required' => true,
+                                'type'     => Attribute::TYPE_VALUE,
+                            ],
+                            'parentId' => [
+                                'required' => true,
+                                'type'     => Attribute::TYPE_VALUE
+                            ]
+                        ]
+                    ]
+                ]
             ],
             'delivery-options'      => [
                 'type' => Field::TYPE_PARENT,

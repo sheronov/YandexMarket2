@@ -105,7 +105,7 @@ abstract class Marketplace
     public function defaultValues(): array
     {
         return [
-            Field::TYPE_SHOP  => [
+            Field::TYPE_SHOP       => [
                 'name'                  => $this->getOption('shop_name', $this->modx->getOption('site_name')),
                 'url'                   => $this->getOption('shop_url', $this->modx->getOption('site_url')),
                 'platform'              => $this->getOption('shop_platform', 'MODX Revolution'),
@@ -115,15 +115,18 @@ abstract class Marketplace
                 ],
                 'enable_auto_discounts' => $this->getOption('shop_enable_auto_discounts', true) ? 'true' : 'false'
             ],
-            Field::TYPE_OFFER => [
+            Field::TYPE_OFFER      => [
                 'name'        => $this->getOption('offer_name', 'pagetitle'),
                 'url'         => $this->getOption('offer_url', 'Offer.url'), // Offer собирающий класс
                 'price'       => $this->getOption('offer_price', 'Offer.price'), // Offer собирающий класс
                 'currencyId'  => $this->getOption('offer_currency_id', 'RUB'),
-                'categoryId'  => $this->getOption('offer_parent', 'parent'),
+                'categoryId'  => $this->getOption('offer_category_id', 'parent'),
                 'delivery'    => $this->getOption('offer_delivery', 'true'),
                 'pickup'      => $this->getOption('offer_pickup', 'true'),
                 'description' => $this->getOption('offer_description', 'introtext'),
+            ],
+            Field::TYPE_CATEGORIES => [
+                'category' => $this->getOption('categories_category', 'pagetitle')
             ]
         ];
     }
@@ -131,13 +134,17 @@ abstract class Marketplace
     public function defaultAttributes(): array
     {
         return [
-            Field::TYPE_ROOT  => [
+            Field::TYPE_ROOT     => [
                 'date' => $this->getOption('yml_catalog_attr_date', 'Pricelist.generated_on')
             ],
-            Field::TYPE_OFFER => [
-                'id'   => $this->getOption('offer_attr_id', 'modResource.id'),
+            Field::TYPE_OFFER    => [
+                'id'   => $this->getOption('offer_attr_id', 'id'),
                 'type' => $this->getOption('offer_attr_type', YandexMarket::TYPE_SIMPLE)
             ],
+            Field::TYPE_CATEGORY => [
+                'id'       => $this->getOption('category_attr_id', 'id'),
+                'parentId' => $this->getOption('category_attr_parent_id', 'parent')
+            ]
         ];
     }
 

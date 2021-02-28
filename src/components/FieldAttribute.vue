@@ -16,7 +16,7 @@
         filled
     >
       <template v-slot:append>
-        <v-btn small v-if="!edited" icon :title="'Отредактировать свойства '+item.name" @click.stop="editAttr"
+        <v-btn small v-if="!edited" icon :title="'Отредактировать свойства атрибута '+item.name" @click.stop="editAttr"
                class="mt-n1 mr-n2">
           <v-icon>icon-pencil</v-icon>
         </v-btn>

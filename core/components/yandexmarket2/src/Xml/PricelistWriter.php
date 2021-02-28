@@ -54,7 +54,6 @@ abstract class PricelistWriter
         return $asString ? implode($separator, $this->log) : $this->log;
     }
 
-
     protected function writeHeader(): void
     {
         $this->xml->startDocument('1.0', 'UTF-8');
@@ -104,6 +103,7 @@ abstract class PricelistWriter
             case Field::TYPE_TEXT:
             case Field::TYPE_VALUE:
             case Field::TYPE_CDATA_VALUE:
+            case Field::TYPE_CATEGORY:
                 $this->writeValuableField($field, $pls);
                 break;
             case Field::TYPE_CATEGORIES:
@@ -162,6 +162,7 @@ abstract class PricelistWriter
                 $value = $field->value;
                 break;
             case Field::TYPE_VALUE:
+            case Field::TYPE_CATEGORY:
             case Field::TYPE_CDATA_VALUE:
                 $value = $this->prepareValue($this->resolveColumn($field->value, $pls), $field->handler, $pls);
                 break;
@@ -219,12 +220,37 @@ abstract class PricelistWriter
 
     protected function resolveColumn(string $column, array $pls = [])
     {
-        if (($offer = $pls['offer'] ?? null) && $offer instanceof Offer) {
-            $value = $offer->get($column);
-        } elseif (($pricelist = $pls['pricelist'] ?? null) && $pricelist instanceof Pricelist) {
-            $value = $pricelist->get($column);
-        } else {
-            $value = $pls[$column] ?? null;
+        $value = null;
+        if (isset($pls['offer']) || mb_strpos($column, '.') !== false) {
+            $object = explode('.', $column)[0];
+            $field = explode('.', $column, 2)[1] ?? null;
+            switch (mb_strtolower($object)) {
+                case 'setting':
+                    $value = $this->modx->getOption($field); //можно даже в полях указывать Setting.some_setting
+                    break;
+                case 'pricelist':
+                    $value = $this->pricelist->get($field);
+                    break;
+                case 'category':
+                    if (($category = $pls['category'] ?? null) && $category instanceof Category) {
+                        $value = $category->get($column);
+                    } else {
+                        $value = $pls[$column] ?? null;
+                    }
+                    break;
+                case 'offer':
+                default: //все остальные объекты проксируются в оффер, он уже сам разрулит
+                    if (($offer = $pls['offer'] ?? null) && $offer instanceof Offer) {
+                        $value = $offer->get($column);
+                    } else {
+                        $value = $pls[$column] ?? null;
+                    }
+                    break;
+            }
+        } elseif (($resource = $pls['resource'] ?? null) && $resource instanceof modResource) {
+            $value = $resource->get($column);
+        } elseif (isset($pls[$column])) {
+            $value = $pls[$column];
         }
 
         return $value;
@@ -236,6 +262,7 @@ abstract class PricelistWriter
             if (mb_stripos(trim($handler), '@INLINE') !== 0) {
                 $handler = '@INLINE '.trim($handler);
             }
+            //TODO: все объекты из pls - сделать в toArray() (у кого нет такого метода - удалить)
             $value = $this->pdoTools->getChunk($handler, array_merge($pls, [
                 'input'     => $value,
                 'pricelist' => $this->pricelist
@@ -284,13 +311,23 @@ abstract class PricelistWriter
         $this->xml->startElement($field->name);
         $this->writeAttributes($field->getAttributes(), $pls);
 
-        $categories = $this->pricelist->getCategories();
-        if (empty($categories)) {
-            //TODO: тут надо получить все категории товаров, которые участвуют в выборке
+        if (!$categories = $this->pricelist->getCategories()) {
+            $categories = $this->pricelist->suitableOffersCategoriesGenerator();
         }
-        foreach ($categories as $category) {
-            $this->writeCategoryTree($category, $field);
+
+        if (($children = $field->getChildren()) && $categoryField = reset($children)) {
+            // foreach ($categories as $category) {
+            //     $this->writeCategoryTree($category, $field);
+            // }
+            foreach ($categories as $category) {
+                $pls['category'] = $category;
+                $pls['resource'] = $category->getResource();
+                $this->writeField($categoryField, $pls);
+            }
+        } else {
+            $this->errorLog("Empty children for field {$field->name} ({$field->id})");
         }
+
         $this->xml->endElement();
     }
 
@@ -341,7 +378,5 @@ abstract class PricelistWriter
         $this->log($message);
         $this->modx->log(modX::LOG_LEVEL_ERROR, '[YandexMarket2] '.$message);
     }
-
-
 
 }

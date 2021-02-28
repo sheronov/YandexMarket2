@@ -14,7 +14,7 @@
     />
     <v-expansion-panel-content :color="`grey lighten-${lighten}`" eager>
       <template v-if="attrs.length">
-        <div class="grey--text mb-1" style="font-size: 13px;">Атрибуты:</div>
+<!--        <div class="grey&#45;&#45;text mb-1" style="font-size: 13px;">Атрибуты:</div>-->
         <v-row dense class="mb-1">
           <field-attribute v-for="attribute in attrs" :key="attribute.id" :attribute="attribute" v-on="$listeners"/>
         </v-row>
