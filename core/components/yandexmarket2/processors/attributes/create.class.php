@@ -18,11 +18,7 @@ class ymAttributeCreateProcessor extends modObjectCreateProcessor
     public function beforeSet()
     {
         $name = trim($this->getProperty('name'));
-        $type = (int)$this->getProperty('type') ?: Attribute::TYPE_DEFAULT;
         $fieldId = (int)$this->getProperty('field_id');
-        $properties = $this->getProperty('properties') ?? [];
-        $properties['type'] = $type;
-        $this->setProperty('properties', $properties);
         if (empty($name) || empty($fieldId)) {
             $this->modx->error->addField('name', $this->modx->lexicon('ym_attribute_err_valid'));
         }

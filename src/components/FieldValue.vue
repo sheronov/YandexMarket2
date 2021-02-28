@@ -32,8 +32,9 @@
                 close
                 small
             >
-              <strong>{{ item.value }}</strong>
-              <span class="pl-1">({{ item.text }})</span>
+              <strong v-if="item.value">{{ item.value }}</strong>
+              <span class="pl-1" v-if="item.text">({{ item.text }})</span>
+              <span v-else>{{ item }}</span>
             </v-chip>
           </template>
         </v-select>
@@ -81,7 +82,7 @@
           <template v-slot:item="{item}">
             <code>{{ item.value }}</code>
             <span class="pl-1">{{ item.text }}</span>
-            <small v-if="item.help" class="pl-1 grey--text">&nbsp;({{item.help}})</small>
+            <small v-if="item.help" class="pl-1 grey--text">&nbsp;({{ item.help }})</small>
           </template>
         </v-combobox>
         <v-btn

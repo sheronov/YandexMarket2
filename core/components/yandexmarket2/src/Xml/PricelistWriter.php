@@ -203,7 +203,7 @@ abstract class PricelistWriter
     protected function writeFieldAttribute(Attribute $attribute, array $pls = []): void
     {
         $value = null;
-        switch ($attribute->getType()) {
+        switch ($attribute->type) {
             case Attribute::TYPE_TEXT:
                 $value = $attribute->value;
                 break;
@@ -211,7 +211,7 @@ abstract class PricelistWriter
                 $value = $this->prepareValue($this->resolveColumn($attribute->value, $pls), $attribute->handler, $pls);
                 break;
             default:
-                $this->errorLog("Undefined type {$attribute->getType()} for attribute {$attribute->name} ({$attribute->id})");
+                $this->errorLog("Undefined type {$attribute->type} for attribute {$attribute->name} ({$attribute->id})");
         }
 
         if ($value !== null && $value !== '') {

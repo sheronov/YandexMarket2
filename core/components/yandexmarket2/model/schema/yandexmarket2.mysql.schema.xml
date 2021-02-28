@@ -71,6 +71,7 @@
     <object class="ymFieldAttribute" table="yandexmarket_field_attributes" extends="xPDOSimpleObject">
         <field key="name" dbtype="varchar" phptype="string" precision="255" null="false"/>
         <field key="field_id" dbtype="int" phptype="integer" null="false"/>
+        <field key="type" dbtype="int" phptype="integer" null="false" default="0"/>
         <field key="value" dbtype="varchar" precision="255" phptype="string" null="true"/>
         <field key="handler" dbtype="text" phptype="string" null="true"/>
         <field key="properties" dbtype="text" phptype="json" null="true"/>

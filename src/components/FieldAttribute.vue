@@ -1,5 +1,6 @@
 <template>
-  <v-col :md="edit ? 12 : 4" :sm="edit ? 12 : 6" cols="12" class="yandexmarket-field-attribute">
+  <v-col :sm="edit ? 12 : 6" cols="12" class="yandexmarket-field-attribute pt-0">
+    <div class="grey--text" style="font-size: 12px;" v-if="label">{{ label }}</div>
     <component
         v-if="!edit"
         :is="item.values ? 'v-select' : 'v-text-field'"
@@ -11,22 +12,28 @@
         :hide-details="!item.handler"
         :attach="true"
         :menu-props="{offsetY: true}"
-        :label="label"
+        class="yandexmarket-field-attribute-input"
         dense
-        filled
+        solo
     >
+      <template v-slot:prepend-inner>
+        <div class="text-no-wrap mr-1 ml-n1">
+          <v-icon color="inherit" class="mr-1" title="Атрибут">icon-font</v-icon>
+          <code style="position:relative; top:1px;">{{ item.name }}</code>
+        </div>
+      </template>
       <template v-slot:append>
         <v-btn small v-if="!edited" icon :title="'Отредактировать свойства атрибута '+item.name" @click.stop="editAttr"
                class="mt-n1 mr-n2">
           <v-icon>icon-pencil</v-icon>
         </v-btn>
-        <v-btn v-else small icon @click.stop="saveChanges" title="Сохранить изменения" class="mt-1 mr-n2"
+        <v-btn v-else small icon @click.stop="saveChanges" title="Сохранить изменения" class="mt-1"
                color="secondary">
           <v-icon>icon-save</v-icon>
         </v-btn>
       </template>
       <template v-slot:append-outer v-if="edited">
-        <v-btn fab x-small absolute depressed width="24" height="24" style="top:-5px;right:0" color="grey lighten-2">
+        <v-btn fab x-small absolute depressed width="24" height="24" style="top:-5px;right:0" color="grey lighten-4">
           <v-icon size="14" @click="cancelChanges" title="Отменить изменения" color="orange">icon-rotate-left</v-icon>
         </v-btn>
       </template>
@@ -81,6 +88,8 @@
               label="Тип значения"
               :items="items"
               dense
+              :menu-props="{offsetY: true}"
+              :attach="true"
           ></v-select>
         </v-col>
         <v-col md="4">
@@ -174,9 +183,9 @@ export default {
       return JSON.stringify(this.item) !== JSON.stringify(this.attribute);
     },
     label() {
-      let label = this.item.name;
-      if (this.item.label && this.item.label !== label) {
-        label += ` (${this.item.label})`;
+      let label = '';
+      if (this.item.label && this.item.label.replace(' *', '') !== this.item.name) {
+        label = this.item.label;
       }
       return label;
     },
@@ -229,6 +238,10 @@ export default {
 
 <!--suppress CssUnusedSymbol -->
 <style>
+.yandexmarket-field-attribute, .yandexmarket-field-attribute-input {
+  position: relative;
+}
+
 .yandexmarket-field-attribute .CodeMirror {
   height: auto;
   min-height: 30px;

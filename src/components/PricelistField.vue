@@ -231,6 +231,13 @@ export default {
         value = val.value;
         if (val.type !== 'undefined') {
           this.field.type = val.type;
+          if (val.values) {
+            this.field.values = val.values;
+            this.field.properties.values = val.values;
+          } else {
+            delete this.field.values;
+            delete this.field.properties.values;
+          }
           if (val.attributes) {
             this.attributesToAdd = val.attributes;
           } else {
