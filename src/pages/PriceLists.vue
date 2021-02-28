@@ -78,7 +78,7 @@
         {{ value ? 'Да' : 'Нет' }}
       </template>
       <template v-slot:item.generated_on="{ value }">
-        {{ value ? value : 'Файл ещё не сгенерирован' }}
+        {{ value ? value.date.replace('.000000', '') : 'Файл ещё не сгенерирован' }}
       </template>
       <template v-slot:item.type="{ value }">
         {{ marketplaceText(value) || value }}

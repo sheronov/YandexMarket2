@@ -1,11 +1,11 @@
 <template>
-  <v-row>
+  <v-row class="yandexmarket-pricelist-generate">
     <v-col cols="12" md="6">
       <h4>Основные параметры выгрузки прайс-листа</h4>
       <p class="mb-2">Все поля обязательны к заполнению</p>
       <v-select
           filled
-          label="Тип прайс-листа (нельзя изменить)"
+          label="Тип прайс-листа (задаётся при создании)"
           dense
           disabled
           v-model="data.type"
@@ -20,6 +20,7 @@
       <v-text-field
           filled
           dense
+          class="mb-1"
           label="Название файла (укажите вместе с расширением xml)"
           :hint="`Файл будет сохранён в директорию ${pricelist.path}`"
           v-model="data.file"
@@ -45,7 +46,8 @@
           v-model="data.generate_interval"
           type="number"
       ></v-text-field>
-      <v-checkbox v-model="data.active" label="Прайс-лист активен" hide-details dense class="mt-0"></v-checkbox>
+      <v-checkbox v-model="data.active" label="Автоматически отслеживать изменения и формировать файл" hide-details dense
+                  class="mt-0 mb-2"/>
       <v-card-actions class="px-0 align-end">
         <v-btn small v-if="hasChanges" @click="cancelChanges" title="Отменить все изменения">
           <v-icon left>icon-undo</v-icon>
@@ -59,21 +61,29 @@
       </v-card-actions>
     </v-col>
     <v-col cols="12" md="6">
-      <v-alert v-if="pricelist.need_generate" type="warning">
+      <v-alert v-if="pricelist.need_generate" type="warning" dense>
         Изменились товары. Файл нужно перегенерировать!
       </v-alert>
-      <v-alert v-if="pricelist.generated_on" type="info">
+      <v-alert v-if="pricelist.generated_on" type="info" color="accent" dense>
         Предыдущий прайс-лист сформирован {{ generatedOn }}
       </v-alert>
       <p v-if="pricelist.generated_on">Ссылка на файл:
-        <a :href="pricelist.fileUrl" title="Файл откроется в новом окне" target="_blank">{{pricelist.fileUrl }}</a>
+        <a :href="pricelist.fileUrl" title="Файл откроется в новом окне" target="_blank">{{ pricelist.fileUrl }}</a>
       </p>
       <h4 v-else class="mb-3">Прайс-лист ещё ни разу не был сформирован</h4>
       <v-btn @click="generateFile" :disabled="loading" color="secondary" class="mb-3"
              title="Существующий файл будет перезаписан">
         Сформировать новый файл
       </v-btn>
-      <pre class="text-pre-wrap">{{ log }}</pre>
+      <v-textarea
+          class="yandexmarket-textarea-log mt-3"
+          auto-grow
+          outlined
+          label="Лог выгрузки"
+          :value="log"
+          placeholder="Появится здесь после генерации файла"
+          disabled
+      />
     </v-col>
   </v-row>
 </template>
@@ -166,3 +176,11 @@ export default {
   }
 }
 </script>
+
+<style>
+.yandexmarket-pricelist-generate .yandexmarket-textarea-log textarea {
+  font-family: monospace;
+  color: #999 !important;
+  font-size: 0.875em;
+}
+</style>

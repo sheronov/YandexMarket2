@@ -45,12 +45,13 @@ abstract class PricelistWriter
 
     /**
      * @param  bool  $asString
+     * @param  string  $separator
      *
      * @return string|array
      */
-    public function getLog(bool $asString = true)
+    public function getLog(bool $asString = false, string $separator = PHP_EOL)
     {
-        return $asString ? implode(PHP_EOL, $this->log) : $this->log;
+        return $asString ? implode($separator, $this->log) : $this->log;
     }
 
 

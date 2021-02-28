@@ -8,7 +8,6 @@ use modX;
 use RuntimeException;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
-use YandexMarket\Service;
 
 class Generate extends PricelistWriter
 {
@@ -41,7 +40,7 @@ class Generate extends PricelistWriter
         $this->xml->endDocument();
         $this->xml->flush();
 
-        $this->log('Файл успешно записан. Техническая информация: '.print_r(Service::debugInfo($this->modx), true));
+        $this->log('Файл успешно записан');
 
         return $this->pricelist->save();
     }
