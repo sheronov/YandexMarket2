@@ -87,7 +87,8 @@
         </v-combobox>
         <v-text-field
             v-if="isPicture(field)"
-            v-model="field.properties.count"
+            :value="field.properties.count"
+            @input="countChanged"
             type="number"
             class="ml-2"
             title="Количество изображений для каждого товара (10 максимум)"
@@ -100,13 +101,13 @@
             hide-details
         >
         </v-text-field>
-        <v-btn
-            :title="openedCode ? 'Для закрытия очистите введённый код' :'Добавить код-обработчик значения'"
-            :color="openedCode ? 'secondary' : 'accent'"
-            @click="toggleCode"
-            class="ml-3"
-            min-width="30"
-            elevation="0">
+        <v-btn v-else
+               :title="openedCode ? 'Для закрытия очистите введённый код' :'Добавить код-обработчик значения'"
+               :color="openedCode ? 'secondary' : 'accent'"
+               @click="toggleCode"
+               class="ml-3"
+               min-width="30"
+               elevation="0">
           <v-icon>icon-code</v-icon>
         </v-btn>
       </template>
@@ -232,6 +233,11 @@ export default {
       values.splice(values.indexOf(item.value), 1);
       values.unshift(item.value);
       this.changedValue(values);
+    },
+    countChanged(count) {
+      let properties = this.field.properties;
+      properties.count = count ? parseInt(count) : 0;
+      this.$set(this.field, 'properties', properties)
     }
   },
   mounted() {

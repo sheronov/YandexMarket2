@@ -118,7 +118,7 @@ abstract class PricelistWriter
                 $this->writeCurrenciesField($field, $pls);
                 break;
             case Field::TYPE_PICTURE:
-                $this->writeOffersImages($field, $pls);
+                $this->writePicturesField($field, $pls);
                 break;
             case Field::TYPE_ROOT:
             case Field::TYPE_SHOP:
@@ -272,8 +272,15 @@ abstract class PricelistWriter
                         if ($resource instanceof msProduct) {
                             $pls['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
                         }
-                        $pls['option'] = $data->getLoadedOptions();
-                        $pls['tv'] = $data->getLoadedTVs();
+                        $pls['option'] = [];
+                        $pls['tv'] = [];
+                        foreach ($pls[$key] as $k => $val) {
+                            if (mb_strpos($k, 'option.') === 0) {
+                                $pls['option'][mb_substr($k, mb_strlen('option.'))] = $val;
+                            } elseif (mb_strpos($k, 'tv.') === 0) {
+                                $pls['tv'][mb_substr($k, mb_strlen('tv.'))] = $val;
+                            }
+                        }
                     } elseif (method_exists($data, 'toArray')) {
                         $pls[$key] = $data->toArray();
                     } else {
@@ -281,6 +288,7 @@ abstract class PricelistWriter
                     }
                 }
             }
+            $this->modx->log(1, print_r($pls, 1));
             $value = $this->pdoTools->getChunk($handler, array_merge(
                 Service::getSitePaths($this->modx), //{site_url} и т.д.
                 $pls,
@@ -368,15 +376,15 @@ abstract class PricelistWriter
         $this->xml->endElement();
     }
 
-    protected function writeOffersImages(Field $field, array $pls = []): void
+    protected function writePicturesField(Field $field, array $pls = []): void
     {
-        if(($offer = $pls['offer'] ?? null) && $offer instanceof Offer) {
-            foreach ($offer->getPictures() as $picture) {
+        if (($offer = $pls['offer'] ?? null) && $offer instanceof Offer && $pictures = $offer->get($field->value)) {
+            foreach (explode('||', $pictures) as $picture) {
                 $tmpField = new Field($this->modx);
                 $tmpField->name = $field->name;
-                $tmpField->value = $picture;
+                $tmpField->value = Service::preparePath($this->modx, '{images_url}'.$picture, true);
                 $tmpField->type = Field::TYPE_TEXT;
-                $this->writeField($tmpField,$pls);
+                $this->writeField($tmpField, $pls);
             }
         }
     }

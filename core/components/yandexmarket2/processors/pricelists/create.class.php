@@ -41,6 +41,14 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
         return parent::beforeSet();
     }
 
+    public function beforeSave(): bool
+    {
+        $defaultWhere = ['published' => 1, 'deleted' => 0];
+        $this->object->set('where', json_encode($defaultWhere));
+
+        return parent::beforeSave();
+    }
+
     public function afterSave(): bool
     {
         $pricelist = new Pricelist($this->modx, $this->object);

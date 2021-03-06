@@ -22,24 +22,6 @@ class Offer extends BaseObject
         return $this->object;
     }
 
-    public function getPictures(): array
-    {
-        $pictures = [];// TODO: сюда должны попадать все изображения, который приджойнены из поля
-        if ($image = $this->get('Data.image')) {
-            $pictures[] = Service::preparePath($this->modx, '{site_url}'.$image, true);
-        }
-        return $pictures;
-    }
-
-    public function getLoadedOptions(): array
-    {
-        return []; // TODO: сюда должны попадать значения приджойненных опций
-    }
-
-    public function getLoadedTVs(): array
-    {
-        return []; // TODO: сюда должны попадать значения приджойненных ТВ-шек
-    }
 
     public function get(string $field)
     {
@@ -68,6 +50,16 @@ class Offer extends BaseObject
                 case 'vendor':
                 case 'msvendor':
                     $field = 'vendor.'.$key;
+                    break;
+                case 'tv':
+                    $field = 'tv.'.$key;
+                    break;
+                case 'option':
+                    $field = 'option.'.$key;
+                    break;
+                case 'msgallery':
+                case 'ms2gallery':
+                    $field = mb_strtolower($class);
                     break;
             }
         }

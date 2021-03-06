@@ -40,6 +40,8 @@ class Pricelist extends BaseObject
     /** @var Marketplace */
     protected $marketplace;
 
+    protected $groupedBy = [];
+
     public function __construct(modX $modx, xPDOObject $object = null)
     {
         parent::__construct($modx, $object);
@@ -233,10 +235,16 @@ class Pricelist extends BaseObject
     protected function queryForOffers(): xPDOQuery
     {
         $hasMs2 = Service::hasMiniShop2();
-        $offerClass = $this->modx->getOption('ym_option_offer_class', null, $hasMs2 ? 'msProduct' : 'modDocument');
-        $class = $offerClass ?: 'modResource'; //если настройку пустой сделать
+        $class = $this->modx->getOption('ym_option_offer_class', null, $hasMs2 ? 'msProduct' : 'modDocument');
+        $class = $class ?: 'modResource'; //если вдруг настройка есть и пустая
         $q = $this->modx->newQuery($class);
-        $q->select($this->modx->getSelectColumns($class, $class, ''));
+
+        $offerColumns = $this->modx->getSelectColumns($class, $class, '');
+        $q->select($offerColumns);
+        // TODO: на будущее для интеграций пример SQL для получения ID при группировках
+        //CONCAT(`msProduct`.`id`, 'x', SUBSTR(md5(`option.color`.`value`), 1, 19 - LENGTH(`msProduct`.`id`))) as id
+
+        $this->addColumnsToGroupBy($offerColumns);
 
         if (!empty($this->getCategories())) {
             $q->where([
@@ -246,25 +254,46 @@ class Pricelist extends BaseObject
             ]);
         }
 
-        if (!empty($offerClass)) {
-            $q->where(['class_key' => $offerClass]);
-        }
-
         if ($hasMs2) {
-            $q->leftJoin('msProductData', 'Data');
+            if($this->modx->getOption('ym_use_ms_products', null, true)) {
+                $q->join('msProductData', 'Data');
+            } else {
+                $q->leftJoin('msProductData', 'Data');
+            }
             $q->leftJoin('msVendor', 'Vendor', 'Data.vendor=Vendor.id');
-            $q->select($this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true));
-            $q->select($this->modx->getSelectColumns('msVendor', 'Vendor', 'vendor.', ['id'], true));
+            $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true);
+            $vendorColumns = $this->modx->getSelectColumns('msVendor', 'Vendor', 'vendor.', ['id'], true);
+            $q->select($dataColumns);
+            $q->select($vendorColumns);
+
+            $this->addColumnsToGroupBy($dataColumns);
+            $this->addColumnsToGroupBy($vendorColumns);
         }
 
         if (!empty($this->getWhere())) {
             $q->where($this->getWhere());
         }
 
-        // TODO: тут изучить все значения (и их хэнделры в выбранных полях)
         $this->joinPricelistFields($q, $this->getFields(true));
 
+        foreach ($this->groupedBy as $column) {
+            $q->groupby($column);
+        }
+
+        $q->prepare();
+        $this->modx->log(1, $q->toSQL(true));
+
         return $q;
+    }
+
+    protected function addColumnsToGroupBy(string $columns): void
+    {
+        foreach (explode(', ', $columns) as $column) {
+            if (mb_strpos($column, ' AS ') !== false) {
+                $column = explode(' AS ', $column)[0];
+            }
+            $this->groupedBy[] = $column;
+        }
     }
 
     /**
@@ -281,6 +310,35 @@ class Pricelist extends BaseObject
             if (in_array($field->type, [Field::TYPE_TEXT, Field::TYPE_CURRENCIES, Field::TYPE_CATEGORIES], true)) {
                 continue;
             }
+            if ($field->type === Field::TYPE_PICTURE) {
+                $count = $field->properties['count'] ?? 10;
+                if ($count > 10) {
+                    $count = 10;
+                }
+
+                switch (mb_strtolower($field->value)) {
+                    case 'msgallery.image':
+                    case 'msproductfile.url':
+                        $alias = "`msgallery`";
+                        $q->leftJoin('msProductFile', $alias,
+                            "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0 and {$alias}.`type` = 'image'");
+                        break;
+                    case 'ms2gallery.image':
+                    case 'msresourcefile.url':
+                        $alias = "`ms2gallery`";
+                        $q->leftJoin('msResourceFile', $alias,
+                            "{$alias}.`resource_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0  and {$alias}.`type` = 'image'");
+                        break;
+                    default:
+                        $this->modx->log(modX::LOG_LEVEL_ERROR,
+                            '[YandexMarket2] Can not process picture field "'.$field->value.'". Check the documentation.');
+                        continue 2;
+                }
+                $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY `rank` ASC SEPARATOR '||'), '||', {$count}) as {$alias}"]);
+
+                continue;
+            }
+
             if (!empty($field->value) && mb_strpos($field->value, '.') !== false) {
                 [$class, $key] = explode('.', $field->value, 2);
                 if (!isset($classKeys[$class])) {
@@ -293,11 +351,55 @@ class Pricelist extends BaseObject
             // TODO if(!empty($field->handler)) с регулярками найти {$option.color} или {$tv.size} или [[+tv.size]]
         }
 
-        $this->modx->log(1, 'class keys '.var_export($classKeys, true));
+        $this->modx->log(1, print_r($classKeys, 1));
 
-        // TODO: приджойнить выбранные столбцы других классов (с моделями что-то придумать нужно)
         foreach ($classKeys as $class => $keys) {
-            switch ($class) {
+            switch (mb_strtolower($class)) {
+                case 'offer':
+                case 'resource':
+                case 'modresource':
+                case 'product':
+                case 'data':
+                case 'msproduct':
+                case 'msproductdata':
+                case 'vendor':
+                case 'msVendor':
+                    //стандартные классы, не нужно ничего джойнить здесь
+                    break;
+                case 'tv':
+                    $qTvs = $this->modx->newQuery('modTemplateVar');
+                    $qTvs->where(['name:IN' => $keys]);
+                    foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
+                        /** @var \modTemplateVar $tv */
+                        $alias = "`tv.{$tv->name}`";
+                        $q->leftJoin('modTemplateVarResource', $alias,
+                            "{$alias}.`contentid` = `{$q->getClass()}`.`id` and {$alias}.`tmplvarid` = {$tv->id}");
+                        $q->select("{$alias}.`value` as {$alias}");
+                        $this->groupedBy[] = "{$alias}.`value`";
+                    }
+                    break;
+                case 'option';
+                    $qOptions = $this->modx->newQuery('msOption');
+                    $qOptions->where(['key:IN' => $keys]);
+                    foreach ($this->modx->getIterator($qOptions->getClass(), $qOptions) as $option) {
+                        /** @var \msOption $option */
+                        $alias = "`option.{$option->get('key')}`";
+                        $q->leftJoin('msProductOption', $alias,
+                            "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$option->get('key')}'");
+                        if (!in_array("{$alias}.`value`", $this->groupedBy, true)
+                            && in_array($option->get('type'), ['combo-multiple', 'combo-options'], true)) {
+                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as {$alias}");
+                        } else {
+                            $q->select("{$alias}.`value` as {$alias}");
+                            $this->groupedBy[] = "{$alias}.`value`";
+                        }
+                    }
+                    break;
+                default:
+                    // TODO: приджойнить выбранные столбцы других классов (с моделями что-то придумать нужно)
+                    $this->modx->log(modX::LOG_LEVEL_ERROR,
+                        '[YandexMarket2] Unimplemented class '.$class.'. Please contact to the support.');
+                    break;
             }
         }
 

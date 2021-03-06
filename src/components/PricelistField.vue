@@ -164,6 +164,9 @@ export default {
       immediate: true,
       handler: function (item) {
         this.field = {...this.field, ...item};
+        if (Object.keys(item.properties).length) {
+          this.field.properties = {...item.properties};
+        }
         this.$nextTick().then(() => this.code = !!this.field.handler)
       }
     },
@@ -267,6 +270,9 @@ export default {
     },
     cancelEdit() {
       this.field = {...this.field, ...this.item};
+      if (Object.keys(this.item.properties).length) {
+        this.field.properties = {...this.item.properties};
+      }
     },
     toggleEdit(edit) {
       this.edit = edit;

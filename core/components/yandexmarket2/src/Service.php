@@ -135,19 +135,21 @@ class Service
             $withDividers ? [['divider' => true]] : []
         );
 
+        if (self::hasMs2Gallery()) {
+            $list = array_merge($list,
+                $withDividers ? [['divider' => true]] : [],
+                [['value' => 'ms2Gallery.image', 'text' => 'Изображения ресурса ms2Gallery']],
+                $withDividers ? [['divider' => true]] : []
+            );
+        }
+
         if (self::hasMiniShop2()) {
             if ($productFields = $this->getMsProductFields()) {
                 $list = array_merge($list,
                     $withHeaders ? [['header' => 'Поля товара miniShop2']] : [],
                     $productFields,
-                    $withDividers ? [['divider' => true]] : []
-                );
-            }
-
-            if ($galleryFields = $this->getMsGalleryFields()) {
-                $list = array_merge($list,
-                    $withHeaders ? [['header' => 'Галерея товара miniShop2']] : [],
-                    $galleryFields,
+                    $withDividers ? [['divider' => true]] : [],
+                    [['value' => 'msGallery.image', 'text' => 'Изображения товара miniShop2']],
                     $withDividers ? [['divider' => true]] : []
                 );
             }
@@ -167,14 +169,6 @@ class Service
                     $withDividers ? [['divider' => true]] : []
                 );
             }
-        }
-
-        if (self::hasMs2Gallery() && $ms2GalleryFields = $this->getMs2GalleryFields()) {
-            $list = array_merge($list,
-                $withHeaders ? [['header' => 'Изображения ms2Gallery']] : [],
-                $ms2GalleryFields,
-                $withDividers ? [['divider' => true]] : []
-            );
         }
 
         if ($tvFields = $this->getTvFields()) {
@@ -267,29 +261,6 @@ class Service
         }, array_keys($fields));
     }
 
-    protected function getMsGalleryFields(string $columnPrefix = 'msProductFile.'): array
-    {
-        return [
-            [
-                'value' => $columnPrefix.'url',
-                'text'  => 'Url изображения',
-            ],
-            [
-                'value' => $columnPrefix.'name',
-                'text'  => 'Название изображения',
-            ],
-            [
-                'value' => $columnPrefix.'file',
-                'text'  => 'Имя файла изображения',
-            ],
-        ];
-    }
-
-    protected function getMs2GalleryFields(string $columnPrefix = 'msResourceFile.'): array
-    {
-        return $this->getMsGalleryFields($columnPrefix);
-    }
-
     protected function getMsVendorFields(string $columnPrefix = 'Vendor.', array $skip = ['id', 'properties']): array
     {
         $fields = $this->modx->getFields('msVendor');
@@ -328,7 +299,7 @@ class Service
         return $fields;
     }
 
-    protected function getTvFields(string $columnPrefix = 'Tv.', array $skip = []): array
+    protected function getTvFields(string $columnPrefix = 'TV.', array $skip = []): array
     {
         $fields = [];
 
@@ -356,6 +327,7 @@ class Service
             'base_path'   => $xpdo->getOption('base_path', null, MODX_BASE_PATH),
             'assets_path' => $xpdo->getOption('assets_path', null, MODX_ASSETS_PATH),
             'assets_url'  => $xpdo->getOption('assets_url', null, MODX_ASSETS_URL),
+            'images_url'  => $xpdo->getOption('ym_images_url', $xpdo->getOption('site_url', null, MODX_SITE_URL)),
         ];
     }
 
