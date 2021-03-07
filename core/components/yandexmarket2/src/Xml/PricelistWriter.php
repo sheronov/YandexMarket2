@@ -3,12 +3,12 @@
 namespace YandexMarket\Xml;
 
 use Exception;
-use Jevix;
 use modResource;
 use modX;
 use msProduct;
 use pdoTools;
 use XMLWriter;
+use YandexMarket\Handlers\XmlJevix;
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Category;
 use YandexMarket\Models\Field;
@@ -20,7 +20,7 @@ abstract class PricelistWriter
 {
     /** @var XMLWriter */
     protected $xml;
-    /** @var Jevix */
+    /** @var XmlJevix */
     protected $jevix;
     /** @var Pricelist */
     protected $pricelist;
@@ -74,12 +74,7 @@ abstract class PricelistWriter
     protected function initializeJevix(): void
     {
         try {
-            $this->jevix = new Jevix();
-            $this->jevix->cfgAllowTags(['h3', 'ul', 'ol', 'li', 'p', 'br']);
-            $this->jevix->cfgSetTagChilds('ul', 'li', true, false);
-            $this->jevix->cfgSetTagChilds('ol', 'li', true, false);
-            $this->jevix->cfgSetTagNoAutoBr(['ul', 'ol']);
-            $this->jevix->cfgSetAutoBrMode(false);
+            $this->jevix = new XmlJevix();
         } catch (Exception $exception) {
             $this->errorLog($exception->getMessage());
             $this->errors[] = $exception->getMessage();
@@ -288,7 +283,6 @@ abstract class PricelistWriter
                     }
                 }
             }
-            $this->modx->log(1, print_r($pls, 1));
             $value = $this->pdoTools->getChunk($handler, array_merge(
                 Service::getSitePaths($this->modx), //{site_url} и т.д.
                 $pls,

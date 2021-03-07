@@ -65,11 +65,6 @@ class Pricelist extends BaseObject
         return parent::get($field);
     }
 
-    public function getWhere(): array
-    {
-        return empty($this->where) ? [] : json_decode($this->where, true);
-    }
-
     public function getFields(bool $withAttributes = true): array
     {
         if (!isset($this->fields)) {
@@ -169,7 +164,7 @@ class Pricelist extends BaseObject
     {
         $data = parent::toArray();
         if (!empty($data['where']) && is_array($data['where'])) {
-            $data['where'] = json_encode($data['where']);
+            $data['where'] = json_encode($data['where'], JSON_UNESCAPED_UNICODE);
         }
 
         $data['path'] = $this->getFilePath();
@@ -239,7 +234,7 @@ class Pricelist extends BaseObject
 
         $offerColumns = $this->modx->getSelectColumns($q->getClass(), $q->getClass(), '');
         $q->select($offerColumns);
-        // TODO: на будущее для интеграций пример SQL для получения ID при группировках
+        // TODO: на будущее для интеграций пример SQL для получения постоянного ID предложения при группировках
         //CONCAT(`msProduct`.`id`, 'x', SUBSTR(md5(`option.color`.`value`), 1, 19 - LENGTH(`msProduct`.`id`))) as id
 
         $this->addColumnsToGroupBy($offerColumns);
@@ -266,10 +261,6 @@ class Pricelist extends BaseObject
 
             $this->addColumnsToGroupBy($dataColumns);
             $this->addColumnsToGroupBy($vendorColumns);
-        }
-
-        if (!empty($this->getWhere())) {
-            $q->where($this->getWhere());
         }
 
         $this->joinPricelistFields($q, $this->getFields(true));
@@ -336,14 +327,32 @@ class Pricelist extends BaseObject
 
             if (!empty($field->value) && mb_strpos($field->value, '.') !== false) {
                 [$class, $key] = explode('.', $field->value, 2);
-                if (!isset($classKeys[$class])) {
-                    $classKeys[$class] = [];
-                }
-                if (!in_array($key, $classKeys[$class], true)) {
-                    $classKeys[$class][] = $key;
+                if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
+                    $classKeys[mb_strtolower($class)][] = $key;
                 }
             }
-            // TODO if(!empty($field->handler)) с регулярками найти {$option.color} или {$tv.size} или [[+tv.size]]
+            if (!empty($field->handler) && preg_match_all('/{\$([A-z]+)\.([0-9A-z-_]+)[^}]*}/m', $field->handler,
+                    $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    [, $class, $key] = $match;
+                    if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
+                        $classKeys[mb_strtolower($class)][] = $key;
+                    }
+                }
+            }
+        }
+
+        // TODO: тут сделать через стороннюю таблицу условий
+        if (!empty($this->where)) {
+            $q->where(json_decode($this->where, true, 512, JSON_UNESCAPED_UNICODE));
+            if (preg_match_all('/"([A-z]+)\.([0-9A-z-_]+)[^"]*"/m', $this->where, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    [, $class, $key] = $match;
+                    if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
+                        $classKeys[mb_strtolower($class)][] = $key;
+                    }
+                }
+            }
         }
 
         foreach ($classKeys as $class => $keys) {
