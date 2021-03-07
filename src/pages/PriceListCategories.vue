@@ -1,7 +1,7 @@
 <template>
   <div class="yandexmarket-pricelist-categories">
     <h4>Категории, участвующие в выгрузке - вложенные тоже нужно выбирать</h4>
-    <p class="mb-2">Скоро можно будет указать название категориям для лучшего сопоставления в агрегаторе</p>
+    <p class="mb-2">Если ничего не выбрать, то будут выгружены категории всех подходящих товаров</p>
     <CategoriesTree
         :selected="selected"
         :categories="categories"
@@ -10,10 +10,10 @@
         @contexts:loaded="categories = $event"
         @tree:reload="treeReload"
     />
-    <p>Если не выбрать категории - то будут выгружены все категории подходящих товаров</p>
+
     <!--    <code>ids: {{ selected.join(',') }}</code>-->
     <template v-if="categoryField">
-      <h4 class="mb-1">Настройки элемента категории в XML</h4>
+      <h4 class="mb-1 mt-2">Настройки элемента категории в XML</h4>
       <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
         <pricelist-field
 
