@@ -1,6 +1,7 @@
 <?php
 
 use YandexMarket\Models\Pricelist;
+use YandexMarket\Service;
 
 /** @noinspection PhpIncludeInspection */
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
@@ -48,6 +49,11 @@ class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
         $this->setProperty('edited_on', date('Y-m-d H:i:s'));
         $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
         $this->unsetProperty('need_generate');
+
+        if (!$this->getProperty('class')) {
+            $this->setProperty('class', $this->modx->getOption('ym_pricelist_default_class', null,
+                Service::hasMiniShop2() ? 'msProduct' : 'modDocument'));
+        }
 
         return parent::beforeSet();
     }

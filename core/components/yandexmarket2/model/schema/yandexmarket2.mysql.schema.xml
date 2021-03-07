@@ -4,6 +4,7 @@
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="false"/>
         <field key="file" dbtype="varchar" precision="255" phptype="string" null="false"/>
         <field key="type" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="class" dbtype="varchar" precision="255" phptype="string" null="false" default="modResource"/>
         <!-- в зависимости от типа будут формировать поля по умолчанию -->
 
         <field key="created_on" dbtype="datetime" phptype="datetime" null="false"/>

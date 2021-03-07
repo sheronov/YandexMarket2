@@ -382,7 +382,7 @@ abstract class PricelistWriter
             foreach (explode('||', $pictures) as $picture) {
                 $tmpField = new Field($this->modx);
                 $tmpField->name = $field->name;
-                $tmpField->value = Service::preparePath($this->modx, '{images_url}'.$picture, true);
+                $tmpField->value = Service::preparePath($this->modx, '{images_url}/'.$picture, true);
                 $tmpField->type = Field::TYPE_TEXT;
                 $this->writeField($tmpField, $pls);
             }

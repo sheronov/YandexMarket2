@@ -1,6 +1,12 @@
 <template>
-  <v-sheet :color="color" class="v-expansion-panel-header pr-2 pb-1">
-<!-- <v-expansion-panel-header :color="color" hide-actions class="pr-2 pb-1">-->
+  <component :is="readonly ? 'v-sheet' : 'v-expansion-panel-header'"
+             class="pr-2 pb-1 v-expansion-panel-header"
+             :color="color">
+    <template v-slot:actions>
+      <v-icon class="ml-3 mr-1 mt-n1">icon-chevron-down</v-icon>
+    </template>
+    <!--  <v-sheet :color="color" class="v-expansion-panel-header pr-2 pb-1">-->
+    <!--    <v-expansion-panel-header :color="color" hide-actions class="pr-2 pb-1">-->
     <inline-edit-dialog v-if="!isSingle(field)">
       <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
         #{{ field.rank }}
@@ -36,10 +42,10 @@
     </v-tooltip>
     <v-spacer/>
     <template v-if="edited">
-      <v-btn @click="$emit('edit:cancel')" small icon title="Отменить изменения" class="ml-1" color="orange darken-1">
+      <v-btn @click.stop="$emit('edit:cancel')" small icon title="Отменить изменения" class="ml-1" color="orange darken-1">
         <v-icon>icon-rotate-left</v-icon>
       </v-btn>
-      <v-btn @click="saveField" small title="Сохранить изменения" class="ml-2 mb-1" color="secondary" height="26">
+      <v-btn @click.stop="saveField" small title="Сохранить изменения" class="ml-2 mb-1" color="secondary" height="26">
         <v-icon left>icon-save</v-icon>
         Сохранить
       </v-btn>
@@ -48,7 +54,7 @@
       <v-btn
           v-if="field.id"
           small depressed
-          @click="$emit('attribute:add')"
+          @click="$emit('attribute:add',$event)"
           :title="disabledAddAttribute ? 'Сначала сохраните новый' : 'Добавить атрибут'"
           color="transparent"
           min-width="40"
@@ -61,7 +67,7 @@
       <v-btn v-if="field.id"
              small icon
              title="Отредактировать название и тип поля"
-             @click="$emit('edit:toggle',!edit)"
+             @click="$emit('edit:toggle',$event)"
              :color="edit ? 'secondary': 'default'"
              class="ml-1"
       >
@@ -69,19 +75,24 @@
       </v-btn>
       <v-btn small icon
              title="Удалить поле"
-             @click="deleteField"
+             @click.stop="deleteField"
              v-if="!isSingle(field)"
              class="ml-1">
         <v-icon>icon-trash</v-icon>
       </v-btn>
     </template>
-  </v-sheet>
+    <!--    </v-expansion-panel-header>-->
+    <!--  &lt;!&ndash;  </v-sheet>-->
+  </component>
 </template>
 
 <script>
 import {mapGetters} from 'vuex';
 import InlineEditDialog from "@/components/InlineEditDialog";
 import api from '@/api';
+
+import VSheet from "vuetify/lib/components/VSheet/VSheet";
+import VExpansionPanelHeader from "vuetify/lib/components/VExpansionPanel/VExpansionPanelHeader";
 
 export default {
   name: 'FieldHeader',
@@ -91,9 +102,12 @@ export default {
     color: {type: String, default: `grey lighten-3`},
     edit: {type: Boolean, default: false},
     disabledAddAttribute: {type: Boolean, default: false},
+    readonly: {type: Boolean, default: true}
   },
   components: {
     InlineEditDialog,
+    VSheet,
+    VExpansionPanelHeader
   },
   computed: {
     ...mapGetters('field', [
@@ -123,7 +137,7 @@ export default {
       setTimeout(() => {
         api.post(!this.field.id ? 'fields/create' : 'fields/update', this.field)
             .then(({data}) => {
-              this.$emit('edit:toggle', false);
+              this.$emit('edit:toggle');
               this.$nextTick().then(() => this.$emit('field:updated', data.object));
             })
             .catch(error => console.error(error));

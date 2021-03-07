@@ -13,6 +13,7 @@ $xpdo_meta_map['ymPricelist']= array (
     'name' => NULL,
     'file' => NULL,
     'type' => NULL,
+    'class' => 'modResource',
     'created_on' => NULL,
     'edited_on' => NULL,
     'generated_on' => NULL,
@@ -45,6 +46,14 @@ $xpdo_meta_map['ymPricelist']= array (
       'precision' => '255',
       'phptype' => 'string',
       'null' => false,
+    ),
+    'class' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '255',
+      'phptype' => 'string',
+      'null' => false,
+      'default' => 'modResource',
     ),
     'created_on' => 
     array (

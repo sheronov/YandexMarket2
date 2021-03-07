@@ -25,6 +25,14 @@
           :hint="`Файл будет сохранён в директорию ${pricelist.path}`"
           v-model="data.file"
       ></v-text-field>
+      <v-text-field
+          filled
+          dense
+          class="mb-1"
+          label="Класс для предложений (class_key из таблицы ресурсов)"
+          hint="Аккуратнее с настройкой. Для простых ресурсов укажите modDocument"
+          v-model="data.class"
+      ></v-text-field>
       <v-select
           filled
           dense
@@ -61,9 +69,10 @@
         </v-btn>
       </v-card-actions>
       <template v-if="rootField">
-        <h4 class="mb-1">Корневой элемент XML-файла</h4>
+        <h4 class="mb-1">Настройки корневого элемента файла</h4>
         <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
           <pricelist-field
+              :readonly="false"
               :item="rootField"
               :fields="pricelist.fields"
               :attributes="pricelist.attributes"
@@ -118,7 +127,7 @@ export default {
     PricelistField
   },
   data: () => ({
-    openedFields: [0],
+    openedFields: [],
     data: {},
     loading: false,
     log: 'Здесь появится лог генерации файла',

@@ -1,6 +1,7 @@
 <template>
-  <v-expansion-panel class="yandexmarket-field" :ref="'panel'+field.id" readonly>
+  <v-expansion-panel class="yandexmarket-field" :ref="'panel'+field.id" :readonly="readonly">
     <field-header
+        :readonly="readonly"
         :field="field"
         :item="item"
         :color="`grey lighten-${lighten}`"
@@ -148,7 +149,8 @@ export default {
     lighten: {type: Number, default: 2},
     availableFields: {type: Array, default: () => ([])},
     availableTypes: {type: Array, default: () => ([])},
-    parent: {default: null}
+    parent: {default: null},
+    readonly: {default: true},
   },
   data: () => ({
     field: {},
@@ -221,7 +223,7 @@ export default {
       if (Object.keys(this.attributesToAdd).length) {
         for (let name in this.attributesToAdd) {
           if (Object.prototype.hasOwnProperty.call(this.attributesToAdd, name) && this.attributesToAdd[name].required) {
-            this.addAttribute(field.id, name, this.attributesToAdd[name].type);
+            this.addAttribute(null, field.id, name, this.attributesToAdd[name].type);
           }
         }
       }
@@ -274,10 +276,16 @@ export default {
         this.field.properties = {...this.item.properties};
       }
     },
-    toggleEdit(edit) {
-      this.edit = edit;
+    toggleEdit(event) {
+      if (event && this.$refs['panel' + this.field.id] && this.$refs['panel' + this.field.id].isActive) {
+        event.stopPropagation();
+      }
+      this.edit = !this.edit;
     },
-    addAttribute(field_id = this.field.id, name = '', type = 0, label = 'Новый атрибут') {
+    addAttribute(event, field_id = this.field.id, name = '', type = 0, label = 'Новый атрибут') {
+      if (event && this.$refs['panel' + this.field.id] && this.$refs['panel' + this.field.id].isActive) {
+        event.stopPropagation();
+      }
       this.$emit('attribute:created', {
         id: null,
         field_id: field_id,

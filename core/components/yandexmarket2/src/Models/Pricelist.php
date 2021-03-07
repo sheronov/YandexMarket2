@@ -17,8 +17,9 @@ use ymPricelist;
  * @property int $id
  * @property string $name
  * @property string $file
+ * @property string $type
+ * @property string $class
  * @property bool $active
- * @property int $type
  * @property DateTimeImmutable $created_on
  * @property null|DateTimeImmutable $edited_on
  * @property null|DateTimeImmutable $generated_on
@@ -234,12 +235,9 @@ class Pricelist extends BaseObject
      */
     protected function queryForOffers(): xPDOQuery
     {
-        $hasMs2 = Service::hasMiniShop2();
-        $class = $this->modx->getOption('ym_option_offer_class', null, $hasMs2 ? 'msProduct' : 'modDocument');
-        $class = $class ?: 'modResource'; //если вдруг настройка есть и пустая
-        $q = $this->modx->newQuery($class);
+        $q = $this->modx->newQuery($this->class);
 
-        $offerColumns = $this->modx->getSelectColumns($class, $class, '');
+        $offerColumns = $this->modx->getSelectColumns($q->getClass(), $q->getClass(), '');
         $q->select($offerColumns);
         // TODO: на будущее для интеграций пример SQL для получения ID при группировках
         //CONCAT(`msProduct`.`id`, 'x', SUBSTR(md5(`option.color`.`value`), 1, 19 - LENGTH(`msProduct`.`id`))) as id
@@ -254,8 +252,8 @@ class Pricelist extends BaseObject
             ]);
         }
 
-        if ($hasMs2) {
-            if($this->modx->getOption('ym_use_ms_products', null, true)) {
+        if (Service::hasMiniShop2()) {
+            if (mb_strtolower($this->class) === mb_strtolower('msProduct')) {
                 $q->join('msProductData', 'Data');
             } else {
                 $q->leftJoin('msProductData', 'Data');
@@ -279,9 +277,6 @@ class Pricelist extends BaseObject
         foreach ($this->groupedBy as $column) {
             $q->groupby($column);
         }
-
-        $q->prepare();
-        $this->modx->log(1, $q->toSQL(true));
 
         return $q;
     }
@@ -350,8 +345,6 @@ class Pricelist extends BaseObject
             }
             // TODO if(!empty($field->handler)) с регулярками найти {$option.color} или {$tv.size} или [[+tv.size]]
         }
-
-        $this->modx->log(1, print_r($classKeys, 1));
 
         foreach ($classKeys as $class => $keys) {
             switch (mb_strtolower($class)) {

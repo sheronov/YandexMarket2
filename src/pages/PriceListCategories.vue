@@ -13,9 +13,10 @@
     <p>Если не выбрать категории - то будут выгружены все категории подходящих товаров</p>
     <!--    <code>ids: {{ selected.join(',') }}</code>-->
     <template v-if="categoryField">
-      <h4>Настройки элемента категории в XML</h4>
+      <h4 class="mb-1">Настройки элемента категории в XML</h4>
       <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
         <pricelist-field
+            :readonly="false"
             :item="categoryField"
             :fields="pricelist.fields"
             :attributes="pricelist.attributes"
@@ -87,7 +88,7 @@ export default {
     PricelistField
   },
   data: () => ({
-    openedFields: [0],
+    openedFields: [],
     selected: [],
     categories: [],
     where: '',
@@ -150,7 +151,6 @@ export default {
   },
   mounted() {
     this.previewXml()
-    this.openedFields = [0];
   }
 }
 </script>

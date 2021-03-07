@@ -4,6 +4,7 @@
 
 use YandexMarket\Handlers\PricelistFiller;
 use YandexMarket\Models\Pricelist;
+use YandexMarket\Service;
 
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
@@ -34,19 +35,21 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
         $this->object->set('created_on', date('Y-m-d H:i:s'));
         $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
 
+        if (!$this->getProperty('class')) {
+            $this->setProperty('class', $this->modx->getOption('ym_pricelist_default_class', null,
+                Service::hasMiniShop2() ? 'msProduct' : 'modDocument'));
+        }
+
+        if (!$this->getProperty('where')) {
+            $this->object->set('where',
+                $this->modx->getOption('ym_pricelist_default_where', json_encode(['published' => 1, 'deleted' => 0])));
+        }
+
         if ($this->modx->getCount($this->classKey, ['file' => $this->getProperty('file')])) {
             $this->modx->error->addField('file', $this->modx->lexicon('ym_pricelist_file_err_ae'));
         }
 
         return parent::beforeSet();
-    }
-
-    public function beforeSave(): bool
-    {
-        $defaultWhere = ['published' => 1, 'deleted' => 0];
-        $this->object->set('where', json_encode($defaultWhere));
-
-        return parent::beforeSave();
     }
 
     public function afterSave(): bool

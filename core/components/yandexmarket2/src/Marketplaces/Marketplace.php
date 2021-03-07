@@ -133,9 +133,9 @@ abstract class Marketplace
 
         if ($this->getOption('ms2gallery_sync_ms2', false, '')) {
             // интеграция ms2Gallery с ms2
-            $values[Field::TYPE_OFFER]['picture'] = 'msResourceFile.url';
+            $values[Field::TYPE_OFFER]['picture'] = 'ms2Gallery.image';
         } elseif (Service::hasMiniShop2()) {
-            $values[Field::TYPE_OFFER]['picture'] = 'msProductFile.url';
+            $values[Field::TYPE_OFFER]['picture'] = 'msGallery.image';
         }
 
         return $values;

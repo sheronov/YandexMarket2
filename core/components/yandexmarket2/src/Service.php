@@ -327,7 +327,8 @@ class Service
             'base_path'   => $xpdo->getOption('base_path', null, MODX_BASE_PATH),
             'assets_path' => $xpdo->getOption('assets_path', null, MODX_ASSETS_PATH),
             'assets_url'  => $xpdo->getOption('assets_url', null, MODX_ASSETS_URL),
-            'images_url'  => $xpdo->getOption('ym_images_url', $xpdo->getOption('site_url', null, MODX_SITE_URL)),
+            'images_url'  => $xpdo->getOption('ym_options_images_url', null,
+                $xpdo->getOption('site_url', null, MODX_SITE_URL)),
         ];
     }
 
@@ -339,7 +340,7 @@ class Service
         }, array_keys($paths)), array_values($paths), $path);
 
         if ($collapseSlashes) {
-            $path = preg_replace('/(?<!:)\/+/', '/', $path);
+            $path = preg_replace('/(?<!:)\/+/', '/', (string)$path);
         }
 
         return $path;
