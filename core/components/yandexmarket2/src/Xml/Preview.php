@@ -66,6 +66,12 @@ class Preview extends PricelistWriter
         if (!$offerField = $this->pricelist->getFieldByType(Field::TYPE_OFFER)) {
             $this->writeComment(' Не найден элемент offer ');
         } else {
+            if ($total = $this->pricelist->offersCount()) {
+                $this->writeComment(' Подходящих предложений: '.$total.' ');
+            } else {
+                $this->writeComment(' Не найдено подходящих предложений ');
+            }
+
             $offers = $this->pricelist->offersGenerator(['sortBy' => 'RAND()', 'limit' => 1]);
 
             foreach ($offers as $offer) {

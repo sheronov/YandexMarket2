@@ -366,9 +366,12 @@ class Pricelist extends BaseObject
                 case 'msproductdata':
                 case 'vendor':
                 case 'msVendor':
+                case 'pricelist':
                     //стандартные классы, не нужно ничего джойнить здесь
                     break;
                 case 'tv':
+                case 'modtemplatevar':
+                case 'modtemplatevarresource':
                     $qTvs = $this->modx->newQuery('modTemplateVar');
                     $qTvs->where(['name:IN' => $keys]);
                     foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
@@ -381,6 +384,8 @@ class Pricelist extends BaseObject
                     }
                     break;
                 case 'option';
+                case 'msoption';
+                case 'msproductoption';
                     $qOptions = $this->modx->newQuery('msOption');
                     $qOptions->where(['key:IN' => $keys]);
                     foreach ($this->modx->getIterator($qOptions->getClass(), $qOptions) as $option) {

@@ -191,6 +191,7 @@ $_lang = array_merge($_lang ?? [], [
     'ym_field_type_4'  => 'список категорий',
     'ym_field_type_5'  => 'список предложений',
     'ym_field_type_6'  => 'элемент предложения',
+    'ym_field_type_7'  => 'элемент категории',
     'ym_field_type_10' => 'родительский элемент',
     'ym_field_type_11' => 'значение из столбца',
     'ym_field_type_12' => 'столбец в CDATA (с html тегами)',
