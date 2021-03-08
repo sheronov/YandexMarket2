@@ -52,10 +52,10 @@ class Offer extends BaseObject
                     $field = 'vendor.'.$key;
                     break;
                 case 'tv':
-                    $field = 'tv.'.$key;
+                    $field = 'tv-'.$key;
                     break;
                 case 'option':
-                    $field = 'option.'.$key;
+                    $field = 'option-'.$key;
                     break;
                 case 'msgallery':
                 case 'ms2gallery':

@@ -270,10 +270,10 @@ abstract class PricelistWriter
                         $pls['option'] = [];
                         $pls['tv'] = [];
                         foreach ($pls[$key] as $k => $val) {
-                            if (mb_strpos($k, 'option.') === 0) {
-                                $pls['option'][mb_substr($k, mb_strlen('option.'))] = $val;
-                            } elseif (mb_strpos($k, 'tv.') === 0) {
-                                $pls['tv'][mb_substr($k, mb_strlen('tv.'))] = $val;
+                            if (mb_strpos($k, 'option-') === 0) {
+                                $pls['option'][mb_substr($k, mb_strlen('option-'))] = $val;
+                            } elseif (mb_strpos($k, 'tv-') === 0) {
+                                $pls['tv'][mb_substr($k, mb_strlen('tv-'))] = $val;
                             }
                         }
                     } elseif (method_exists($data, 'toArray')) {

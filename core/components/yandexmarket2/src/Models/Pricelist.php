@@ -344,15 +344,28 @@ class Pricelist extends BaseObject
 
         // TODO: тут сделать через стороннюю таблицу условий
         if (!empty($this->where)) {
-            $q->where(json_decode($this->where, true, 512, JSON_UNESCAPED_UNICODE));
+            $where = $this->where;
             if (preg_match_all('/"([A-z]+)\.([0-9A-z-_]+)[^"]*"/m', $this->where, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     [, $class, $key] = $match;
                     if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
                         $classKeys[mb_strtolower($class)][] = $key;
                     }
+                    switch (mb_strtolower($class)) {
+                        case 'tv':
+                        case 'modtemplatevar':
+                        case 'modtemplatevarresource':
+                            $where = str_replace("{$class}.{$key}", "tv-{$key}.value", $where);
+                            break;
+                        case 'option';
+                        case 'msoption';
+                        case 'msproductoption';
+                            $where = str_replace("{$class}.{$key}", "option-{$key}.value", $where);
+                            break;
+                    }
                 }
             }
+            $q->where(json_decode($where, true, 512, JSON_UNESCAPED_UNICODE));
         }
 
         foreach ($classKeys as $class => $keys) {
@@ -376,7 +389,7 @@ class Pricelist extends BaseObject
                     $qTvs->where(['name:IN' => $keys]);
                     foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
                         /** @var \modTemplateVar $tv */
-                        $alias = "`tv.{$tv->name}`";
+                        $alias = "`tv-{$tv->name}`";
                         $q->leftJoin('modTemplateVarResource', $alias,
                             "{$alias}.`contentid` = `{$q->getClass()}`.`id` and {$alias}.`tmplvarid` = {$tv->id}");
                         $q->select("{$alias}.`value` as {$alias}");
@@ -390,7 +403,7 @@ class Pricelist extends BaseObject
                     $qOptions->where(['key:IN' => $keys]);
                     foreach ($this->modx->getIterator($qOptions->getClass(), $qOptions) as $option) {
                         /** @var \msOption $option */
-                        $alias = "`option.{$option->get('key')}`";
+                        $alias = "`option-{$option->get('key')}`";
                         $q->leftJoin('msProductOption', $alias,
                             "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$option->get('key')}'");
                         if (!in_array("{$alias}.`value`", $this->groupedBy, true)
