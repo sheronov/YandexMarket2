@@ -15,10 +15,25 @@ export default new Vuex.Store({
     },
     state: {
         classKeys: [],
+        operators: [
+            {text: 'Равно', sign: '=', value: 'equals', select: true},
+            {text: 'Не равно', sign: '!=', value: 'not equals', select: true},
+            {text: 'Больше чем', sign: '>', value: 'greater than'},
+            {text: 'Меньше чем', sign: '<', value: 'less than'},
+            {text: 'Больше или равно', sign: '>=', value: 'greater than or equal to'},
+            {text: 'Меньше или равно', sign: '<=', value: 'less than or equal to'},
+            {text: 'В строке', sign: 'LIKE', value: 'like'},
+            {text: 'Не в строке', sign: 'NOT LIKE', value: 'not like'},
+            {text: 'В списке', sign: 'IN', value: 'exists in', multiple: true, select: true},
+            {text: 'Не в списке', sign: 'NOT IN', value: 'not exists in', multiple: true, select: true},
+            {text: 'Null-значение', sign: 'IS NULL', value: 'is null', valueless: true},
+            {text: 'Не null', sign: 'IS NOT NULL', value: 'is not null', valueless: true},
+        ],
     },
     getters: {
         dataColumns: state => state.classKeys.filter(ck => !ck.skipped),
-        columnText:  state => value => {
+        operatorsList: state => state.operators,
+        columnText: state => value => {
             let found = state.classKeys.find(classKey => classKey.value === value);
             return found ? found.text : null;
         }
@@ -32,6 +47,6 @@ export default new Vuex.Store({
         loadClassKeys({commit}) {
             api.post('lists/classkeys')
                 .then(({data}) => commit('setClassKeys', data))
-        }
+        },
     }
 });

@@ -5,6 +5,7 @@ namespace YandexMarket\Handlers;
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
+use YandexMarket\Service;
 
 class PricelistFiller
 {
@@ -15,6 +16,16 @@ class PricelistFiller
     {
         $this->pricelist = $pricelist;
         $this->marketplace = $pricelist->getMarketplace();
+    }
+
+    public function fillDefaultConditions(): void
+    {
+        $this->pricelist->newCondition('published', 'equals', 1)->save();
+        $this->pricelist->newCondition('deleted', 'equals', 0)->save();
+
+        if (Service::hasMiniShop2()) {
+            $this->pricelist->newCondition('class_key', 'equals', 'msProduct')->save();
+        }
     }
 
     public function fillDefaultValues(): array

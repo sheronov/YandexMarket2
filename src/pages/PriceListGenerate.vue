@@ -150,7 +150,7 @@ export default {
     pricelist: {
       immediate: true,
       // eslint-disable-next-line no-unused-vars
-      handler: function ({fields, categories, attributes, ...data}) {
+      handler: function ({fields, categories, attributes, conditions, ...data}) {
         this.data = {...this.data, ...data};
       }
     }
@@ -172,14 +172,14 @@ export default {
     },
     hasChanges() {
       // eslint-disable-next-line no-unused-vars
-      let {fields, categories, attributes, ...data} = this.pricelist;
+      let {fields, categories, attributes, conditions, ...data} = this.pricelist;
       return JSON.stringify(this.data) !== JSON.stringify(data);
     }
   },
   methods: {
     cancelChanges() {
       // eslint-disable-next-line no-unused-vars
-      let {fields, categories, attributes, ...data} = this.pricelist;
+      let {fields, categories, attributes, conditions, ...data} = this.pricelist;
       this.data = {...this.data, ...data};
     },
     saveChanges() {

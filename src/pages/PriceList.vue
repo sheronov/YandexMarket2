@@ -25,6 +25,9 @@
                 @attribute:created="attributeUpdated($event, true)"
                 @attribute:updated="attributeUpdated"
                 @attribute:deleted="attributeDeleted"
+                @condition:created="conditionUpdated($event, true)"
+                @condition:updated="conditionUpdated"
+                @condition:deleted="conditionDeleted"
                 @category:added="categoryAdded"
                 @category:removed="categoryRemoved"
                 @pricelist:updated="pricelistUpdated"
@@ -145,6 +148,20 @@ export default {
       attributes.splice(attributes.findIndex(item => item.id === attribute.id), 1);
       this.pricelistUpdated({attributes}, false);
     },
+    conditionUpdated(condition, created = false) {
+      let conditions = this.pricelist.conditions.slice();
+      if (created) {
+        conditions.push(condition);
+      } else {
+        conditions.splice(conditions.findIndex(item => item.id ? item.id === condition.id : !item.id), 1, condition);
+      }
+      this.pricelistUpdated({conditions}, false);
+    },
+    conditionDeleted(condition) {
+      let conditions = this.pricelist.conditions.slice();
+      conditions.splice(conditions.findIndex(item => item.id === condition.id), 1);
+      this.pricelistUpdated({conditions}, false);
+    },
     togglePreview() {
       this.preview = !this.preview;
       if (this.preview) {
@@ -188,7 +205,7 @@ export default {
       if (save) {
         this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
         // eslint-disable-next-line no-unused-vars
-        let {fields, categories, attributes, shop_fields, offer_field, ...pricelist} = this.pricelist;
+        let {fields, categories, attributes, conditions, ...pricelist} = this.pricelist;
         api.post('pricelists/update', {...pricelist})
             .then(({data}) => {
               this.pricelist = {...this.pricelist, ...data.object};

@@ -35,7 +35,7 @@ class ymFieldUpdateProcessor extends modObjectUpdateProcessor
 
     public function cleanup()
     {
-        return $this->success('', (new Field($this->modx, $this->object))->toFrontend(true));
+        return $this->success('', (new Field($this->modx, $this->object))->toArray());
     }
 }
 

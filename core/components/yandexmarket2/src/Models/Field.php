@@ -172,36 +172,6 @@ class Field extends BaseObject
         return $data;
     }
 
-    public function toFrontend(bool $withItself = false, array $skipChildrenTypes = []): array
-    {
-        $data = [];
-        if ($withItself) {
-            $data = $this->toArray();
-            $data['attributes'] = [];
-            if ($attributes = $this->getAttributes()) {
-                foreach ($attributes as $attribute) {
-                    $data['attributes']['attr'.$attribute->id] = $attribute->toArray();
-                }
-            }
-        }
-
-        if ($withItself) {
-            $data['fields'] = [];
-            $fields = &$data['fields'];
-        } else {
-            $fields = &$data;
-        }
-
-        foreach ($this->getChildren() as $child) {
-            if (in_array($child->type, $skipChildrenTypes, true)) {
-                continue;
-            }
-            $fields['field'.$child->id] = $child->toFrontend(true, $skipChildrenTypes);
-        }
-
-        return $data;
-    }
-
     public function lexiconKey(?string $parent = null): string
     {
         if ($parent) {
@@ -239,26 +209,6 @@ class Field extends BaseObject
         }
 
         return null;
-    }
-
-    /**
-     * Узлы не могут содержать своего значения, только дочерние поля или атрибуты
-     *
-     * @return bool
-     */
-    public function isValueless(): bool
-    {
-        return in_array($this->type, [
-            self::TYPE_ROOT,
-            self::TYPE_SHOP,
-            self::TYPE_OFFERS,
-            self::TYPE_CURRENCIES,
-            self::TYPE_CATEGORIES,
-            self::TYPE_OFFER,
-            self::TYPE_PICTURE,
-            self::TYPE_PARENT,
-            self::TYPE_EMPTY
-        ]);
     }
 
     public function newAttribute(string $attrName): Attribute

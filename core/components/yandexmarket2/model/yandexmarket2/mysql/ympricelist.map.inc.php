@@ -151,5 +151,13 @@ $xpdo_meta_map['ymPricelist']= array (
       'cardinality' => 'many',
       'owner' => 'local',
     ),
+    'Conditions' => 
+    array (
+      'class' => 'ymCondition',
+      'local' => 'id',
+      'foreign' => 'pricelist_id',
+      'cardinality' => 'many',
+      'owner' => 'local',
+    ),
   ),
 );

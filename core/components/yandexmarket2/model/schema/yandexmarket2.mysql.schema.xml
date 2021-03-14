@@ -26,6 +26,19 @@
         <composite alias="Categories" class="ymCategory" local="id" foreign="pricelist_id" cardinality="many"
                    owner="local"/>
         <composite alias="Fields" class="ymField" local="id" foreign="pricelist_id" cardinality="many" owner="local"/>
+        <composite alias="Conditions" class="ymCondition" local="id" foreign="pricelist_id" cardinality="many"
+                   owner="local"/>
+    </object>
+
+    <object class="ymCondition" table="yandexmarket_conditions" extends="xPDOSimpleObject">
+        <field key="pricelist_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
+        <field key="column" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="operator" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="value" dbtype="text" phptype="string" null="true"/>
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
+
+        <aggregate alias="Pricelist" class="ymPricelist" local="pricelist_id" foreign="id" cardinality="one"
+                   owner="foreign"/>
     </object>
 
     <object class="ymCategory" table="yandexmarket_categories" extends="xPDOSimpleObject">

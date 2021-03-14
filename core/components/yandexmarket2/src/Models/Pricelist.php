@@ -4,7 +4,9 @@ namespace YandexMarket\Models;
 
 use DateTimeImmutable;
 use Generator;
+use modTemplateVar;
 use modX;
+use msOption;
 use PDO;
 use xPDOObject;
 use xPDOQuery;
@@ -26,13 +28,15 @@ use ymPricelist;
  * @property null|int $generate_mode
  * @property null|int $generate_interval
  * @property bool $need_generate
- * @property null|string $where
- * @property null|array $properties //make here array by default
+ * @property null|string $where //TODO: remove redundant field
+ * @property null|array $properties
  */
 class Pricelist extends BaseObject
 {
     /** @var Category[] */
     protected $categories;
+    /** @var Condition[] */
+    protected $conditions;
     /** @var Field[] */
     protected $fields;
     /** @var Attribute[] */
@@ -138,6 +142,18 @@ class Pricelist extends BaseObject
         return $this->categories;
     }
 
+    public function getConditions(): array
+    {
+        if (!isset($this->conditions)) {
+            $this->conditions = [];
+            foreach ($this->object->getMany('Conditions') as $ymCondition) {
+                $condition = new Condition($this->modx, $ymCondition);
+                $this->conditions[$condition->id] = $condition;
+            }
+        }
+        return $this->conditions;
+    }
+
     public function getFilePath(bool $withFile = false): string
     {
         $path = Service::preparePath($this->modx, $this->modx->getOption('yandexmarket2_files_path', null,
@@ -169,6 +185,10 @@ class Pricelist extends BaseObject
 
         $data['path'] = $this->getFilePath();
         $data['fileUrl'] = $this->getFileUrl(true);
+
+        $data['conditions'] = array_map(static function (Condition $condition) {
+            return $condition->toArray();
+        }, array_values($this->getConditions()));
 
         if ($withValues) {
             $data['fields'] = array_map(static function (Field $field) {
@@ -253,17 +273,16 @@ class Pricelist extends BaseObject
             } else {
                 $q->leftJoin('msProductData', 'Data');
             }
-            $q->leftJoin('msVendor', 'Vendor', 'Data.vendor=Vendor.id');
             $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true);
-            $vendorColumns = $this->modx->getSelectColumns('msVendor', 'Vendor', 'vendor.', ['id'], true);
             $q->select($dataColumns);
-            $q->select($vendorColumns);
-
             $this->addColumnsToGroupBy($dataColumns);
-            $this->addColumnsToGroupBy($vendorColumns);
         }
 
-        $this->joinPricelistFields($q, $this->getFields(true));
+        if ($externalClassKeys = $this->getExternalClassKeys()) {
+            $this->joinExternalColumns($q, $externalClassKeys);
+        }
+
+        $this->addConditionsToQuery($q);
 
         foreach ($this->groupedBy as $column) {
             $q->groupby($column);
@@ -282,105 +301,45 @@ class Pricelist extends BaseObject
         }
     }
 
-    /**
-     * @param  xPDOQuery  $q
-     * @param  Field[]  $fields
-     *
-     * @return xPDOQuery
-     */
-    protected function joinPricelistFields(xPDOQuery $q, array $fields): xPDOQuery
+    public function getExternalClassKeys(): array
     {
         $classKeys = [];
-
-        foreach ($fields as $field) {
+        foreach ($this->getFields(true) as $field) {
             if (in_array($field->type, [Field::TYPE_TEXT, Field::TYPE_CURRENCIES, Field::TYPE_CATEGORIES], true)) {
                 continue;
             }
-            if ($field->type === Field::TYPE_PICTURE) {
-                $count = $field->properties['count'] ?? 10;
-                if ($count > 10) {
-                    $count = 10;
-                }
 
-                switch (mb_strtolower($field->value)) {
-                    case 'msgallery.image':
-                    case 'msproductfile.url':
-                        $alias = "`msgallery`";
-                        $q->leftJoin('msProductFile', $alias,
-                            "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0 and {$alias}.`type` = 'image'");
-                        break;
-                    case 'ms2gallery.image':
-                    case 'msresourcefile.url':
-                        $alias = "`ms2gallery`";
-                        $q->leftJoin('msResourceFile', $alias,
-                            "{$alias}.`resource_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0  and {$alias}.`type` = 'image'");
-                        break;
-                    default:
-                        $this->modx->log(modX::LOG_LEVEL_ERROR,
-                            '[YandexMarket2] Can not process picture field "'.$field->value.'". Check the documentation.');
-                        continue 2;
-                }
-                $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY `rank` ASC SEPARATOR '||'), '||', {$count}) as {$alias}"]);
+            $this->addClassKeyFromValue($field->value, $classKeys);
+            $this->addClassKeyFromCodeHandler($field->handler, $classKeys);
 
-                continue;
-            }
-
-            if (!empty($field->value) && mb_strpos($field->value, '.') !== false) {
-                [$class, $key] = explode('.', $field->value, 2);
-                if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
-                    $classKeys[mb_strtolower($class)][] = $key;
-                }
-            }
-            if (!empty($field->handler) && preg_match_all('/{\$([A-z]+)\.([0-9A-z-_]+)[^}]*}/m', $field->handler,
-                    $matches, PREG_SET_ORDER)) {
-                foreach ($matches as $match) {
-                    [, $class, $key] = $match;
-                    if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
-                        $classKeys[mb_strtolower($class)][] = $key;
-                    }
+            if ($attributes = $field->getAttributes()) {
+                foreach ($attributes as $attribute) {
+                    $this->addClassKeyFromValue($attribute->value, $classKeys);
+                    $this->addClassKeyFromCodeHandler($attribute->handler, $classKeys);
                 }
             }
         }
 
-        // TODO: тут сделать через стороннюю таблицу условий
-        if (!empty($this->where)) {
-            $where = $this->where;
-            if (preg_match_all('/"([A-z]+)\.([0-9A-z-_]+)[^"]*"/m', $this->where, $matches, PREG_SET_ORDER)) {
-                foreach ($matches as $match) {
-                    [, $class, $key] = $match;
-                    if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
-                        $classKeys[mb_strtolower($class)][] = $key;
-                    }
-                    switch (mb_strtolower($class)) {
-                        case 'tv':
-                        case 'modtemplatevar':
-                        case 'modtemplatevarresource':
-                            $where = str_replace("{$class}.{$key}", "tv-{$key}.value", $where);
-                            break;
-                        case 'option';
-                        case 'msoption';
-                        case 'msproductoption';
-                            $where = str_replace("{$class}.{$key}", "option-{$key}.value", $where);
-                            break;
-                    }
-                }
+        if ($conditions = $this->getConditions()) {
+            foreach ($conditions as $condition) {
+                $this->addClassKeyFromValue($condition->column, $classKeys);
             }
-            $q->where(json_decode($where, true, 512, JSON_UNESCAPED_UNICODE));
         }
 
+        return $classKeys;
+    }
+
+    protected function joinExternalColumns(xPDOQuery $q, array $classKeys): void
+    {
         foreach ($classKeys as $class => $keys) {
             switch (mb_strtolower($class)) {
-                case 'offer':
-                case 'resource':
-                case 'modresource':
-                case 'product':
-                case 'data':
-                case 'msproduct':
-                case 'msproductdata':
                 case 'vendor':
-                case 'msVendor':
-                case 'pricelist':
-                    //стандартные классы, не нужно ничего джойнить здесь
+                case 'msvendor':
+                    $alias = $class;
+                    $q->leftJoin('msVendor', $alias, "`Data`.`vendor` = `$alias`.`id`");
+                    $columns = $this->modx->getSelectColumns('msVendor', $alias, $alias.'.', $keys, false);
+                    $q->select($columns);
+                    $this->addColumnsToGroupBy($columns);
                     break;
                 case 'tv':
                 case 'modtemplatevar':
@@ -388,10 +347,10 @@ class Pricelist extends BaseObject
                     $qTvs = $this->modx->newQuery('modTemplateVar');
                     $qTvs->where(['name:IN' => $keys]);
                     foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
-                        /** @var \modTemplateVar $tv */
-                        $alias = "`tv-{$tv->name}`";
+                        /** @var modTemplateVar $tv */
+                        $alias = "`{$class}-{$tv->name}`";
                         $q->leftJoin('modTemplateVarResource', $alias,
-                            "{$alias}.`contentid` = `{$q->getClass()}`.`id` and {$alias}.`tmplvarid` = {$tv->id}");
+                            "{$alias}.`contentid` = `{$q->getClass()}`.`id` and {$alias}.`tmplvarid` = {$tv->get('id')}");
                         $q->select("{$alias}.`value` as {$alias}");
                         $this->groupedBy[] = "{$alias}.`value`";
                     }
@@ -402,8 +361,8 @@ class Pricelist extends BaseObject
                     $qOptions = $this->modx->newQuery('msOption');
                     $qOptions->where(['key:IN' => $keys]);
                     foreach ($this->modx->getIterator($qOptions->getClass(), $qOptions) as $option) {
-                        /** @var \msOption $option */
-                        $alias = "`option-{$option->get('key')}`";
+                        /** @var msOption $option */
+                        $alias = "`{$class}-{$option->get('key')}`";
                         $q->leftJoin('msProductOption', $alias,
                             "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$option->get('key')}'");
                         if (!in_array("{$alias}.`value`", $this->groupedBy, true)
@@ -414,16 +373,144 @@ class Pricelist extends BaseObject
                             $this->groupedBy[] = "{$alias}.`value`";
                         }
                     }
+                    foreach (['size', 'color', 'tags'] as $key) {
+                        if (in_array($key, $keys, true)) {
+                            $alias = "`{$class}-{$key}`";
+                            $q->leftJoin('msProductOption', $alias,
+                                "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$key}'");
+                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as {$alias}");
+                        }
+                    }
+                    break;
+                case 'msgallery':
+                case 'msproductfile':
+                    foreach ($keys as $key) {
+                        $alias = "`$class-$key`";
+                        $q->leftJoin('msProductFile', $alias,
+                            "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0 and {$alias}.`type` = '{$key}'");
+                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as {$alias}"]);
+                    }
+                    break;
+                case 'ms2gallery':
+                case 'msresourcefile':
+                    foreach ($keys as $key) {
+                        $alias = "`$class-$key`";
+                        $q->leftJoin('msResourceFile', $alias,
+                            "{$alias}.`resource_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0  and {$alias}.`type` = '{$key}'");
+                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as {$alias}"]);
+                    }
+                    break;
+                case 'offer':
+                case 'resource':
+                case 'modresource':
+                case 'product':
+                case 'data':
+                case 'msproduct':
+                case 'msproductdata':
+                case 'pricelist':
+                    //стандартные классы, не нужно ничего присоединять здесь
                     break;
                 default:
-                    // TODO: приджойнить выбранные столбцы других классов (с моделями что-то придумать нужно)
+                    // приджойнить выбранные столбцы других классов (с моделями что-то придумать нужно)
                     $this->modx->log(modX::LOG_LEVEL_ERROR,
                         '[YandexMarket2] Unimplemented class '.$class.'. Please contact to the support.');
                     break;
             }
         }
+    }
 
-        return $q;
+    protected function addConditionsToQuery(xPDOQuery $q): void
+    {
+        if ($conditions = $this->getConditions()) {
+            foreach ($conditions as $condition) {
+                if (mb_strpos($condition->column, '.') !== false) {
+                    [$class, $key] = explode('.', $condition->column, 2);
+                    switch (mb_strtolower($class)) {
+                        case 'tv':
+                        case 'modtemplatevar':
+                        case 'modtemplatevarresource':
+                        case 'option';
+                        case 'msoption';
+                        case 'msproductoption';
+                            $column = mb_strtolower($class)."-{$key}.value";
+                            break;
+                        case 'vendor':
+                        case 'msvendor':
+                            $column = mb_strtolower($class).'.'.$key;
+                            break;
+                        case 'msgallery':
+                        case 'ms2gallery':
+                        case 'msproductfile':
+                        case 'msresourcefile':
+                            $column = mb_strtolower($class)."-{$key}.".($key === 'image' ? 'url' : $key);
+                            break;
+                        default:
+                            $column = $condition->column;
+                    }
+                } else {
+                    $column = $condition->column;
+                }
+
+                if (!array_key_exists($condition->operator, Condition::OPERATOR_SYMBOLS)) {
+                    continue;
+                }
+
+                $operator = Condition::OPERATOR_SYMBOLS[$condition->operator];
+
+                switch ($condition->operator) {
+                    case 'exists in':
+                    case 'not exists in':
+                        $value = json_decode($condition->value, true, 512, JSON_UNESCAPED_UNICODE);
+                        break;
+                    case 'is null':
+                    case 'is not null':
+                        $operator = $condition->operator === 'is null' ? 'IS' : 'IS NOT';
+                        $value = null;
+                        break;
+                    default:
+                        $value = $condition->value;
+                        break;
+                }
+                if ($operator === null) {
+                    $operator = '';
+                } else {
+                    $operator = ':'.$operator;
+                }
+                $q->where([$column.$operator => $value]);
+            }
+        }
+    }
+
+    protected function addClassKeyFromValue(?string $value, array &$classKeys): array
+    {
+        if (!empty($value) && mb_strpos($value, '.') !== false) {
+            [$class, $key] = explode('.', $value, 2);
+            if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
+                $classKeys[mb_strtolower($class)][] = $key;
+            }
+        }
+        return $classKeys;
+    }
+
+    /**
+     * Поиск столбцов по подобным Fenom конструкциям в коде {$Option.size}
+     *
+     * @param  string|null  $code
+     * @param  array  $classKeys
+     *
+     * @return array
+     */
+    protected function addClassKeyFromCodeHandler(?string $code, array &$classKeys): array
+    {
+        if (!empty($code) && preg_match_all('/{\$([A-z]+)\.([0-9A-z-_]+)[^}]*}/m', $code, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                [, $class, $key] = $match;
+                if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
+                    $classKeys[mb_strtolower($class)][] = $key;
+                }
+            }
+        }
+        return $classKeys;
     }
 
     public function newField(string $name, int $type = Field::TYPE_DEFAULT, bool $active = true): Field
@@ -436,6 +523,17 @@ class Pricelist extends BaseObject
         $field->active = $active;
 
         return $field;
+    }
+
+    public function newCondition(string $column, string $operator, $value): Condition
+    {
+        $condition = new Condition($this->modx);
+        $condition->column = $column;
+        $condition->operator = $operator;
+        $condition->value = $value;
+        $condition->pricelist_id = $this->id;
+
+        return $condition;
     }
 
     /**
@@ -467,4 +565,5 @@ class Pricelist extends BaseObject
             }
         }
     }
+
 }

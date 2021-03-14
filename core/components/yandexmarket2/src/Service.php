@@ -6,6 +6,7 @@ use Exception;
 use modTemplateVar;
 use modX;
 use msOption;
+use PDO;
 use xPDO;
 use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Models\Field;
@@ -344,6 +345,67 @@ class Service
         }
 
         return $path;
+    }
+
+    public function getValues(string $column): array
+    {
+        if (mb_strpos($column, '.') !== false) {
+            [$class, $key] = explode('.', $column, 2);
+        } else {
+            $class = 'modResource';
+            $key = $column;
+        }
+        $mode = PDO::FETCH_COLUMN;
+        $callback = static function ($value) {
+            return $value;
+        };
+
+        switch (mb_strtolower($class)) {
+            case 'vendor':
+            case 'msvendor':
+                $q = $this->modx->newQuery('msVendor');
+                $q->select($key);
+                break;
+            case 'tv':
+            case 'modtemplatevar':
+            case 'modtemplatevarresource':
+                $qtv = $this->modx->newQuery('modTemplateVar');
+                $qtv->where(['name' => $key]);
+                if ($tv = $this->modx->getObject('modTemplateVar', $qtv)) {
+                    $q = $this->modx->newQuery('modTemplateVarResource');
+                    $q->where(['tmplvarid' => $tv->get('id')]);
+                    $q->select('value');
+                }
+                break;
+            case 'option';
+            case 'msoption';
+            case 'msproductoption';
+                $q = $this->modx->newQuery('msProductOption');
+                $q->where(['key' => $key]);
+                $q->select('value');
+                break;
+            case 'offer':
+            case 'resource':
+            case 'modresource':
+                $q = $this->modx->newQuery('modResource');
+                $q->select($key);
+                break;
+            case 'data':
+            case 'msproduct':
+            case 'msproductdata':
+                $q = $this->modx->newQuery('msProductData');
+                $q->select($key);
+                break;
+        }
+
+        if (isset($q)) {
+            $q->limit(100);
+            $q->distinct(true);
+            if ($q->prepare() && $q->stmt->execute()) {
+                return array_map($callback, $q->stmt->fetchAll($mode));
+            }
+        }
+        return [];
     }
 
 }

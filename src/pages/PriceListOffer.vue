@@ -70,15 +70,8 @@
             Сохранить
           </v-btn>
         </template>
-        <span v-else>в JSON формате</span>
       </v-row>
-      <vue-codemirror
-          ref="whereCode"
-          :value="where"
-          @input="changedWhere"
-          :options="cmOptions"
-          placeholder='Пример: {"Data.price:>":0, "Vendor.name:IN":["Apple","Samsung"], "Option.tags:IN":["телефон","планшет"]}'
-      ></vue-codemirror>
+      <pricelist-conditions :conditions="pricelist.conditions" :pricelist="pricelist" v-on="$listeners"/>
     </div>
 
     <v-row class="ma-0">
@@ -105,17 +98,13 @@
 <script>
 import PricelistOfferField from "@/components/PricelistField";
 import {mapGetters} from "vuex";
-import {codemirror} from 'vue-codemirror';
-import '@/plugins/jsonlint'
-import 'codemirror/addon/lint/lint.css'
-import 'codemirror/addon/lint/lint'
-import 'codemirror/addon/lint/json-lint'
+import PricelistConditions from "@/components/PricelistConditions";
 
 export default {
   name: 'PriceListOffer',
   components: {
+    PricelistConditions,
     PricelistOfferField,
-    VueCodemirror: codemirror,
   },
   props: {
     pricelist: {type: Object, required: true}
@@ -135,9 +124,6 @@ export default {
     }
   }),
   watch: {
-    where(value) {
-      this.$nextTick().then(() => this.$refs.whereCode.codemirror.setOption("lint", !!value))
-    },
     'pricelist.where': {
       immediate: true,
       handler: function (where) {
@@ -165,13 +151,6 @@ export default {
   methods: {
     previewXml() {
       this.$emit('preview:xml', 'offers');
-    },
-    changedWhere(where) {
-      this.where = where;
-      setTimeout(() => {
-        let state = this.$refs.whereCode.codemirror.state;
-        this.hasErrors = !!(state.lint && state.lint.marked.length);
-      }, 610); //lint in CM has 600ms timeout
     },
     saveClass() {
       this.$emit('pricelist:updated', {class: this.classKey});

@@ -40,11 +40,6 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
                 Service::hasMiniShop2() ? 'msProduct' : 'modDocument'));
         }
 
-        if (!$this->getProperty('where')) {
-            $this->object->set('where',
-                $this->modx->getOption('ym_pricelist_default_where', json_encode(['published' => 1, 'deleted' => 0])));
-        }
-
         if ($this->modx->getCount($this->classKey, ['file' => $this->getProperty('file')])) {
             $this->modx->error->addField('file', $this->modx->lexicon('ym_pricelist_file_err_ae'));
         }
@@ -58,6 +53,7 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
 
         $pricelistFiller = new PricelistFiller($pricelist);
         $pricelistFiller->fillDefaultValues();
+        $pricelistFiller->fillDefaultConditions();
 
         $this->object = $pricelist;
 
