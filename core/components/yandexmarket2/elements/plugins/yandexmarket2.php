@@ -1,5 +1,6 @@
 <?php
 /** @var modResource $resource */
+
 /** @var modX $modx */
 
 switch ($modx->event->name) {
@@ -12,7 +13,7 @@ switch ($modx->event->name) {
         $q->where([
             'active'            => 1,
             'class'             => $resource->class_key,
-            'generated_mode:!=' => \YandexMarket\Models\Pricelist::GENERATE_MODE_MANUALLY
+            'generate_mode:!=' => 0
         ]);
         if ($modx->getCount('ymPricelist', $q)) {
             /** @noinspection PhpIncludeInspection */
