@@ -75,7 +75,7 @@ class Attribute extends BaseObject
 
     public function lexiconKey(): string
     {
-        return "ym_{$this->getField()->getPricelist()->type}_{$this->getField()->name}_attr_{$this->name}";
+        return "ym2_{$this->getField()->getPricelist()->type}_{$this->getField()->name}_attr_{$this->name}";
     }
 
     public function getLexicon(string $key): string

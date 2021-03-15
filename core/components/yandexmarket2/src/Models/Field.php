@@ -182,9 +182,9 @@ class Field extends BaseObject
     public function lexiconKey(string $parent = null): string
     {
         if ($parent !== null) {
-            return "ym_{$this->getPricelist()->type}_{$parent}_{$this->name}";
+            return "ym2_{$this->getPricelist()->type}_{$parent}_{$this->name}";
         }
-        return "ym_{$this->getPricelist()->type}_{$this->name}";
+        return "ym2_{$this->getPricelist()->type}_{$this->name}";
     }
 
     public function getLabel(string $parent = null): string

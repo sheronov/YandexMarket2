@@ -7,7 +7,7 @@ require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymAttributeUpdateProcessor extends modObjectUpdateProcessor
 {
-    public $objectType     = 'ym_attribute';
+    public $objectType     = 'ym2_attribute';
     public $classKey       = ymFieldAttribute::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
@@ -21,7 +21,7 @@ class ymAttributeUpdateProcessor extends modObjectUpdateProcessor
         $fieldId = (int)$this->getProperty('field_id');
         $id = (int)$this->getProperty('id');
         if (empty($id) || empty($name) || empty($fieldId)) {
-            $this->modx->error->addField('name', $this->modx->lexicon('ym_attribute_err_valid'));
+            $this->modx->error->addField('name', $this->modx->lexicon('ym2_attribute_err_valid'));
         }
 
         return parent::beforeSet();

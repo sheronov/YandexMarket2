@@ -2,7 +2,7 @@
 
 class ymAttributeRemoveProcessor extends modObjectProcessor
 {
-    public $objectType     = 'ym_attribute';
+    public $objectType     = 'ym2_attribute';
     public $classKey       = ymFieldAttribute::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
@@ -18,13 +18,13 @@ class ymAttributeRemoveProcessor extends modObjectProcessor
 
         $ids = $this->modx->fromJSON($this->getProperty('ids'));
         if (empty($ids)) {
-            return $this->failure($this->modx->lexicon('ym_attribute_err_ns'));
+            return $this->failure($this->modx->lexicon('ym2_attribute_err_nf'));
         }
 
         foreach ($ids as $id) {
             /** @var ymFieldAttribute $object */
             if (!$object = $this->modx->getObject($this->classKey, $id)) {
-                return $this->failure($this->modx->lexicon('ym_attribute_err_nf'));
+                return $this->failure($this->modx->lexicon('ym2_attribute_err_nf'));
             }
 
             $object->remove();

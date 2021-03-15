@@ -2,7 +2,7 @@
 
 class ymCategoryRemoveProcessor extends modObjectProcessor
 {
-    public $objectType     = 'ym_category';
+    public $objectType     = 'ym2_category';
     public $classKey       = ymCategory::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
@@ -19,7 +19,7 @@ class ymCategoryRemoveProcessor extends modObjectProcessor
         $pricelistId = (int)$this->getProperty('pricelist_id') ?: null;
 
         if (!$resourceId = (int)$this->getProperty('resource_id')) {
-            return $this->failure($this->modx->lexicon('ym_category_err_ns'));
+            return $this->failure($this->modx->lexicon('ym2_category_err_nf'));
         }
 
         /** @var ymCategory $object */
@@ -27,7 +27,7 @@ class ymCategoryRemoveProcessor extends modObjectProcessor
             'resource_id'  => $resourceId,
             'pricelist_id' => $pricelistId
         ])) {
-            return $this->failure($this->modx->lexicon('ym_category_err_nf'));
+            return $this->failure($this->modx->lexicon('ym2_category_err_nf'));
         }
 
         $object->remove();

@@ -19,7 +19,7 @@ class ymXmlGenerateProcessor extends modProcessor
     public function initialize()
     {
         if ((!$id = $this->getProperty('id')) || !$this->pricelist = Pricelist::getById($id, $this->modx)) {
-            return $this->modx->lexicon('ym_pricelist_err_nfs', ['id' => $id]);
+            return $this->modx->lexicon('ym2_pricelist_err_nf', ['id' => $id]);
         }
 
         $this->xmlGenerator = new Generate($this->pricelist, $this->modx);

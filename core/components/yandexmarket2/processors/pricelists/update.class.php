@@ -8,7 +8,7 @@ require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
 {
-    public $objectType     = 'ym_pricelist';
+    public $objectType     = 'ym2_pricelist';
     public $classKey       = ymPricelist::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
@@ -37,13 +37,13 @@ class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
         $name = trim($this->getProperty('name'));
         $file = trim($this->getProperty('file'));
         if (empty($id)) {
-            return $this->modx->lexicon('ym_pricelist_err_ns');
+            return $this->modx->lexicon('ym2_pricelist_err_nf');
         }
 
         if (empty($name) || empty($file)) {
-            $this->modx->error->addField('name', $this->modx->lexicon('ym_pricelist_err_name'));
+            $this->modx->error->addField('name', $this->modx->lexicon('ym2_pricelist_name_err_ns'));
         } elseif ($this->modx->getCount($this->classKey, ['file' => $file, 'id:!=' => $id])) {
-            $this->modx->error->addField('file', $this->modx->lexicon('ym_pricelist_err_ae'));
+            $this->modx->error->addField('file', $this->modx->lexicon('ym2_pricelist_file_err_ae'));
         }
         $this->unsetProperty('created_on');
         $this->setProperty('edited_on', date('Y-m-d H:i:s'));
@@ -51,7 +51,7 @@ class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
         $this->unsetProperty('need_generate');
 
         if (!$this->getProperty('class')) {
-            $this->setProperty('class', $this->modx->getOption('ym_pricelist_default_class', null,
+            $this->setProperty('class', $this->modx->getOption('ym2_default_pricelist_class', null,
                 Service::hasMiniShop2() ? 'msProduct' : 'modDocument'));
         }
 
