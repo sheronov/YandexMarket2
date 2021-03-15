@@ -1,5 +1,5 @@
 // import '@mdi/font/css/materialdesignicons.css'
-import 'font-awesome/css/font-awesome.min.css'
+// import 'font-awesome/css/font-awesome.min.css'
 import Vue from 'vue';
 import Vuetify from 'vuetify/lib';
 import 'vuetify/src/styles/styles.sass'
