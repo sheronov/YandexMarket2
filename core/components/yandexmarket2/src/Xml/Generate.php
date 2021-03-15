@@ -27,13 +27,14 @@ class Generate extends PricelistWriter
     public function makeFile(): bool
     {
         if (!$field = $this->pricelist->getFieldByType(Field::TYPE_ROOT)) {
-            $this->log('Не найден корневой элемент для прайс-листа');
-            return false;
+            throw new RuntimeException('Could not find the ROOT element (type='.Field::TYPE_ROOT.')');
         }
 
         $this->pricelist->need_generate = false;
-        $this->pricelist->save(); //lock для долгого экспорта
         $this->pricelist->generated_on = new DateTimeImmutable();
+        $this->pricelist->save(); //lock для долгого экспорта
+
+        $this->log('Найдено подходящих предложений: '.$this->pricelist->offersCount());
 
         $this->writeField($field);
 
@@ -65,6 +66,5 @@ class Generate extends PricelistWriter
             throw new RuntimeException('Can not create file '.$pricelistFilePath);
         }
     }
-
 
 }

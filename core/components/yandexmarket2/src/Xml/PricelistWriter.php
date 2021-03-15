@@ -348,7 +348,11 @@ abstract class PricelistWriter
         if (($children = $field->getChildren()) && $categoryField = reset($children)) {
             foreach ($categories as $category) {
                 $pls['category'] = $category;
-                $pls['resource'] = $category->getResource();
+                $resource = $category->getResource();
+                if ($resource && !$resource->parent) {
+                    $resource->parent = null;
+                }
+                $pls['resource'] = $resource;
                 $this->writeField($categoryField, $pls);
             }
         } else {

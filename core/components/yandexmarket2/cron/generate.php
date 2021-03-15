@@ -26,7 +26,7 @@ $corePath = $modx->getOption('yandexmarket2_core_path', null,
 $modx->addPackage('yandexmarket2', $corePath.'model/');
 
 $q = $modx->newQuery('ymPricelist');
-$q->where(['active' => 1]);
+$q->where(['active' => 1, 'generate_mode:!=' => 0]);
 if ($pricelistIds = $argv[1] ?? '') {
     $q->where(['id:IN' => explode(',', $pricelistIds)]);
 }
@@ -35,6 +35,20 @@ if (!$modx->getCount('ymPricelist', $q)) {
 }
 foreach ($modx->getIterator('ymPricelist', $q) as $ymPricelist) {
     $pricelist = new Pricelist($modx, $ymPricelist);
+
+    if (!$pricelist->generated_on) {
+        $pricelist->need_generate = true;
+    } elseif ($minutes = $pricelist->generate_interval) {
+        $lastDate = (new DateTimeImmutable())->sub(DateInterval::createFromDateString($minutes.' minutes'));
+        if ($pricelist->generated_on && $lastDate > $pricelist->generated_on) {
+            $pricelist->need_generate = true;
+        }
+    }
+    if (!$pricelist->need_generate) {
+        echo "Skipped pricelist id = {$pricelist->id}\n";
+        continue;
+    }
+
     $generator = new Generate($pricelist, $modx);
     try {
         $generator->makeFile();
