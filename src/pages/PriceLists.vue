@@ -80,6 +80,17 @@
       <template v-slot:item.generated_on="{ value }">
         {{ value ? value.date.replace('.000000', '') : 'Файл ещё не сгенерирован' }}
       </template>
+      <template v-slot:item.generate_mode="{ value }">
+        <template v-if="parseInt(value) === 2">
+          Только cron
+        </template>
+        <template v-else-if="parseInt(value) === 1">
+          На лету
+        </template>
+        <template v-else>
+          Вручную
+        </template>
+      </template>
       <template v-slot:item.type="{ value }">
         {{ marketplaceText(value) || value }}
       </template>
@@ -87,8 +98,9 @@
         <v-spacer/>
         <v-btn
             :to="{name:'pricelist.generate', params: {id: item.id}}"
-            title="Сгенерировать файл"
+            :title="item.need_generate ? 'Нужно сгенерировать файл!' : 'Генерация файла'"
             icon
+            :color="item.need_generate ? 'warning' : 'inherit'"
         >
           <v-icon>icon icon-print</v-icon>
         </v-btn>
@@ -141,7 +153,8 @@ export default {
         {text: 'Название', value: 'name', sortable: false},
         {text: 'Тип прайс-листа', value: 'type', sortable: false},
         {text: 'Файл', value: 'file', sortable: false},
-        {text: 'Обновлён', value: 'generated_on', sortable: false},
+        {text: 'Генерация', value: 'generate_mode', sortable: false},
+        {text: 'Сформирован', value: 'generated_on', sortable: false},
         {text: 'Активен', value: 'active', sortable: false},
         {text: 'Действия', value: 'actions', sortable: false, align: 'end'}
       ],

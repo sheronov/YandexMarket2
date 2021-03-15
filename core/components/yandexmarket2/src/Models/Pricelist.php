@@ -33,6 +33,10 @@ use ymPricelist;
  */
 class Pricelist extends BaseObject
 {
+    const GENERATE_MODE_MANUALLY = 0;
+    const GENERATE_MODE_AFTER_SAVE = 1;
+    const GENERATE_MODE_CRON_ONLY = 2;
+
     /** @var Category[] */
     protected $categories;
     /** @var Condition[] */
@@ -505,7 +509,6 @@ class Pricelist extends BaseObject
         }
     }
 
-
     protected function addClassKeyFromValue(string $value, array &$classKeys): array
     {
         if (!empty($value) && mb_strpos($value, '.') !== false) {
@@ -590,4 +593,10 @@ class Pricelist extends BaseObject
         }
     }
 
+    public function isOfferFits(int $offerId): bool
+    {
+        $q = $this->queryForOffers();
+        $q->where(['id' => $offerId]);
+        return $this->modx->getCount($q->getClass(), $q) > 0;
+    }
 }

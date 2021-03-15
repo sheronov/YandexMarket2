@@ -8,8 +8,10 @@ define('MODX_API_MODE', true);
 require_once(dirname(__FILE__, 2).'/vendor/autoload.php');
 
 if (file_exists(dirname(__FILE__, 5).'/index.php')) {
+    /** @noinspection PhpIncludeInspection */
     require_once dirname(__FILE__, 5).'/index.php';
 } elseif (file_exists(dirname(__FILE__, 6).'/index.php')) {
+    /** @noinspection PhpIncludeInspection */
     require_once dirname(__FILE__, 6).'/index.php';
 } else {
     echo "Could not load MODX!\n";
@@ -26,7 +28,7 @@ $corePath = $modx->getOption('yandexmarket2_core_path', null,
 $modx->addPackage('yandexmarket2', $corePath.'model/');
 
 $q = $modx->newQuery('ymPricelist');
-$q->where(['active' => 1, 'generate_mode:!=' => 0]);
+$q->where(['active' => 1, 'generate_mode:!=' => Pricelist::GENERATE_MODE_MANUALLY]);
 if ($pricelistIds = $argv[1] ?? '') {
     $q->where(['id:IN' => explode(',', $pricelistIds)]);
 }
