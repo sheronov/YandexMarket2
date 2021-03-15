@@ -18,11 +18,11 @@ abstract class Marketplace
     }
 
     /**
-     * Уникальный ключ маркетплейса. Нужен для лексиконов. Само название задаётся в лексиконе ym_marketplace_{key}
-     * Для лексиконов к полю идёт двойной поиск ym_{key}_{parent}_{field}, а потом ym_{key}_{field}
-     * Название полей - ym_{key}_{parent}_{field} если отсутствует, то ym_{key}_{field} (где {parent} - родитель узла)
-     * Расширенная подсказка к полю - ym_{key}_{field}_help
-     * Название атрибута поля - ym_{parent}_attr_{attribute} or ym_{key}_{field}_attr_{attribute}
+     * Уникальный ключ маркетплейса. Нужен для лексиконов. Само название задаётся в лексиконе ym2_marketplace_{key}
+     * Для лексиконов к полю идёт двойной поиск ym2_{key}_{parent}_{field}, а потом ym2_{key}_{field}
+     * Название полей - ym2_{key}_{parent}_{field} если отсутствует, то ym2_{key}_{field} (где {parent} - родитель узла)
+     * Расширенная подсказка к полю - ym2_{key}_{field}_help
+     * Название атрибута поля - ym2_{parent}_attr_{attribute} or ym2_{key}_{field}_attr_{attribute}
      * Если есть поля или атрибуты с выбором из нескольких значений, то к лексикону названия добавляется _value_{val}
      *
      * @return string
@@ -145,7 +145,7 @@ abstract class Marketplace
     {
         return [
             Field::TYPE_ROOT     => [
-                'date' => $this->getOption('yml_catalog_attr_date', 'Pricelist.generated_on')
+                'date' => $this->getOption('root_attr_date', 'Pricelist.generated_on')
             ],
             Field::TYPE_OFFER    => [
                 'id'   => $this->getOption('offer_attr_id', 'id'),
@@ -165,7 +165,7 @@ abstract class Marketplace
      *
      * @return mixed
      */
-    protected function getOption(string $key, $default = null, string $prefix = 'ym_default_')
+    protected function getOption(string $key, $default = null, string $prefix = 'ym2_default_')
     {
         return $this->modx->getOption($prefix.$key, null, $default);
     }

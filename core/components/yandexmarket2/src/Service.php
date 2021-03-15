@@ -33,7 +33,7 @@ class Service
 
     public static function debugInfo(xPDO $xpdo): array
     {
-        if (!$xpdo->getOption('yandexmarket_debug_mode')) {
+        if (!$xpdo->getOption('yandexmarket2_debug_mode')) {
             return [];
         }
         return [
@@ -74,7 +74,7 @@ class Service
         foreach (Field::TYPES_DATA as $field => $data) {
             $fields[] = array_merge($data, [
                 'value' => $field,
-                'text'  => $this->getLexicon('ym_field_type_'.$field) ?: $field,
+                'text'  => $this->getLexicon('ym2_field_type_'.$field) ?: $field,
             ]);
         }
 
@@ -89,7 +89,7 @@ class Service
         return array_map(function (array $marketplace) {
             $type = $marketplace['key'];
             $marketplace['value'] = $type;
-            $marketplace['text'] = $this->getLexicon('ym_marketplace_'.$type) ?: $type;
+            $marketplace['text'] = $this->getLexicon('ym2_marketplace_'.$type) ?: $type;
             unset($marketplace['class'], $marketplace['key']);
 
             $marketplace['shop_fields'] = $this->prepareFields($marketplace['shop_fields'], $type, 'shop');
@@ -108,8 +108,8 @@ class Service
         foreach ($keyFields as $key => $data) {
             $fields[] = array_merge($data, [
                 'value' => $key,
-                'text'  => $this->getLexicon('ym_'.$marketplace.'_'.$parent.'_'.$key,
-                    'ym_'.$marketplace.'_'.$key) ?: $key,
+                'text'  => $this->getLexicon('ym2_'.$marketplace.'_'.$parent.'_'.$key,
+                    'ym2_'.$marketplace.'_'.$key) ?: $key,
                 'type'  => $data['type'] ?? Field::TYPE_DEFAULT,
             ]);
         }
@@ -328,7 +328,7 @@ class Service
             'base_path'   => $xpdo->getOption('base_path', null, MODX_BASE_PATH),
             'assets_path' => $xpdo->getOption('assets_path', null, MODX_ASSETS_PATH),
             'assets_url'  => $xpdo->getOption('assets_url', null, MODX_ASSETS_URL),
-            'images_url'  => $xpdo->getOption('ym_options_images_url', null,
+            'images_url'  => $xpdo->getOption('yandexmarket2_images_url', null,
                 $xpdo->getOption('site_url', null, MODX_SITE_URL)),
         ];
     }

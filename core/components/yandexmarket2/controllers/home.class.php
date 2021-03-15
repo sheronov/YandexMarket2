@@ -8,7 +8,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
 
     protected $connectorUrl;
     protected $mgrAssetsUrl;
-    protected $lexicons;
+    // protected $lexicons;
 
     public function initialize()
     {
@@ -16,7 +16,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
             $this->modx->getOption('assets_url').'components/yandexmarket2/');
         $this->connectorUrl = $assetsUrl.'connector.php';
         $this->mgrAssetsUrl = $assetsUrl.'mgr/';
-        $this->lexicons = json_encode($this->modx->lexicon->fetch('yandexmarket2_', true));
+        // $this->lexicons = json_encode($this->modx->lexicon->fetch('yandexmarket2_', true));
 
         parent::initialize();
     }
@@ -25,7 +25,6 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
     {
         return ['yandexmarket2:default'];
     }
-
 
     public function getPageTitle(): string
     {
@@ -47,9 +46,10 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
         window.ym2Config = {
             apiUrl: \"{$this->connectorUrl}\",
             modAuth: \"{$this->modx->user->getUserToken($this->modx->context->key)}\",
-            lang: {$this->lexicons}
+            lang: {}
         }
         </script>");
+        //  lang: {$this->lexicons} // TODO: добавить лексиконы для фронта
 
         $this->addJavascript($this->mgrAssetsUrl.'js/chunk-vendors.js');
         $this->addLastJavascript($this->mgrAssetsUrl.'js/app.js');
