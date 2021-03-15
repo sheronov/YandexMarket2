@@ -3,8 +3,6 @@ config.core.php
 node_modules
 vue/node_modules
 core/components/yandexmarket2/vendor
-assets/components/yandexmarket2/mgr
-dist
 
 # local env files
 .env.local
