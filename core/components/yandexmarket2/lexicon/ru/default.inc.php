@@ -153,7 +153,7 @@ used — подержанный (товар был в употреблении).
 
 $_lang = array_merge($_lang ?? [], [
     'yandexmarket2'           => 'YandexMarket2',
-    'yandexmarket2_menu_desc' => 'Экспорт товаров в Яндекс.Маркет',
+    'yandexmarket2_menu_desc' => 'Экспорт предложений в XML',
 
     'ym2_pricelist'                 => 'Прайс-лист',
     'ym2_field'                     => 'Элемент',

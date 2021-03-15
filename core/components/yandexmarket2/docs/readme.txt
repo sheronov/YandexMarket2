@@ -1,7 +1,7 @@
 --------------------
 YandexMarket2
 --------------------
-Author: John Doe <john@doe.com>
+Author: Evgeniy Sheronov <webrush@bk.ru>
 --------------------
 
-A basic Extra for MODx Revolution.
+Export of offers in XML to Yandex Market and not only
