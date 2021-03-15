@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if (isset($_SERVER['HTTP_MODCOOKIE'])) {
     $modCookie = array_map('trim', explode(';', $_SERVER['HTTP_MODCOOKIE']));
     foreach ($modCookie as $cookie) {
-        [$key, $value] = explode('=', $cookie, 2);
+        list($key, $value) = explode('=', $cookie, 2);
         $_COOKIE[$key] = $value;
     }
 }
