@@ -42,7 +42,7 @@ class Pricelist extends BaseObject
     /** @var Attribute[] */
     protected $fieldsAttributes;
 
-    /** @var Marketplace */
+    /** @var null|Marketplace */
     protected $marketplace;
 
     protected $groupedBy = [];
@@ -53,7 +53,10 @@ class Pricelist extends BaseObject
         $this->marketplace = Marketplace::getMarketPlace($this->type, $modx);
     }
 
-    public function getMarketplace(): Marketplace
+    /**
+     * @return null|Marketplace
+     */
+    public function getMarketplace()
     {
         return $this->marketplace;
     }
@@ -69,7 +72,7 @@ class Pricelist extends BaseObject
         return parent::get($field);
     }
 
-    public function getFields(bool $withAttributes = true): array
+    public function getFields(bool $withAttributes = false): array
     {
         if (!isset($this->fields)) {
             $this->fields = [];
@@ -120,7 +123,12 @@ class Pricelist extends BaseObject
         return $this->fieldsAttributes;
     }
 
-    public function getFieldByType(int $type): ?Field
+    /**
+     * @param  int  $type
+     *
+     * @return Field|null
+     */
+    public function getFieldByType(int $type)
     {
         foreach ($this->getFields(true) as $field) {
             if ($field->type === $type) {
@@ -193,11 +201,11 @@ class Pricelist extends BaseObject
         if ($withValues) {
             $data['fields'] = array_map(static function (Field $field) {
                 return $field->toArray();
-            }, array_values($this->getFields(false)));
+            }, array_values($this->getFields()));
 
             $data['attributes'] = array_map(static function (Attribute $attribute) {
                 return $attribute->toArray();
-            }, array_values($this->getFieldsAttributes(array_keys($this->getFields(false)))));
+            }, array_values($this->getFieldsAttributes(array_keys($this->getFields()))));
 
             $data['categories'] = array_map(static function (Category $categoryObject) {
                 return $categoryObject->resource_id;
@@ -252,7 +260,7 @@ class Pricelist extends BaseObject
     {
         $q = $this->modx->newQuery($this->class);
 
-        $offerColumns = $this->modx->getSelectColumns($q->getClass(), $q->getClass(), '');
+        $offerColumns = $this->modx->getSelectColumns($q->getClass(), $q->getClass());
         $q->select($offerColumns);
         // TODO: на будущее для интеграций пример SQL для получения постоянного ID предложения при группировках
         //CONCAT(`msProduct`.`id`, 'x', SUBSTR(md5(`option.color`.`value`), 1, 19 - LENGTH(`msProduct`.`id`))) as id
@@ -291,7 +299,12 @@ class Pricelist extends BaseObject
         return $q;
     }
 
-    protected function addColumnsToGroupBy(string $columns): void
+    /**
+     * @param  string  $columns
+     *
+     * @return void
+     */
+    protected function addColumnsToGroupBy(string $columns)
     {
         foreach (explode(', ', $columns) as $column) {
             if (mb_strpos($column, ' AS ') !== false) {
@@ -309,27 +322,33 @@ class Pricelist extends BaseObject
                 continue;
             }
 
-            $this->addClassKeyFromValue($field->value, $classKeys);
-            $this->addClassKeyFromCodeHandler($field->handler, $classKeys);
+            $this->addClassKeyFromValue($field->value ?? '', $classKeys);
+            $this->addClassKeyFromCodeHandler($field->handler ?? '', $classKeys);
 
             if ($attributes = $field->getAttributes()) {
                 foreach ($attributes as $attribute) {
-                    $this->addClassKeyFromValue($attribute->value, $classKeys);
-                    $this->addClassKeyFromCodeHandler($attribute->handler, $classKeys);
+                    $this->addClassKeyFromValue($attribute->value ?? '', $classKeys);
+                    $this->addClassKeyFromCodeHandler($attribute->handler ?? '', $classKeys);
                 }
             }
         }
 
         if ($conditions = $this->getConditions()) {
             foreach ($conditions as $condition) {
-                $this->addClassKeyFromValue($condition->column, $classKeys);
+                $this->addClassKeyFromValue($condition->column ?? '', $classKeys);
             }
         }
 
         return $classKeys;
     }
 
-    protected function joinExternalColumns(xPDOQuery $q, array $classKeys): void
+    /**
+     * @param  xPDOQuery  $q
+     * @param  array  $classKeys
+     *
+     * @return void
+     */
+    protected function joinExternalColumns(xPDOQuery $q, array $classKeys)
     {
         foreach ($classKeys as $class => $keys) {
             switch (mb_strtolower($class)) {
@@ -419,12 +438,17 @@ class Pricelist extends BaseObject
         }
     }
 
-    protected function addConditionsToQuery(xPDOQuery $q): void
+    /**
+     * @param  xPDOQuery  $q
+     *
+     * @return void
+     */
+    protected function addConditionsToQuery(xPDOQuery $q)
     {
         if ($conditions = $this->getConditions()) {
             foreach ($conditions as $condition) {
                 if (mb_strpos($condition->column, '.') !== false) {
-                    [$class, $key] = explode('.', $condition->column, 2);
+                    list($class, $key) = explode('.', $condition->column, 2);
                     switch (mb_strtolower($class)) {
                         case 'tv':
                         case 'modtemplatevar':
@@ -481,10 +505,11 @@ class Pricelist extends BaseObject
         }
     }
 
-    protected function addClassKeyFromValue(?string $value, array &$classKeys): array
+
+    protected function addClassKeyFromValue(string $value, array &$classKeys): array
     {
         if (!empty($value) && mb_strpos($value, '.') !== false) {
-            [$class, $key] = explode('.', $value, 2);
+            list($class, $key) = explode('.', $value, 2);
             if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
                 $classKeys[mb_strtolower($class)][] = $key;
             }
@@ -495,16 +520,15 @@ class Pricelist extends BaseObject
     /**
      * Поиск столбцов по подобным Fenom конструкциям в коде {$Option.size}
      *
-     * @param  string|null  $code
+     * @param  string  $code
      * @param  array  $classKeys
      *
      * @return array
      */
-    protected function addClassKeyFromCodeHandler(?string $code, array &$classKeys): array
+    protected function addClassKeyFromCodeHandler(string $code, array &$classKeys): array
     {
         if (!empty($code) && preg_match_all('/{\$([A-z]+)\.([0-9A-z-_]+)[^}]*}/m', $code, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
-                [, $class, $key] = $match;
+            foreach ($matches as list(, $class, $key)) {
                 if (!in_array($key, $classKeys[mb_strtolower($class)] ?? [], true)) {
                     $classKeys[mb_strtolower($class)][] = $key;
                 }

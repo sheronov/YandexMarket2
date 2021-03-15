@@ -26,7 +26,7 @@ class Offer extends BaseObject
     public function get(string $field)
     {
         if (mb_strpos($field, '.') !== false) {
-            [$class, $key] = explode('.', $field, 2);
+            list($class, $key) = explode('.', $field, 2);
             switch (mb_strtolower($class)) {
                 case 'offer': //it's like proxy class
                     $getMethod = 'get'.ucfirst($key);

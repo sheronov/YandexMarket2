@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "33766e877dd036894cf28e26f8ecf1af",
+    "content-hash": "68e11e6a7755f38799287c813b34dbb1",
     "packages": [
         {
             "name": "agelxnash/jevix",
@@ -65,16 +65,16 @@
         },
         {
             "name": "haydenpierce/class-finder",
-            "version": "dev-master",
+            "version": "0.4.2",
             "source": {
                 "type": "git",
                 "url": "https://gitlab.com/hpierce1102/ClassFinder.git",
-                "reference": "d6c68f386c764674c59ee336d1dfca35aada5f90"
+                "reference": "b8393ea73d25010e3e946e317d0e8797c788cb20"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://gitlab.com/api/v4/projects/hpierce1102%2FClassFinder/repository/archive.zip?sha=d6c68f386c764674c59ee336d1dfca35aada5f90",
-                "reference": "d6c68f386c764674c59ee336d1dfca35aada5f90",
+                "url": "https://gitlab.com/api/v4/projects/hpierce1102%2FClassFinder/repository/archive.zip?sha=b8393ea73d25010e3e946e317d0e8797c788cb20",
+                "reference": "b8393ea73d25010e3e946e317d0e8797c788cb20",
                 "shasum": ""
             },
             "require": {
@@ -83,9 +83,8 @@
             },
             "require-dev": {
                 "mikey179/vfsstream": "^1.6",
-                "phpunit/phpunit": "~9.0"
+                "phpunit/phpunit": "4.8.36"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -107,7 +106,7 @@
             "support": {
                 "issues": "https://gitlab.com/api/v4/projects/7670051/issues"
             },
-            "time": "2021-01-05T20:50:49+00:00"
+            "time": "2020-04-20T17:38:50+00:00"
         }
     ],
     "packages-dev": [
@@ -446,7 +445,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "haydenpierce/class-finder": 20,
         "agelxnash/jevix": 20,
         "roave/security-advisories": 20
     },
@@ -458,5 +456,8 @@
         "ext-xmlreader": "*"
     },
     "platform-dev": [],
+    "platform-overrides": {
+        "php": "7.0.0"
+    },
     "plugin-api-version": "2.0.0"
 }

@@ -45,7 +45,10 @@ class Generate extends PricelistWriter
         return $this->pricelist->save();
     }
 
-    protected function openFile(): void
+    /**
+     * @return void
+     */
+    protected function openFile()
     {
         $filesPath = $this->pricelist->getFilePath(false);
         if (!is_dir($filesPath) && !mkdir($filesPath, 0755, true) && !is_dir($filesPath)) {

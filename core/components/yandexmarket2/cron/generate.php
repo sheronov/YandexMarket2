@@ -12,10 +12,14 @@ if (file_exists(dirname(__FILE__, 5).'/index.php')) {
 } elseif (file_exists(dirname(__FILE__, 6).'/index.php')) {
     require_once dirname(__FILE__, 6).'/index.php';
 } else {
-    echo 'Could not load MODX!';
+    echo "Could not load MODX!\n";
     return;
 }
 /** @var modX $modx */
+// Включаем обработку ошибок
+$modx->getService('error', 'error.modError');
+$modx->setLogLevel(modX::LOG_LEVEL_INFO);
+$modx->setLogTarget(XPDO_CLI_MODE ? 'ECHO' : 'HTML');
 
 $corePath = $modx->getOption('yandexmarket2_core_path', null,
     $modx->getOption('core_path').'components/yandexmarket2/');
@@ -23,17 +27,20 @@ $modx->addPackage('yandexmarket2', $corePath.'model/');
 
 $q = $modx->newQuery('ymPricelist');
 $q->where(['active' => 1]);
-if ($pricelistIds = explode(',', $argv[1] ?? '')) {
-    $q->where(['id:IN' => $pricelistIds]);
+if ($pricelistIds = $argv[1] ?? '') {
+    $q->where(['id:IN' => explode(',', $pricelistIds)]);
+}
+if (!$modx->getCount('ymPricelist', $q)) {
+    echo "Not found pricelists to generate\n";
 }
 foreach ($modx->getIterator('ymPricelist', $q) as $ymPricelist) {
     $pricelist = new Pricelist($modx, $ymPricelist);
-    $generator = new Generate($pricelist, $this->modx);
+    $generator = new Generate($pricelist, $modx);
     try {
         $generator->makeFile();
-        echo "Succeed generated file for pricelist id = {$pricelist->id} to {$pricelist->getFilePath(true)}";
+        echo "Succeed generated file for pricelist id = {$pricelist->id} to {$pricelist->getFilePath(true)}\n";
     } catch (Exception $e) {
-        echo "Error with pricelist id = {$pricelist->id}: {$e->getMessage()}";
+        echo "Error with pricelist id = {$pricelist->id}: {$e->getMessage()}\n";
     }
 }
 

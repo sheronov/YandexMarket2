@@ -7,15 +7,15 @@ use YandexMarket\Models\Field;
 
 class YandexMarket extends Marketplace
 {
-    public const TYPE_SIMPLE        = '';
-    public const TYPE_CUSTOM        = 'vendor.model';
-    public const TYPE_ALCOHOL       = 'alco';
-    public const TYPE_AUDIOBOOKS    = 'audiobook';
-    public const TYPE_EVENT_TICKETS = 'event-ticket';
-    public const TYPE_BOOKS         = 'book';
-    public const TYPE_DRUGS         = 'medicine';
-    public const TYPE_MUSIC_VIDEO   = 'artist.title';
-    public const TYPE_TOURS         = 'tour';
+    const TYPE_SIMPLE        = '';
+    const TYPE_CUSTOM        = 'vendor.model';
+    const TYPE_ALCOHOL       = 'alco';
+    const TYPE_AUDIOBOOKS    = 'audiobook';
+    const TYPE_EVENT_TICKETS = 'event-ticket';
+    const TYPE_BOOKS         = 'book';
+    const TYPE_DRUGS         = 'medicine';
+    const TYPE_MUSIC_VIDEO   = 'artist.title';
+    const TYPE_TOURS         = 'tour';
 
     /** @inheritDoc */
     public static function getKey(): string

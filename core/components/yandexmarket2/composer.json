@@ -6,7 +6,7 @@
     "php": "^7.0",
     "ext-xmlwriter": "*",
     "ext-xmlreader": "*",
-    "haydenpierce/class-finder": "dev-master",
+    "haydenpierce/class-finder": "0.4.2",
     "agelxnash/jevix": "dev-master"
   },
   "require-dev": {
@@ -18,6 +18,11 @@
     ],
     "psr-4": {
       "YandexMarket\\": "src/"
+    }
+  },
+  "config": {
+    "platform": {
+      "php": "7.0.0"
     }
   }
 }

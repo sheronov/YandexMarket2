@@ -22,24 +22,24 @@ use ymFieldAttribute;
 class Field extends BaseObject
 {
     //любое значение может быть записано в value и дополнительно обработано в handler
-    public const TYPE_TEXT       = 0; //текстовое значение (не будет как-либо обрабатываться)
-    public const TYPE_ROOT       = 1; //корневой элемент
-    public const TYPE_SHOP       = 2; //поле магазин (сюда будут прокинуты SHOP_FIELDS)
-    public const TYPE_CURRENCIES = 3; //валюта
-    public const TYPE_CATEGORIES = 4; //категории
-    public const TYPE_OFFERS     = 5; //предложения
-    public const TYPE_OFFER      = 6; //предложение
-    public const TYPE_CATEGORY   = 7; //предложение
+    const TYPE_TEXT       = 0; //текстовое значение (не будет как-либо обрабатываться)
+    const TYPE_ROOT       = 1; //корневой элемент
+    const TYPE_SHOP       = 2; //поле магазин (сюда будут прокинуты SHOP_FIELDS)
+    const TYPE_CURRENCIES = 3; //валюта
+    const TYPE_CATEGORIES = 4; //категории
+    const TYPE_OFFERS     = 5; //предложения
+    const TYPE_OFFER      = 6; //предложение
+    const TYPE_CATEGORY   = 7; //предложение
 
-    public const TYPE_PARENT      = 10; //обёртка без своего собственного значения
-    public const TYPE_VALUE       = 11; //значение из поля товара (подходит всегда)
-    public const TYPE_CDATA_VALUE = 12; //значение из поля товара обернуть в CDATA
-    public const TYPE_PICTURE     = 13; //изображения предложения
+    const TYPE_PARENT      = 10; //обёртка без своего собственного значения
+    const TYPE_VALUE       = 11; //значение из поля товара (подходит всегда)
+    const TYPE_CDATA_VALUE = 12; //значение из поля товара обернуть в CDATA
+    const TYPE_PICTURE     = 13; //изображения предложения
 
-    public const TYPE_EMPTY = 20; //пустой, только для атрибутов
+    const TYPE_EMPTY = 20; //пустой, только для атрибутов
 
-    public const TYPE_DEFAULT = self::TYPE_VALUE; //поле по умолчанию
-    public const TYPES_DATA   = [
+    const TYPE_DEFAULT = self::TYPE_VALUE; //поле по умолчанию
+    const TYPES_DATA   = [
         Field::TYPE_VALUE       => ['group' => ['offer']],
         Field::TYPE_CDATA_VALUE => ['group' => ['offer']],
         Field::TYPE_TEXT        => ['group' => ['offer', 'shop']],
@@ -121,7 +121,10 @@ class Field extends BaseObject
         return $this;
     }
 
-    public function getParent(): ?Field
+    /**
+     * @return Field|null
+     */
+    public function getParent()
     {
         if (!isset($this->parentField)) {
             if ($parent = $this->object->getOne('Parent')) {
@@ -133,7 +136,11 @@ class Field extends BaseObject
         return $this->parentField;
     }
 
-    public function addChildren(Field $child): void
+    /**
+     * @param  Field  $child
+     * @return void
+     */
+    public function addChildren(Field $child)
     {
         if (!isset($this->children)) {
             $this->children = [];
@@ -141,7 +148,7 @@ class Field extends BaseObject
         $this->children[] = $child->setParent($this);
     }
 
-    public function getChildren(): ?array
+    public function getChildren(): array
     {
         if (!isset($this->children)) {
             $this->children = array_map(function (ymField $field) {
@@ -172,15 +179,15 @@ class Field extends BaseObject
         return $data;
     }
 
-    public function lexiconKey(?string $parent = null): string
+    public function lexiconKey(string $parent = null): string
     {
-        if ($parent) {
+        if ($parent !== null) {
             return "ym_{$this->getPricelist()->type}_{$parent}_{$this->name}";
         }
         return "ym_{$this->getPricelist()->type}_{$this->name}";
     }
 
-    public function getLabel(?string $parent = null): string
+    public function getLabel(string $parent = null): string
     {
         if (!$label = $this->getLexicon($this->lexiconKey($parent), $this->lexiconKey())) {
             $label = $this->name;
@@ -193,12 +200,12 @@ class Field extends BaseObject
         return $label;
     }
 
-    public function getHelp(?string $parent = null): ?string
+    public function getHelp(string $parent = null): string
     {
         return $this->getLexicon($this->lexiconKey($parent).'_help', $this->lexiconKey().'_help');
     }
 
-    public function getLexicon(string $key, string $fallbackKey = null): ?string
+    public function getLexicon(string $key, string $fallbackKey = null): string
     {
         if (($key !== $lexicon = $this->modx->lexicon($key))) {
             return $lexicon;
@@ -208,7 +215,7 @@ class Field extends BaseObject
             return $lexicon;
         }
 
-        return null;
+        return '';
     }
 
     public function newAttribute(string $attrName): Attribute

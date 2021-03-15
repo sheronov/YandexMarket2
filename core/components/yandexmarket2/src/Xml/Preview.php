@@ -9,9 +9,9 @@ use YandexMarket\Models\Pricelist;
 
 class Preview extends PricelistWriter
 {
-    public const PREVIEW_CATEGORIES = 'categories';
-    public const PREVIEW_OFFERS     = 'offers';
-    public const PREVIEW_SHOP       = 'shop';
+    const PREVIEW_CATEGORIES = 'categories';
+    const PREVIEW_OFFERS     = 'offers';
+    const PREVIEW_SHOP       = 'shop';
 
     protected $preview = true;
 

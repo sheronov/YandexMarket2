@@ -56,14 +56,14 @@ abstract class PricelistWriter
         return $asString ? implode($separator, $this->log) : $this->log;
     }
 
-    protected function writeHeader(): void
+    protected function writeHeader()
     {
         $this->xml->startDocument('1.0', 'UTF-8');
         $this->xml->setIndent(true);
         $this->xml->setIndentString("\t");
     }
 
-    protected function writeComment(string $comment, bool $indentAfter = true): void
+    protected function writeComment(string $comment, bool $indentAfter = true)
     {
         $this->xml->writeComment($comment);
         if ($indentAfter) {
@@ -71,7 +71,7 @@ abstract class PricelistWriter
         }
     }
 
-    protected function initializeJevix(): void
+    protected function initializeJevix()
     {
         try {
             $this->jevix = new XmlJevix();
@@ -88,7 +88,7 @@ abstract class PricelistWriter
      *
      * @throws Exception
      */
-    protected function writeField(Field $field, array $pls = [], array $skipTypes = []): void
+    protected function writeField(Field $field, array $pls = [], array $skipTypes = [])
     {
         if (!empty($skipTypes) && in_array($field->type, $skipTypes, true)) {
             if ($this->preview) {
@@ -149,7 +149,7 @@ abstract class PricelistWriter
      *
      * @throws Exception
      */
-    protected function writeValuableField(Field $field, array $pls = []): void
+    protected function writeValuableField(Field $field, array $pls = [])
     {
         $value = null;
 
@@ -188,14 +188,14 @@ abstract class PricelistWriter
      * @param  Attribute[]  $attributes
      * @param  array  $pls
      */
-    protected function writeAttributes(array $attributes, array $pls = []): void
+    protected function writeAttributes(array $attributes, array $pls = [])
     {
         foreach ($attributes as $attribute) {
             $this->writeFieldAttribute($attribute, $pls);
         }
     }
 
-    protected function writeFieldAttribute(Attribute $attribute, array $pls = []): void
+    protected function writeFieldAttribute(Attribute $attribute, array $pls = [])
     {
         $value = null;
         switch ($attribute->type) {
@@ -252,7 +252,7 @@ abstract class PricelistWriter
         return $value;
     }
 
-    protected function prepareValue(?string $value, ?string $handler, array $pls = []): ?string
+    protected function prepareValue(string $value = null, string $handler = null, array $pls = []): string
     {
         if (!empty($handler) && $this->pdoTools) {
             if (mb_stripos(trim($handler), '@INLINE') !== 0) {
@@ -292,7 +292,7 @@ abstract class PricelistWriter
                 ]
             ), true);
         }
-        return $value;
+        return $value ?? '';
     }
 
     protected function initializePdoTools(): bool
@@ -305,7 +305,7 @@ abstract class PricelistWriter
         return false;
     }
 
-    protected function writeCurrenciesField(Field $field, array $pls = []): void
+    protected function writeCurrenciesField(Field $field, array $pls = [])
     {
         $currencyElement = $field->getProperties()['child'] ?? 'currency';
         $rateAttr = $field->getProperties()['rate'] ?? 'rate';
@@ -330,7 +330,13 @@ abstract class PricelistWriter
         }
     }
 
-    protected function writeCategoriesField(Field $field, array $pls = []): void
+    /**
+     * @param  Field  $field
+     * @param  array  $pls
+     *
+     * @throws Exception
+     */
+    protected function writeCategoriesField(Field $field, array $pls = [])
     {
         $this->xml->startElement($field->name);
         $this->writeAttributes($field->getAttributes(), $pls);
@@ -352,7 +358,13 @@ abstract class PricelistWriter
         $this->xml->endElement();
     }
 
-    protected function writeOffersField(Field $field, array $pls = []): void
+    /**
+     * @param  Field  $field
+     * @param  array  $pls
+     *
+     * @throws Exception
+     */
+    protected function writeOffersField(Field $field, array $pls = [])
     {
         $this->xml->startElement($field->name);
         $this->writeAttributes($field->getAttributes(), $pls);
@@ -370,7 +382,13 @@ abstract class PricelistWriter
         $this->xml->endElement();
     }
 
-    protected function writePicturesField(Field $field, array $pls = []): void
+    /**
+     * @param  Field  $field
+     * @param  array  $pls
+     *
+     * @throws Exception
+     */
+    protected function writePicturesField(Field $field, array $pls = [])
     {
         if (($offer = $pls['offer'] ?? null) && $offer instanceof Offer && $pictures = $offer->get($field->value)) {
             foreach (explode('||', $pictures) as $picture) {
@@ -383,7 +401,7 @@ abstract class PricelistWriter
         }
     }
 
-    protected function log(string $message, bool $withTime = true): void
+    protected function log(string $message, bool $withTime = true)
     {
         if ($withTime) {
             $message = sprintf("%2.4f s: %s", (microtime(true) - $this->start), $message);
@@ -391,7 +409,7 @@ abstract class PricelistWriter
         $this->log[] = $message;
     }
 
-    protected function errorLog(string $message): void
+    protected function errorLog(string $message)
     {
         $this->log($message);
         $this->modx->log(modX::LOG_LEVEL_ERROR, '[YandexMarket2] '.$message);

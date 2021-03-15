@@ -15,7 +15,7 @@ use ymCondition;
 class Condition extends BaseObject
 {
     // https://docs.modx.com/current/en/extending-modx/xpdo/class-reference/xpdoquery/xpdoquery.where
-    public const OPERATOR_SYMBOLS = [
+    const OPERATOR_SYMBOLS = [
         'equals'                   => null,
         'not equals'               => '!=',
         'greater than'             => '>',

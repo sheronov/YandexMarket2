@@ -18,7 +18,10 @@ class PricelistFiller
         $this->marketplace = $pricelist->getMarketplace();
     }
 
-    public function fillDefaultConditions(): void
+    /**
+     * @return void
+     */
+    public function fillDefaultConditions()
     {
         $this->pricelist->newCondition('published', 'equals', 1)->save();
         $this->pricelist->newCondition('deleted', 'equals', 0)->save();
@@ -32,10 +35,10 @@ class PricelistFiller
     {
         $rootFields = $this->marketplace::getRootFields();
 
-        return $this->createFields($rootFields, null);
+        return $this->createFields($rootFields);
     }
 
-    protected function createFields(array $fields, ?Field $parent): array
+    protected function createFields(array $fields, Field $parent = null): array
     {
         $fields = array_filter($fields, function (array $field, string $name) use ($parent) {
             return ($field['required'] ?? false) //обязательно к добавлению

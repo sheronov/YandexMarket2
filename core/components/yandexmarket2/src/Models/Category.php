@@ -24,12 +24,6 @@ class Category extends BaseObject
         return ymCategory::class;
     }
 
-    public function setPricelist(Pricelist $pricelist): Category
-    {
-        $this->pricelist = $pricelist;
-        return $this;
-    }
-
     public function getPricelist(): Pricelist
     {
         if (!isset($this->pricelist)) {
@@ -46,7 +40,10 @@ class Category extends BaseObject
         return $this;
     }
 
-    public function getResource(): ?modResource
+    /**
+     * @return modResource|null
+     */
+    public function getResource()
     {
         if (!isset($this->resource)) {
             $this->resource = $this->object->getOne('Resource');

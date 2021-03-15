@@ -82,7 +82,7 @@ abstract class Marketplace
      *
      * @return Marketplace|null
      */
-    public static function getMarketPlace(string $type, modX $modx): ?Marketplace
+    public static function getMarketPlace(string $type, modX $modx)
     {
         try {
             $marketplaces = self::listMarketplaces();

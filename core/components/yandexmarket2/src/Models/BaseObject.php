@@ -11,11 +11,11 @@ use xPDOObject;
 abstract class BaseObject
 {
     protected $modx;
-    protected $xpdo = null;
+    protected $xpdo;
     protected $object;
 
-    protected const DATETIME_FIELDS = ['created_on', 'edited_on', 'generated_on'];
-    protected const ARRAY_FIELDS    = ['properties'];
+    const DATETIME_FIELDS = ['created_on', 'edited_on', 'generated_on'];
+    const ARRAY_FIELDS    = ['properties'];
 
     public function __construct(modX $modx, xPDOObject $object = null)
     {
@@ -33,7 +33,13 @@ abstract class BaseObject
 
     abstract public static function getObjectClass(): string;
 
-    public static function getById(int $id, modX $modX): ?self
+    /**
+     * @param  int  $id
+     * @param  modX  $modX
+     *
+     * @return static|null
+     */
+    public static function getById(int $id, modX $modX)
     {
         $object = $modX->getObject(static::getObjectClass(),$id);
         return $object ? new static($modX,$object) : null;
@@ -67,7 +73,7 @@ abstract class BaseObject
         $this->object->$name = $value;
     }
 
-    public function __isset($name)
+    public function __isset($name): bool
     {
         return isset($this->object->$name);
     }

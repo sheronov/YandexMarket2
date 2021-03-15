@@ -2,10 +2,16 @@
 
 namespace YandexMarket\Handlers;
 
+use Exception;
 use Jevix;
 
 class XmlJevix extends Jevix
 {
+    /**
+     * XmlJevix constructor.
+     *
+     * @throws Exception
+     */
     public function __construct()
     {
         //<obr> it's an original <br>
@@ -26,12 +32,5 @@ class XmlJevix extends Jevix
                 parent::parse(preg_replace('/<br\/?>/', "<obr/>", $text), $errors)
             )
         );
-    }
-
-    //это более строгий вырезающий текст без тегов
-    public function parseVariant($text, &$errors)
-    {
-        return str_replace(["<yandexmarket>", "</yandexmarket>"], '',
-            parent::parse("<yandexmarket>{$text}</yandexmarket>", $errors));
     }
 }

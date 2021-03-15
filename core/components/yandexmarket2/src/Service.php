@@ -31,10 +31,10 @@ class Service
         $this->modx->lexicon->load('yandexmarket2:default');
     }
 
-    public static function debugInfo(xPDO $xpdo): ?array
+    public static function debugInfo(xPDO $xpdo): array
     {
         if (!$xpdo->getOption('yandexmarket_debug_mode')) {
-            return null;
+            return [];
         }
         return [
             'queries'   => $xpdo->executedQueries,
@@ -54,7 +54,7 @@ class Service
         return file_exists(MODX_CORE_PATH.'components/ms2gallery/model/ms2gallery/ms2gallery.class.php');
     }
 
-    protected function getLexicon(string $key, ?string $fallbackKey = null): ?string
+    protected function getLexicon(string $key, string $fallbackKey = null): string
     {
         if (($key !== $lexicon = $this->modx->lexicon($key))) {
             return $lexicon;
@@ -64,7 +64,7 @@ class Service
             return $lexicon;
         }
 
-        return null;
+        return '';
     }
 
     public function getAvailableFields(): array
@@ -350,7 +350,7 @@ class Service
     public function getValues(string $column): array
     {
         if (mb_strpos($column, '.') !== false) {
-            [$class, $key] = explode('.', $column, 2);
+            list($class, $key) = explode('.', $column, 2);
         } else {
             $class = 'modResource';
             $key = $column;

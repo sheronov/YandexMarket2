@@ -15,10 +15,10 @@ use ymFieldAttribute;
  */
 class Attribute extends BaseObject
 {
-    public const TYPE_TEXT  = 0;
-    public const TYPE_VALUE = 1;
+    const TYPE_TEXT  = 0;
+    const TYPE_VALUE = 1;
 
-    public const TYPE_DEFAULT = self::TYPE_TEXT;
+    const TYPE_DEFAULT = self::TYPE_TEXT;
 
     protected $field;
 
@@ -55,7 +55,7 @@ class Attribute extends BaseObject
             $data['values'] = array_map(function ($value) {
                 return [
                     'value' => $value,
-                    'text'  => $this->getLexicon($this->lexiconKey().'_value_'.$value) ?? $value
+                    'text'  => $this->getLexicon($this->lexiconKey().'_value_'.$value) ?: $value
                 ];
             }, $values);
         }
@@ -64,7 +64,7 @@ class Attribute extends BaseObject
 
     public function getLabel(): string
     {
-        $label = $this->getLexicon($this->lexiconKey()) ?? $this->name;
+        $label = $this->getLexicon($this->lexiconKey()) ?: $this->name;
 
         if ($this->getProperties()['required'] ?? false) {
             $label .= ' *';
@@ -78,12 +78,12 @@ class Attribute extends BaseObject
         return "ym_{$this->getField()->getPricelist()->type}_{$this->getField()->name}_attr_{$this->name}";
     }
 
-    public function getLexicon(string $key): ?string
+    public function getLexicon(string $key): string
     {
         if (($key !== $lexicon = $this->modx->lexicon($key))) {
             return $lexicon;
         }
 
-        return null;
+        return '';
     }
 }

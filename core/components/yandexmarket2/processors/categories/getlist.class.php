@@ -15,7 +15,7 @@ class ymCategoryGetListProcessor extends modResourceGetNodesProcessor
         return $initialized;
     }
 
-    public function prepare(): void
+    public function prepare()
     {
         $this->permissions = [];
 

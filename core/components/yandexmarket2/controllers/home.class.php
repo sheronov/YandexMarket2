@@ -10,7 +10,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
     protected $mgrAssetsUrl;
     protected $lexicons;
 
-    public function initialize(): void
+    public function initialize()
     {
         $assetsUrl = $this->modx->getOption('yandexmarket2_assets_url', null,
             $this->modx->getOption('assets_url').'components/yandexmarket2/');
@@ -27,9 +27,9 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
     }
 
 
-    public function getPageTitle(): ?string
+    public function getPageTitle(): string
     {
-        return $this->modx->lexicon('yandexmarket2');
+        return $this->modx->lexicon('yandexmarket2') ?? 'YandexMarket2';
     }
 
     public function getTemplateFile(): string
@@ -38,7 +38,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
         return '';
     }
 
-    public function loadCustomCssJs(): void
+    public function loadCustomCssJs()
     {
         $this->addCss($this->mgrAssetsUrl.'css/chunk-vendors.css');
         $this->addCss($this->mgrAssetsUrl.'css/app.css');
