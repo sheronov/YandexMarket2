@@ -138,7 +138,7 @@ export default {
       {
         value: 2,
         text: 'По cron при изменении товаров (рекомендуется)',
-        hint: 'Поставьте ежеминутную крон-задачу на /core/components/yandexmarket/cron.php'
+        hint: 'Поставьте ежеминутную крон-задачу на /core/components/yandexmarket2/cron/generate.php'
       },
     ],
   }),
