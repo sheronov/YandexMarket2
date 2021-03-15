@@ -1,6 +1,6 @@
 <template>
   <h2 class="mb-5 mt-5 yandexmarket-component-name">
-    YandexMarket
+    YandexMarket2
     <v-breadcrumbs v-if="breadcrumbs.length > 1" class="yandexmarket-breadcrumbs" :items="breadcrumbs"/>
     <span class="subtitle-1" v-else> &nbsp;-&nbsp; выгрузка предложений в XML для Яндекс Маркет и не только</span>
   </h2>
