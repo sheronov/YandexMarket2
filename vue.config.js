@@ -13,6 +13,7 @@ module.exports = {
             config.plugins.delete('html')
             config.plugins.delete('preload')
             config.plugins.delete('prefetch')
+            config.plugins.delete('copy')
         }
         const sassRule = config.module.rule('sass');
         const sassNormalRule = sassRule.oneOfs.get('normal');
