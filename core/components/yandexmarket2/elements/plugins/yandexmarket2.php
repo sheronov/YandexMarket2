@@ -11,8 +11,8 @@ switch ($modx->event->name) {
 
         $q = $modx->newQuery('ymPricelist');
         $q->where([
-            'active'            => 1,
-            'class'             => $resource->class_key,
+            'class'            => $resource->class_key,
+            'active'           => 1,
             'generate_mode:!=' => 0
         ]);
         if ($modx->getCount('ymPricelist', $q)) {
