@@ -22,7 +22,6 @@ class Offer extends BaseObject
         return $this->object;
     }
 
-
     public function get(string $field)
     {
         if (mb_strpos($field, '.') !== false) {
@@ -79,6 +78,9 @@ class Offer extends BaseObject
             return $price;
         }
 
+        $ctx = $this->modx->context->key; // change ctx for plugins work
+        $this->modx->context->key = $this->object->get('context_key');
+
         /** @var miniShop2 $miniShop2 */
         if ($miniShop2 = $this->modx->getService('miniShop2')) {
             $params = [
@@ -88,10 +90,14 @@ class Offer extends BaseObject
             ];
             $response = $miniShop2->invokeEvent('msOnGetProductPrice', $params);
             if ($response['success']) {
-                $price = $params['price'] = $response['data']['price'];
+                $price = $response['data']['price'];
+                if ($price < $params['price']) {
+                    $this->object->set('old_price', $params['price']);
+                }
             }
         }
 
+        $this->modx->context->key = $ctx;
         return $price;
     }
 

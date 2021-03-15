@@ -4,6 +4,7 @@ module.exports = {
     publicPath: process.env.NODE_ENV === 'production' ? "/YandexMarket2/assets/components/yandexmarket2/mgr" : "",
     outputDir: "assets/components/yandexmarket2/mgr",
     filenameHashing: false,
+    productionSourceMap: false,
     transpileDependencies: [
         "vuetify"
     ],
