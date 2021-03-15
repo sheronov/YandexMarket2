@@ -1,8 +1,9 @@
 {
   "name": "sheronov/yandexmarket2",
+  "description": "YandexMarket2 component for MODX Revolution",
   "minimum-stability": "dev",
   "require": {
-    "php": ">=7.1",
+    "php": "^7.0",
     "ext-xmlwriter": "*",
     "ext-xmlreader": "*",
     "haydenpierce/class-finder": "dev-master",
