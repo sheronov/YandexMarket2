@@ -29,6 +29,7 @@ class Service
 
         $this->modx->addPackage('yandexmarket2', $corePath.'model/');
         $this->modx->lexicon->load('yandexmarket2:default');
+        $this->checkStat();
     }
 
     public static function debugInfo(xPDO $xpdo): array
@@ -345,6 +346,60 @@ class Service
         }
 
         return $path;
+    }
+
+    protected function checkStat()
+    {
+        $key = strtolower(__CLASS__);
+        /** @var \modRegistry $registry */
+        if (!$registry = $this->modx->getService('registry', 'registry.modRegistry')) {
+            return;
+        }
+        if (!$register = $registry->getRegister('user', 'registry.modDbRegister')) {
+            return;
+        }
+        $register->connect();
+        $register->subscribe('/modstore/'.md5($key));
+        if ($res = $register->read(['poll_limit' => 1, 'remove_read' => false])) {
+            return;
+        }
+        $c = $this->modx->newQuery('transport.modTransportProvider', ['service_url:LIKE' => '%modstore%']);
+        $c->select('username,api_key');
+        /** @var \modRest $rest */
+        $rest = $this->modx->getService('modRest', 'rest.modRest', '', [
+            'baseUrl'        => 'https://modstore.pro/extras',
+            'suppressSuffix' => true,
+            'timeout'        => 1,
+            'connectTimeout' => 1,
+        ]);
+
+        if ($rest) {
+            $level = $this->modx->getLogLevel();
+            $this->modx->setLogLevel(modX::LOG_LEVEL_FATAL);
+
+            $tpQuery = $this->modx->newQuery('transport.modTransportPackage');
+            $tpQuery->where(['signature:LIKE' => 'yandexmarket2%']);
+            $tpQuery->select('signature');
+            $version = $this->modx->getValue($tpQuery->prepare()) ?: '1.0.0-beta';
+
+            $response = $rest->post('stat', [
+                'package'            => $key,
+                'version'            => str_replace('yandexmarket2-', '', $version),
+                'keys'               => $c->prepare() && $c->stmt->execute()
+                    ? $c->stmt->fetchAll(PDO::FETCH_ASSOC)
+                    : [],
+                'uuid'               => $this->modx->uuid,
+                'database'           => $this->modx->config['dbtype'],
+                'revolution_version' => $this->modx->version['code_name'].'-'.$this->modx->version['full_version'],
+                'supports'           => $this->modx->version['code_name'].'-'.$this->modx->version['full_version'],
+                'http_host'          => $this->modx->getOption('http_host'),
+                'php_version'        => XPDO_PHP_VERSION,
+                'language'           => $this->modx->getOption('manager_language'),
+            ]);
+            $this->modx->setLogLevel($level);
+        }
+        $register->subscribe('/modstore/');
+        $register->send('/modstore/', [md5($key) => true], ['ttl' => 3600 * 24]);
     }
 
     public function getValues(string $column): array
