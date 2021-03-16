@@ -1,6 +1,6 @@
 <?php
 
-class encryptedVehicle extends xPDOObjectVehicle
+class EncryptedVehicle extends xPDOObjectVehicle
 {
     public $class = 'encryptedVehicle';
     const version = '2.0.0';

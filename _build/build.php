@@ -69,7 +69,7 @@ class YandexMarket2Package
         $this->category = $this->modx->newObject('modCategory');
         $this->category->set('category', $this->config['name']);
         $this->category_attributes = [
-            'vehicle_class'                              => 'encryptedVehicle',
+            'vehicle_class'                              => EncryptedVehicle::class,
             xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             xPDOTransport::UNIQUE_KEY                    => 'category',
             xPDOTransport::PRESERVE_KEYS                 => false,
@@ -85,8 +85,8 @@ class YandexMarket2Package
         if ($provider = $this->modx->getObject('transport.modTransportProvider', $this->config['modstore_id'])) {
             $provider->xpdo->setOption('contentType', 'default');
             $params = [
-                'package'         => PKG_NAME_LOWER,
-                'version'         => PKG_VERSION.'-'.PKG_RELEASE,
+                'package'         => $this->config['name_lower'],
+                'version'         => $this->config['version'].'-'.$this->config['release'],
                 'username'        => $provider->username,
                 'api_key'         => $provider->api_key,
                 'vehicle_version' => '2.0.0',
@@ -653,19 +653,6 @@ class YandexMarket2Package
         // Add resolvers into vehicle
         $resolvers = scandir($this->config['resolvers']);
         // Remove Office files
-        if (!in_array('office', $resolvers)) {
-            if ($cache = $this->modx->getCacheManager()) {
-                $dirs = [
-                    $this->config['assets'].'js/office',
-                    $this->config['core'].'controllers/office',
-                    $this->config['core'].'processors/office',
-                ];
-                foreach ($dirs as $dir) {
-                    $cache->deleteTree($dir, ['deleteTop' => true, 'skipDirs' => false, 'extensions' => []]);
-                }
-            }
-            $this->modx->log(modX::LOG_LEVEL_INFO, 'Deleted Office files');
-        }
         foreach ($resolvers as $resolver) {
             if (in_array($resolver[0], ['_', '.'])) {
                 continue;
