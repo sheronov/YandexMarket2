@@ -7,7 +7,7 @@ require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymConditionUpdateProcessor extends modObjectUpdateProcessor
 {
-    public $objectType     = 'ym2_condition';
+    public $objectType     = 'yandexmarket2.condition';
     public $classKey       = ymCondition::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
