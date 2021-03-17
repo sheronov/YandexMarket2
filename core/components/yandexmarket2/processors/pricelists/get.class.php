@@ -7,7 +7,7 @@ require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymPricelistGetProcessor extends modObjectGetProcessor
 {
-    public $objectType     = 'ym2_pricelist';
+    public $objectType     = 'yandexmarket2.pricelist';
     public $classKey       = ymPricelist::class;
     public $languageTopics = ['yandexmarket2:default'];
 

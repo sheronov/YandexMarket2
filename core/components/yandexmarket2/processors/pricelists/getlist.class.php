@@ -7,7 +7,7 @@ require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymPricelistGetListProcessor extends modObjectGetListProcessor
 {
-    public $objectType           = 'ym2_pricelist';
+    public $objectType           = 'yandexmarket2.pricelist';
     public $classKey             = ymPricelist::class;
     public $defaultSortField     = 'id';
     public $defaultSortDirection = 'DESC';

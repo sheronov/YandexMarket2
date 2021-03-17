@@ -2,7 +2,7 @@
 
 class ymConditionRemoveProcessor extends modObjectProcessor
 {
-    public $objectType     = 'ym2_condition';
+    public $objectType     = 'yandexmarket2.condition';
     public $classKey       = ymCondition::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
