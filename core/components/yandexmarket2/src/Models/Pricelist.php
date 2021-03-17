@@ -33,9 +33,9 @@ use ymPricelist;
  */
 class Pricelist extends BaseObject
 {
-    const GENERATE_MODE_MANUALLY = 0;
+    const GENERATE_MODE_MANUALLY   = 0;
     const GENERATE_MODE_AFTER_SAVE = 1;
-    const GENERATE_MODE_CRON_ONLY = 2;
+    const GENERATE_MODE_CRON_ONLY  = 2;
 
     /** @var Category[] */
     protected $categories;
@@ -262,6 +262,7 @@ class Pricelist extends BaseObject
      */
     protected function queryForOffers(): xPDOQuery
     {
+        $this->groupedBy = [];
         $q = $this->modx->newQuery($this->class);
 
         $offerColumns = $this->modx->getSelectColumns($q->getClass(), $q->getClass());

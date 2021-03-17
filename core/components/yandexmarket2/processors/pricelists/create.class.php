@@ -37,7 +37,11 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
 
         if (!$this->getProperty('class')) {
             $this->setProperty('class', $this->modx->getOption('ym2_default_pricelist_class', null,
-                Service::hasMiniShop2() ? 'msProduct' : 'modDocument'));
+                Service::hasMiniShop2() ? 'msProduct' : 'modResource'));
+        }
+
+        if (!$this->getProperty('generate_mode')) {
+            $this->setProperty('generate_mode', Pricelist::GENERATE_MODE_MANUALLY);
         }
 
         if ($this->modx->getCount($this->classKey, ['file' => $this->getProperty('file')])) {
