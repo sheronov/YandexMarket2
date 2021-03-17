@@ -553,7 +553,7 @@ class YandexMarket2Package
         if (file_exists($filename)) {
             $file = trim(file_get_contents($filename));
 
-            return preg_match('#\<\?php(.*)#is', $file, $data)
+            return preg_match('#<\?php(.*)#is', $file, $data)
                 ? rtrim(rtrim(trim(@$data[1]), '?>'))
                 : $file;
         }
@@ -633,7 +633,7 @@ class YandexMarket2Package
                 'updated'       => null,
                 'state'         => 1,
                 'workspace'     => 1,
-                'provider'      => 0,
+                'provider'      => $this->config['modstore_id'],
                 'source'        => $signature.'.transport.zip',
                 'package_name'  => $this->config['name'],
                 'version_major' => $versionSignature[0],
