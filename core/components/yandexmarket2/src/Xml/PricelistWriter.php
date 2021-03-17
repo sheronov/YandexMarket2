@@ -35,6 +35,7 @@ abstract class PricelistWriter
 
     public function __construct(Pricelist $pricelist, modX $modx)
     {
+        $this->start = microtime(true);
         $this->pricelist = $pricelist;
         $this->modx = $modx;
         $this->initializeJevix();
@@ -42,7 +43,6 @@ abstract class PricelistWriter
             $this->errorLog('Could not load pdoTools. Code handlers will be skipped');
         }
         $this->xml = new XMLWriter();
-        $this->start = microtime(true);
     }
 
     /**
@@ -237,6 +237,7 @@ abstract class PricelistWriter
                 case 'offer':
                 default: //все остальные объекты проксируются в оффер, он уже сам разрулит
                     if (($offer = $pls['offer'] ?? null) && $offer instanceof Offer) {
+                        $offer->setPricelist($this->pricelist);
                         $value = $offer->get($column);
                     } else {
                         $value = $pls[$column] ?? null;
@@ -415,7 +416,7 @@ abstract class PricelistWriter
 
     protected function errorLog(string $message)
     {
-        $this->log($message);
+        $this->log($message, false);
         $this->modx->log(modX::LOG_LEVEL_ERROR, '[YandexMarket2] '.$message);
     }
 

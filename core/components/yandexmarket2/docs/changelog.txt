@@ -1,6 +1,11 @@
 Changelog for YandexMarket2.
 
+1.0.1-beta (17.03.2021)
+==============
+- Добавил режим формирования файла по-умолчанию
+- Мелкие исправления в интерфейсе
+
 1.0.0-beta
 ==============
 - Абсолютно новая версия компонента для выгрузки прайс-листов на Яндекс Маркет и не только
-- Подробнее в описании на ModStore https://modstore.pro/packages/import-and-export/yandexmarket2
+- Подробнее в описании на ModStore https://modstore.pro/packages/import-and-export/yandcexmarket2

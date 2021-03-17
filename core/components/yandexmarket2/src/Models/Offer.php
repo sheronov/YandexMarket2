@@ -9,9 +9,18 @@ use YandexMarket\Service;
 
 class Offer extends BaseObject
 {
+    /** @var Pricelist */
+    protected $pricelist;
+
     public static function getObjectClass(): string
     {
         return modResource::class;
+    }
+
+    public function setPricelist(Pricelist $pricelist): Offer
+    {
+        $this->pricelist = $pricelist;
+        return $this;
     }
 
     /**
@@ -66,6 +75,11 @@ class Offer extends BaseObject
         return parent::get($field);
     }
 
+    /***
+     * Подумать над тем, чтобы сюда подставлять URL из настроек прайс-листа
+     *
+     * @return string
+     */
     public function getUrl(): string
     {
         return $this->modx->makeUrl($this->object->get('id'), $this->object->get('context'), '', 'full');

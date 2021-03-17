@@ -107,12 +107,16 @@
           </v-expansion-panels>
         </template>
         <v-row class="ma-0 align-center" v-if="!isRoot(field)">
-          <div v-if="!children.length" class="grey--text">Ещё нет дочерних полей</div>
+          <div v-if="!children.length" class="grey--text">Ещё нет дочерних элементов</div>
           <v-spacer/>
-          <v-btn small class="mt-4" color="white" @click="addField" :disabled="!!children.filter(f => !f.id).length">
+          <v-btn small class="mt-4" color="white" @click="addField"
+                 :disabled="!!children.filter(f => !f.id).length || !item.id">
             <v-icon class="icon-sm" left>icon-plus</v-icon>
             <template v-if="children.filter(f => !f.id).length">
               Сохраните новое поле
+            </template>
+            <template v-else-if="!item.id">
+              Сохраните, чтобы добавлять элементы
             </template>
             <template v-else>
               Добавить элемент в &lt;{{ field.name }}&gt;
@@ -175,9 +179,11 @@ export default {
     fields: {
       immediate: true,
       handler: function (fields) {
-        this.children = fields
-            .filter(field => field.parent === this.item.id).slice()
-            .sort((a, b) => a.rank - b.rank);
+        if (this.item.id) {
+          this.children = fields
+              .filter(field => field.parent === this.item.id).slice()
+              .sort((a, b) => a.rank - b.rank);
+        }
         this.$nextTick().then(() => this.opened = Object.keys(this.children).map((field, index) => index));
       }
     },
@@ -276,11 +282,11 @@ export default {
         this.field.properties = {...this.item.properties};
       }
     },
-    toggleEdit(event) {
+    toggleEdit(event, val = !this.edit) {
       if (event && this.$refs['panel' + this.field.id] && this.$refs['panel' + this.field.id].isActive) {
         event.stopPropagation();
       }
-      this.edit = !this.edit;
+      this.edit = val;
     },
     addAttribute(event, field_id = this.field.id, name = '', type = 0, label = 'Новый атрибут') {
       if (event && this.$refs['panel' + this.field.id] && this.$refs['panel' + this.field.id].isActive) {

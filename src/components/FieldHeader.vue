@@ -42,7 +42,8 @@
     </v-tooltip>
     <v-spacer/>
     <template v-if="edited">
-      <v-btn @click.stop="$emit('edit:cancel')" small icon title="Отменить изменения" class="ml-1" color="orange darken-1">
+      <v-btn @click.stop="$emit('edit:cancel')" small icon title="Отменить изменения" class="ml-1"
+             color="orange darken-1">
         <v-icon>icon-rotate-left</v-icon>
       </v-btn>
       <v-btn @click.stop="saveField" small title="Сохранить изменения" class="ml-2 mb-1" color="secondary" height="26">
@@ -133,11 +134,11 @@ export default {
             .catch(error => console.log(error));
       }
     },
-    saveField() {
+    saveField(event) {
       setTimeout(() => {
         api.post(!this.field.id ? 'fields/create' : 'fields/update', this.field)
             .then(({data}) => {
-              this.$emit('edit:toggle');
+              this.$emit('edit:toggle', event, false);
               this.$nextTick().then(() => this.$emit('field:updated', data.object));
             })
             .catch(error => console.error(error));
