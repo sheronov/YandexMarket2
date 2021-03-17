@@ -20,11 +20,21 @@ class YandexMarket2Package
      *
      * @param $core_path
      * @param  array  $config
+     *
+     * @noinspection  PhpIncludeInspection
      */
     public function __construct($core_path, array $config = [])
     {
-        /** @noinspection PhpIncludeInspection */
-        require($core_path.'model/modx/modx.class.php');
+        require_once $core_path.'model/modx/modx.class.php';
+        require_once $core_path.'model/modx/transport/modpackagebuilder.class.php';
+        require_once $core_path.'xpdo/xpdo.class.php';
+        require_once $core_path.'xpdo/transport/xpdotransport.class.php';
+        require_once $core_path.'xpdo/transport/xpdovehicle.class.php';
+        require_once $core_path.'xpdo/transport/xpdofilevehicle.class.php';
+        require_once $core_path.'xpdo/transport/xpdoscriptvehicle.class.php';
+        require_once $core_path.'xpdo/transport/xpdoobjectvehicle.class.php';
+        require_once __DIR__.'/helpers/encryptedvehicle.class.php';
+
         /** @var modX $modx */
         $this->modx = new modX();
         $this->modx->initialize('mgr');
@@ -40,6 +50,7 @@ class YandexMarket2Package
 
             'root'      => $root,
             'build'     => $root.'_build/',
+            'helpers'   => $root.'_build/helpers/',
             'elements'  => $root.'_build/elements/',
             'resolvers' => $root.'_build/resolvers/',
 
@@ -57,12 +68,15 @@ class YandexMarket2Package
      */
     protected function initialize()
     {
-        $this->builder = $this->modx->getService('transport.modPackageBuilder');
+        $this->defineEncodeKey();
+
+        $this->builder = new modPackageBuilder($this->modx);
         $this->builder->createPackage($this->config['name_lower'], $this->config['version'], $this->config['release']);
+
+        $this->addEncryptionHelpers();
+
         $this->builder->registerNamespace($this->config['name_lower'], false, true,
             '{core_path}components/'.$this->config['name_lower'].'/');
-
-        $this->initEncryption();
 
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Created Transport Package and Namespace.');
 
@@ -80,8 +94,44 @@ class YandexMarket2Package
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Created main Category.');
     }
 
-    protected function initEncryption()
+    protected function addEncryptionHelpers()
     {
+        // /** @noinspection PhpIncludeInspection */
+        // require_once $this->config['core'].'model/encryptedvehicle.class.php';
+
+        $this->builder->package->put(new xPDOFileVehicle(), [
+            'vehicle_class' => xPDOFileVehicle::class,
+            'object'        => [
+                'source' => $this->config['helpers'].'encryptedvehicle.class.php',
+                // 'target' => "return MODX_CORE_PATH .'components/".$this->config['name_lower'].'/'
+            ]
+        ]);
+
+        $this->builder->package->put(new xPDOScriptVehicle(), [
+            'vehicle_class' => xPDOScriptVehicle::class,
+            'object'        => [
+                'source' => $this->config['helpers'].'encryption.php'
+            ]
+        ]);
+
+        // $this->builder->package->put([
+        //     'source' => $this->config['core'],
+        //     'target' => "return MODX_CORE_PATH . 'components/';",
+        // ], [
+        //     'vehicle_class' => 'xPDOFileVehicle',
+        //     'resolve'       => [
+        //         [
+        //             'type'   => 'php',
+        //             'source' => $this->config['resolvers'].'encryption.php',
+        //         ],
+        //     ],
+        // ]);
+        $this->modx->log(modX::LOG_LEVEL_INFO, 'Initialized encryption');
+    }
+
+    protected function defineEncodeKey(): string
+    {
+        $key = '';
         if ($provider = $this->modx->getObject('transport.modTransportProvider', $this->config['modstore_id'])) {
             $provider->xpdo->setOption('contentType', 'default');
             $params = [
@@ -99,29 +149,20 @@ class YandexMarket2Package
             } else {
                 $data = $response->toXml();
                 if (!empty($data->key)) {
-                    define('PKG_ENCODE_KEY', $data->key);
+                    $key = $data->key;
+                    $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Received key from modstore');
                 } elseif (!empty($data->message)) {
                     $this->modx->log(xPDO::LOG_LEVEL_ERROR, $data->message);
                 }
             }
         }
 
-        /** @noinspection PhpIncludeInspection */
-        require_once $this->config['core'].'model/encryptedvehicle.class.php';
-
-        $this->builder->package->put([
-            'source' => $this->config['core'],
-            'target' => "return MODX_CORE_PATH . 'components/';",
-        ], [
-            'vehicle_class' => 'xPDOFileVehicle',
-            'resolve'       => [
-                [
-                    'type'   => 'php',
-                    'source' => $this->config['resolvers'].'encryption.php',
-                ],
-            ],
-        ]);
-        $this->modx->log(modX::LOG_LEVEL_INFO, 'Initialized encryption');
+        if (!empty($key)) {
+            define('PKG_ENCODE_KEY', $key);
+        } else {
+            $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Problem with getting encode key from modstore');
+        }
+        return $key;
     }
 
     /**
@@ -584,6 +625,7 @@ class YandexMarket2Package
 
         /** @var modTransportPackage $package */
         if (!$package = $this->modx->getObject('transport.modTransportPackage', ['signature' => $signature])) {
+            /** @var modTransportPackage $package */
             $package = $this->modx->newObject('transport.modTransportPackage');
             $package->set('signature', $signature);
             $package->fromArray([
@@ -620,7 +662,7 @@ class YandexMarket2Package
     public function process()
     {
         $this->model();
-        $this->assets();
+        // $this->assets();
 
         // Add elements
         $elements = scandir($this->config['elements']);
@@ -639,14 +681,13 @@ class YandexMarket2Package
         $vehicle = $this->builder->createVehicle($this->category, $this->category_attributes);
 
         // Files resolvers
-        // encrypted core
-        // $vehicle->resolve('file', [
-        //     'source' => $this->config['core'],
-        //     'target' => "return MODX_CORE_PATH . 'components/';",
-        // ]);
+        $vehicle->resolve('file', [
+            'source' => rtrim($this->config['core'], '/'),
+            'target' => "return MODX_CORE_PATH . 'components/';",
+        ]);
 
         $vehicle->resolve('file', [
-            'source' => $this->config['assets'],
+            'source' => rtrim($this->config['assets'], '/'),
             'target' => "return MODX_ASSETS_PATH . 'components/';",
         ]);
 
@@ -654,14 +695,24 @@ class YandexMarket2Package
         $resolvers = scandir($this->config['resolvers']);
         // Remove Office files
         foreach ($resolvers as $resolver) {
-            if (in_array($resolver[0], ['_', '.'])) {
+            if (mb_strpos($resolver, '_') === 0 || in_array($resolver, ['.', '..'], true)) {
                 continue;
             }
             if ($vehicle->resolve('php', ['source' => $this->config['resolvers'].$resolver])) {
                 $this->modx->log(modX::LOG_LEVEL_INFO, 'Added resolver '.preg_replace('#\.php$#', '', $resolver));
+            } else {
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Could not add resolver "'.$resolver.'" to category.');
             }
         }
         $this->builder->putVehicle($vehicle);
+
+        //encryption resolver
+        $this->builder->package->put(new xPDOScriptVehicle(), [
+            'vehicle_class' => xPDOScriptVehicle::class,
+            'object'        => [
+                'source' => $this->config['helpers'].'encryption.php',
+            ]
+        ]);
 
         $this->builder->setPackageAttributes([
             'changelog' => file_get_contents($this->config['core'].'docs/changelog.txt'),
@@ -671,14 +722,6 @@ class YandexMarket2Package
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Added package attributes and setup options.');
 
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Packing up transport package zip...');
-
-        //encryption resolver
-        $this->builder->putVehicle($this->builder->createVehicle([
-            'source' => $this->config['resolvers'].'encryption.php',
-        ], [
-            'vehicle_class' => 'xPDOScriptVehicle',
-        ]));
-
         $this->builder->pack();
 
         if (!empty($this->config['install'])) {
