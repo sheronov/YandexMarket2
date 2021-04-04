@@ -8,33 +8,31 @@ if (!$transport->xpdo || !($transport instanceof xPDOTransport)) {
 
 $modx =& $transport->xpdo;
 $packages = [
-    'pdoTools' => [
-        'version' => '2.10.0-pl',
-        'service_url' => 'modstore.pro',
-    ],
+    // 'pdoTools' => [
+    //     'version' => '2.10.0-pl',
+    //     'service_url' => 'modstore.pro',
+    // ],
 ];
 
 $downloadPackage = function ($src, $dst) {
     if (ini_get('allow_url_fopen')) {
         $file = @file_get_contents($src);
-    } else {
-        if (function_exists('curl_init')) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $src);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 180);
-            $safeMode = @ini_get('safe_mode');
-            $openBasedir = @ini_get('open_basedir');
-            if (empty($safeMode) && empty($openBasedir)) {
-                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-            }
-
-            $file = curl_exec($ch);
-            curl_close($ch);
-        } else {
-            return false;
+    } elseif (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $src);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 180);
+        $safeMode = @ini_get('safe_mode');
+        $openBasedir = @ini_get('open_basedir');
+        if (empty($safeMode) && empty($openBasedir)) {
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         }
+
+        $file = curl_exec($ch);
+        curl_close($ch);
+    } else {
+        return false;
     }
     file_put_contents($dst, $file);
 
@@ -110,12 +108,12 @@ $installPackage = function ($packageName, $options = []) use ($modx, $downloadPa
                         'success' => 1,
                         'message' => "<b>{$packageName}</b> was successfully installed",
                     ];
-                } else {
-                    return [
-                        'success' => 0,
-                        'message' => "Could not save package <b>{$packageName}</b>",
-                    ];
                 }
+
+                return [
+                    'success' => 0,
+                    'message' => "Could not save package <b>{$packageName}</b>",
+                ];
                 break;
             }
         }
