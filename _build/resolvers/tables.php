@@ -9,7 +9,7 @@ if ($transport->xpdo) {
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_INSTALL:
         case xPDOTransport::ACTION_UPGRADE:
-            $manifestIndex = 2; //кладём его поле двух файлов encryption
+            $manifestIndex = 2; //кладём его поле двух файлов encryption и namespace
             $modx->addPackage('yandexmarket2', MODX_CORE_PATH.'components/yandexmarket2/model/');
             $manager = $modx->getManager();
             $objects = [];

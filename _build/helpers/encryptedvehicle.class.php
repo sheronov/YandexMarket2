@@ -29,6 +29,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
             }
 
             $this->payload[xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL] = true;
+            $this->payload[xPDOTransport::NATIVE_KEY] = 1;
 
             $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle encrypted!');
         }
@@ -289,5 +290,4 @@ class EncryptedVehicle extends xPDOObjectVehicle
             'language'           => $provider->xpdo->getOption('manager_language')
         ];
     }
-
 }
