@@ -75,6 +75,8 @@ class YandexMarket2Package
 
         $this->addEncryptionHelpers();
 
+        $this->addSchemeFile();
+
         $this->builder->registerNamespace($this->config['name_lower'], false, true,
             '{core_path}components/'.$this->config['name_lower'].'/');
 
@@ -127,6 +129,17 @@ class YandexMarket2Package
         //     ],
         // ]);
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Initialized encryption');
+    }
+
+    protected function addSchemeFile()
+    {
+        $this->builder->package->put(new xPDOFileVehicle(), [
+            'vehicle_class' => xPDOFileVehicle::class,
+            'object'        => [
+                'source' => $this->config['core'].'model/schema/yandexmarket2.mysql.schema.xml',
+                // 'target' => "return MODX_CORE_PATH .'components/yandexmarket2/model/schema/';"
+            ]
+        ]);
     }
 
     protected function defineEncodeKey(): string
@@ -693,7 +706,6 @@ class YandexMarket2Package
 
         // Add resolvers into vehicle
         $resolvers = scandir($this->config['resolvers']);
-        // Remove Office files
         foreach ($resolvers as $resolver) {
             if (mb_strpos($resolver, '_') === 0 || in_array($resolver, ['.', '..'], true)) {
                 continue;
