@@ -107,8 +107,7 @@ class YandexMarket2Package
             xPDOTransport::UNINSTALL_FILES => false,
             'object'                       => [
                 'source' => $this->config['helpers'].'encryptedvehicle.class.php',
-                'target' => null
-                // 'target' => "return MODX_CORE_PATH .'components/yandexmarket2/';"
+                'target' => "return MODX_CORE_PATH .'cache/default/yandexmarket2/';",
             ]
         ]);
 
@@ -148,8 +147,7 @@ class YandexMarket2Package
             xPDOTransport::UNINSTALL_FILES => false,
             'object'                       => [
                 'source' => $this->config['core'].'model/schema/yandexmarket2.mysql.schema.xml',
-                'target' => null
-                // 'target' => "return MODX_CORE_PATH .'components/yandexmarket2/model/schema/';"
+                'target' => "return MODX_CORE_PATH .'cache/default/yandexmarket2/';",
             ]
         ]);
 
