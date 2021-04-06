@@ -67,7 +67,7 @@ class Offer extends BaseObject
                     break;
                 case 'msgallery':
                 case 'ms2gallery':
-                    $field = mb_strtolower($class);
+                    $field = mb_strtolower($class).'-'.$key;
                     break;
             }
         }

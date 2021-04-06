@@ -350,7 +350,7 @@ class Service
 
     protected function checkStat()
     {
-        $key = strtolower(__CLASS__);
+        $key = 'yandexmarket2';
         /** @var \modRegistry $registry */
         if (!$registry = $this->modx->getService('registry', 'registry.modRegistry')) {
             return;
@@ -382,6 +382,14 @@ class Service
             $tpQuery->select('signature');
             $version = $this->modx->getValue($tpQuery->prepare()) ?: '1.0.0-beta';
 
+            if (method_exists($this->modx, 'getVersionData')) {
+                $modxVersion = $this->modx->getVersionData();
+            } elseif (isset($this->modx->version)) {
+                $modxVersion = $this->modx->version;
+            } else {
+                $modxVersion = [];
+            }
+
             $response = $rest->post('stat', [
                 'package'            => $key,
                 'version'            => str_replace('yandexmarket2-', '', $version),
@@ -390,8 +398,8 @@ class Service
                     : [],
                 'uuid'               => $this->modx->uuid,
                 'database'           => $this->modx->config['dbtype'],
-                'revolution_version' => $this->modx->version['code_name'].'-'.$this->modx->version['full_version'],
-                'supports'           => $this->modx->version['code_name'].'-'.$this->modx->version['full_version'],
+                'revolution_version' => $modxVersion['code_name'].'-'.$modxVersion['full_version'],
+                'supports'           => $modxVersion['code_name'].'-'.$modxVersion['full_version'],
                 'http_host'          => $this->modx->getOption('http_host'),
                 'php_version'        => XPDO_PHP_VERSION,
                 'language'           => $this->modx->getOption('manager_language'),

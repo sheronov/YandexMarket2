@@ -74,6 +74,7 @@ class YandexMarket2Package
         $this->builder->createPackage($this->config['name_lower'], $this->config['version'], $this->config['release']);
 
         $this->addEncryptionHelpers();
+        $this->addSchemeFile();
 
         $this->builder->registerNamespace($this->config['name_lower'], false, true,
             '{core_path}components/'.$this->config['name_lower'].'/');
@@ -98,17 +99,24 @@ class YandexMarket2Package
     {
         // /** @noinspection PhpIncludeInspection */
         // require_once $this->config['core'].'model/encryptedvehicle.class.php';
-
+        $guid = md5(uniqid(rand(), true));
         $this->builder->package->put(new xPDOFileVehicle(), [
-            'vehicle_class' => xPDOFileVehicle::class,
-            'object'        => [
+            'vehicle_class'                => xPDOFileVehicle::class,
+            'guid'                         => $guid,
+            'native_key'                   => $guid,
+            xPDOTransport::UNINSTALL_FILES => false,
+            'object'                       => [
                 'source' => $this->config['helpers'].'encryptedvehicle.class.php',
-                // 'target' => "return MODX_CORE_PATH .'components/".$this->config['name_lower'].'/'
+                'target' => "return MODX_CORE_PATH .'cache/default/yandexmarket2/';",
             ]
         ]);
 
+        $guid = md5(uniqid(rand(), true));
         $this->builder->package->put(new xPDOScriptVehicle(), [
             'vehicle_class' => xPDOScriptVehicle::class,
+            'namespace'     => 'yandexmarket2',
+            'guid'          => $guid,
+            'native_key'    => $guid,
             'object'        => [
                 'source' => $this->config['helpers'].'encryption.php'
             ]
@@ -129,27 +137,70 @@ class YandexMarket2Package
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Initialized encryption');
     }
 
+    protected function addSchemeFile()
+    {
+        $guid = md5(uniqid(rand(), true));
+        $this->builder->package->put(new xPDOFileVehicle(), [
+            'vehicle_class'                => xPDOFileVehicle::class,
+            'guid'                         => $guid,
+            'native_key'                   => $guid,
+            xPDOTransport::UNINSTALL_FILES => false,
+            'object'                       => [
+                'source' => $this->config['core'].'model/schema/yandexmarket2.mysql.schema.xml',
+                'target' => "return MODX_CORE_PATH .'cache/default/yandexmarket2/';",
+            ]
+        ]);
+
+        // $vehicle = $this->builder->createVehicle(new xPDOFileVehicle(), [
+        //     xPDOTransport::PRESERVE_KEYS => true,
+        //     'vehicle_class'              => xPDOFileVehicle::class,
+        //     'namespace'                  => 'yandexmarket2',
+        //     'object'                     => [
+        //         'source' => $this->config['core'].'model/schema/yandexmarket2.mysql.schema.xml',
+        //         // 'target' => "return MODX_CORE_PATH .'components/yandexmarket2/model/schema/';"
+        //     ]
+        // ]);
+        // $this->builder->putVehicle($vehicle);
+    }
+
     protected function defineEncodeKey(): string
     {
         $key = '';
+        /** @var modTransportProvider $provider */
         if ($provider = $this->modx->getObject('transport.modTransportProvider', $this->config['modstore_id'])) {
             $provider->xpdo->setOption('contentType', 'default');
+            $modxVersion = $this->modx->getVersionData();
+
             $params = [
-                'package'         => $this->config['name_lower'],
-                'version'         => $this->config['version'].'-'.$this->config['release'],
-                'username'        => $provider->username,
-                'api_key'         => $provider->api_key,
-                'vehicle_version' => '2.0.0',
+                'package'            => $this->config['name_lower'],
+                'version'            => $this->config['version'].'-'.$this->config['release'],
+                'username'           => $provider->username,
+                'api_key'            => $provider->api_key,
+                'vehicle_version'    => '2.0.0',
+                'database'           => $this->modx->config['dbtype'],
+                'revolution_version' => $modxVersion['code_name'].'-'.$modxVersion['full_version'],
+                'supports'           => $modxVersion['code_name'].'-'.$modxVersion['full_version'],
+                'http_host'          => $this->modx->getOption('http_host'),
+                'php_version'        => XPDO_PHP_VERSION,
+                'language'           => $this->modx->getOption('manager_language'),
             ];
 
-            $response = $provider->request('package/encode', 'POST', $params);
-            if ($response->isError()) {
-                $msg = $response->getError();
-                $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg);
+            /** @var modRest $rest */
+            $rest = $this->modx->getService('modRest', 'rest.modRest', '', [
+                'baseUrl'        => rtrim($provider->get('service_url'), '/'),
+                'suppressSuffix' => true,
+                'timeout'        => 10,
+                'connectTimeout' => 10,
+                'format'         => 'xml',
+            ]);
+
+            $response = $rest->post('package/encode', $params);
+            if ($response->responseError) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, $response->responseError);
             } else {
-                $data = $response->toXml();
-                if (!empty($data->key)) {
-                    $key = $data->key;
+                $data = $response->process();
+                if (!empty($data['key'])) {
+                    $key = $data['key'];
                     $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Received key from modstore');
                 } elseif (!empty($data->message)) {
                     $this->modx->log(xPDO::LOG_LEVEL_ERROR, $data->message);
@@ -675,25 +726,21 @@ class YandexMarket2Package
                 $this->{$name}();
             }
         }
-
         // Create main vehicle
-        /** @var modTransportVehicle $vehicle */
         $vehicle = $this->builder->createVehicle($this->category, $this->category_attributes);
 
         // Files resolvers
         $vehicle->resolve('file', [
-            'source' => rtrim($this->config['core'], '/'),
+            'source' => $this->config['core'],
             'target' => "return MODX_CORE_PATH . 'components/';",
         ]);
-
         $vehicle->resolve('file', [
-            'source' => rtrim($this->config['assets'], '/'),
+            'source' => $this->config['assets'],
             'target' => "return MODX_ASSETS_PATH . 'components/';",
         ]);
 
         // Add resolvers into vehicle
         $resolvers = scandir($this->config['resolvers']);
-        // Remove Office files
         foreach ($resolvers as $resolver) {
             if (mb_strpos($resolver, '_') === 0 || in_array($resolver, ['.', '..'], true)) {
                 continue;
@@ -704,11 +751,16 @@ class YandexMarket2Package
                 $this->modx->log(modX::LOG_LEVEL_INFO, 'Could not add resolver "'.$resolver.'" to category.');
             }
         }
+
         $this->builder->putVehicle($vehicle);
 
         //encryption resolver
+        $guid = md5(uniqid(rand(), true));
         $this->builder->package->put(new xPDOScriptVehicle(), [
             'vehicle_class' => xPDOScriptVehicle::class,
+            'namespace'     => 'yandexmarket2',
+            'guid'          => $guid,
+            'native_key'    => $guid,
             'object'        => [
                 'source' => $this->config['helpers'].'encryption.php',
             ]
