@@ -195,7 +195,6 @@ class Pricelist extends BaseObject
             $data['where'] = json_encode($data['where'], JSON_UNESCAPED_UNICODE);
         }
 
-        $data['path'] = $this->getFilePath();
         $data['fileUrl'] = $this->getFileUrl(true);
 
         $data['conditions'] = array_map(static function (Condition $condition) {

@@ -22,7 +22,7 @@
           dense
           class="mb-1"
           label="Название файла (укажите вместе с расширением xml)"
-          :hint="`Файл будет сохранён в директорию ${pricelist.path}`"
+          :hint="`Файл будет доступен по адресу ${pricelist.fileUrl}`"
           v-model="data.file"
       ></v-text-field>
       <v-select
@@ -82,8 +82,8 @@
       <v-alert v-if="pricelist.need_generate" type="warning" dense>
         Изменились товары. Файл нужно перегенерировать!
       </v-alert>
-      <v-alert v-if="pricelist.generated_on" type="info" color="accent" dense>
-        Предыдущий прайс-лист сформирован {{ generatedOn }}
+      <v-alert v-if="prepareDate(pricelist.generated_on)" type="info" color="accent" dense>
+        Предыдущий прайс-лист сформирован {{ prepareDate(pricelist.generated_on) }}
       </v-alert>
       <p v-if="pricelist.generated_on">Ссылка на файл:
         <a :href="pricelist.fileUrl" title="Файл откроется в новом окне" target="_blank">{{ pricelist.fileUrl }}</a>
@@ -156,9 +156,6 @@ export default {
     rootField() {
       return this.pricelist.fields.find(field => field.type === 1);
     },
-    generatedOn() {
-      return this.pricelist.generated_on.date.replace('.000000', '');
-    },
     modeHint() {
       let mode = this.modes.find(m => m.value === parseInt(this.data.generate_mode));
       if (mode) {
@@ -173,6 +170,17 @@ export default {
     }
   },
   methods: {
+    prepareDate(input) {
+      let date = '';
+      if (input) {
+        if (typeof input === 'object' && input.date) {
+          date = input.date;
+        } else if (typeof input === 'string') {
+          date = input;
+        }
+      }
+      return date.replace('.000000', '');
+    },
     cancelChanges() {
       // eslint-disable-next-line no-unused-vars
       let {fields, categories, attributes, conditions, ...data} = this.pricelist;
