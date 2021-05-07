@@ -1,7 +1,11 @@
 <?php
 
+require_once 'PricelistTouch.php';
+
 class ymCondition extends xPDOSimpleObject
 {
+    use PricelistTouch;
+
     public function getField($key, $validate = false)
     {
         return parent::getField($key === 'name' ? 'column' : $key, $validate);
@@ -11,4 +15,5 @@ class ymCondition extends xPDOSimpleObject
     {
         return parent::get($k === 'name' ? 'column' : $k, $format, $formatTemplate);
     }
+
 }

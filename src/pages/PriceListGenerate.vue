@@ -47,9 +47,14 @@
           v-model="data.generate_interval"
           type="number"
       ></v-text-field>
-      <v-checkbox v-model="data.active" label="Автоматически отслеживать изменения и формировать файл" hide-details
-                  dense
-                  class="mt-0 mb-2"/>
+      <v-checkbox
+          v-model="data.active"
+          :label="data.active
+          ? 'Прайс-лист активен (отслеживаются изменения настроек и связанных товаров)'
+          : 'Прайс-лист НЕ активен (активируйте после завершения настройки)'"
+          hide-details
+          class="mt-0 mb-2"
+      />
       <v-card-actions class="px-0">
         <v-btn small v-if="hasChanges" @click="cancelChanges" title="Отменить все изменения">
           <v-icon left>icon-undo</v-icon>
@@ -80,7 +85,7 @@
     </v-col>
     <v-col cols="12" md="6">
       <v-alert v-if="pricelist.need_generate" type="warning" dense>
-        Изменились товары. Файл нужно перегенерировать!
+        Изменились товары или настройки. Файл нужно перегенерировать!
       </v-alert>
       <v-alert v-if="prepareDate(pricelist.generated_on)" type="info" color="accent" dense>
         Предыдущий прайс-лист сформирован {{ prepareDate(pricelist.generated_on) }}
@@ -122,8 +127,8 @@ export default {
     modes: [
       {
         value: 0,
-        text: 'Только вручную в админ-панели (cron пропустит)',
-        hint: 'Поменяйте после завершения всех настроек'
+        text: 'Только вручную в админ-панели (ручной режим)',
+        hint: 'Если установлена крон задача - то этот прайслист туда не попадёт'
       },
       {
         value: 1,

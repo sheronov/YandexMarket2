@@ -30,6 +30,7 @@ use ymPricelist;
  * @property bool $need_generate
  * @property null|string $where //TODO: remove redundant field
  * @property null|array $properties
+ * @property ymPricelist $object
  */
 class Pricelist extends BaseObject
 {
@@ -78,6 +79,11 @@ class Pricelist extends BaseObject
     {
         $field = str_replace(['Pricelist.', 'pricelist.'], '', $field);
         return parent::get($field);
+    }
+
+    public function touch()
+    {
+        $this->object->touch();
     }
 
     public function getFields(bool $withAttributes = false): array
@@ -310,7 +316,13 @@ class Pricelist extends BaseObject
                 $q->groupby($column);
             }
         } else {
-            $q->groupby("`{$q->getClass()}`.`id`");
+            $pk = $this->modx->getPK($q->getClass());
+            if(!is_array($pk)) {
+                $pk = [$pk];
+            }
+            foreach($pk as $primaryKey) {
+                $q->groupby("`{$q->getClass()}`.`{$primaryKey}`");
+            }
         }
 
         return $q;
