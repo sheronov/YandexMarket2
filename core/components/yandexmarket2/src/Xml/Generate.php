@@ -34,14 +34,12 @@ class Generate extends PricelistWriter
         $this->pricelist->generated_on = new DateTimeImmutable();
         $this->pricelist->save(); //lock для долгого экспорта
 
-        $this->log('Найдено подходящих предложений: '.$this->pricelist->offersCount());
-
         $this->writeField($field);
 
         $this->xml->endDocument();
         $this->xml->flush();
 
-        $this->log('Файл успешно записан');
+        $this->log('Файл успешно сформирован');
 
         return $this->pricelist->save();
     }

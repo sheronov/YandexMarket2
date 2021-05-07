@@ -48,13 +48,17 @@ class Pricelist extends BaseObject
 
     /** @var null|Marketplace */
     protected $marketplace;
-
     protected $groupedBy = [];
+
+    protected $strictSql;
+    protected $debugMode;
 
     public function __construct(modX $modx, xPDOObject $object = null)
     {
         parent::__construct($modx, $object);
         $this->marketplace = Marketplace::getMarketPlace($this->type, $modx);
+        $this->strictSql = $modx->getOption('yandexmarket2_strict_sql', null, true);
+        $this->debugMode = $modx->getOption('yandexmarket2_debug_mode', null, true);
     }
 
     /**
@@ -237,6 +241,11 @@ class Pricelist extends BaseObject
             $query->limit($limit, $config['offset'] ?? 0);
         }
 
+        if ($this->modx->getOption('yandexmarket2_debug_mode')) {
+            $query->prepare();
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Offers SQL: '.$query->toSQL(true));
+        }
+
         $offers = $this->modx->getIterator($query->getClass(), $query);
         foreach ($offers as $offer) {
             yield new Offer($this->modx, $offer);
@@ -251,10 +260,6 @@ class Pricelist extends BaseObject
     public function offersCount(): int
     {
         $query = $this->queryForOffers();
-        if ($this->modx->getOption('yandexmarket2_debug_mode')) {
-            $query->prepare();
-            $this->modx->log(modX::LOG_LEVEL_INFO, 'Offers SQL: '.$query->toSQL(true));
-        }
         return $this->modx->getCount($query->getClass(), $query);
     }
 
@@ -300,8 +305,12 @@ class Pricelist extends BaseObject
 
         $this->addConditionsToQuery($q);
 
-        foreach ($this->groupedBy as $column) {
-            $q->groupby($column);
+        if ($this->strictSql) {
+            foreach ($this->groupedBy as $column) {
+                $q->groupby($column);
+            }
+        } else {
+            $q->groupby("`{$q->getClass()}`.`id`");
         }
 
         return $q;
@@ -379,7 +388,7 @@ class Pricelist extends BaseObject
                         $q->leftJoin('modTemplateVarResource', $alias,
                             "{$alias}.`contentid` = `{$q->getClass()}`.`id` and {$alias}.`tmplvarid` = {$tv->get('id')}");
                         $q->select("{$alias}.`value` as {$alias}");
-                        $this->groupedBy[] = "{$alias}.`value`";
+                        $this->addColumnsToGroupBy("{$alias}.`value`");
                     }
                     break;
                 case 'option';
@@ -397,7 +406,7 @@ class Pricelist extends BaseObject
                             $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as {$alias}");
                         } else {
                             $q->select("{$alias}.`value` as {$alias}");
-                            $this->groupedBy[] = "{$alias}.`value`";
+                            $this->addColumnsToGroupBy("{$alias}.`value`");
                         }
                     }
                     foreach (['size', 'color', 'tags'] as $key) {

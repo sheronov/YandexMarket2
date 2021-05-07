@@ -102,12 +102,12 @@ abstract class PricelistWriter
                 $this->writeValuableField($field, $pls);
                 break;
             case Field::TYPE_CATEGORIES:
-                $this->writeCategoriesField($field, $pls);
-                $this->log('Записал категории');
+                $categoriesCount = $this->writeCategoriesField($field, $pls);
+                $this->log(sprintf('Записано категорий: %d',$categoriesCount));
                 break;
             case Field::TYPE_OFFERS:
-                $this->writeOffersField($field, $pls);
-                $this->log('Записал товары');
+                $offersCount = $this->writeOffersField($field, $pls);
+                $this->log(sprintf('Записано товаров: %d', $offersCount));
                 break;
             case Field::TYPE_CURRENCIES:
                 $this->writeCurrenciesField($field, $pls);
@@ -341,8 +341,9 @@ abstract class PricelistWriter
      *
      * @throws Exception
      */
-    protected function writeCategoriesField(Field $field, array $pls = [])
+    protected function writeCategoriesField(Field $field, array $pls = []): int
     {
+        $count = 0;
         $this->xml->startElement($field->name);
         $this->writeAttributes($field->getAttributes(), $pls);
 
@@ -352,6 +353,7 @@ abstract class PricelistWriter
 
         if (($children = $field->getChildren()) && $categoryField = reset($children)) {
             foreach ($categories as $category) {
+                $count++;
                 $pls['category'] = $category;
                 //TODO: переделать здесь, иначе тьма запросов!
                 $resource = $category->getResource();
@@ -366,6 +368,8 @@ abstract class PricelistWriter
         }
 
         $this->xml->endElement();
+
+        return $count;
     }
 
     /**
@@ -374,8 +378,9 @@ abstract class PricelistWriter
      *
      * @throws Exception
      */
-    protected function writeOffersField(Field $field, array $pls = [])
+    protected function writeOffersField(Field $field, array $pls = []): int
     {
+        $count = 0;
         $this->xml->startElement($field->name);
         $this->writeAttributes($field->getAttributes(), $pls);
 
@@ -384,8 +389,10 @@ abstract class PricelistWriter
 
         if (($children = $field->getChildren()) && $offerField = reset($children)) {
             foreach ($offers as $offer) {
+                $count ++;
                 if ($contextKey !== $offer->get('context_key')) {
-                    $contextKey = $this->switchContext($offer->get('context_key'));
+                    $contextKey = $offer->get('context_key');
+                    $this->switchContext($contextKey);
                 }
                 $pls['offer'] = $offer;
                 $this->writeField($offerField, $pls);
@@ -394,15 +401,17 @@ abstract class PricelistWriter
             $this->errorLog("Пустой список товаров в поле \"{$field->name}\" (ID: {$field->id})");
         }
 
+        $this->switchContext($this->contextKey);
+
         $this->xml->endElement();
+        return $count;
     }
 
-    protected function switchContext(string $contextKey): string
+    protected function switchContext(string $contextKey)
     {
         $this->modx->switchContext($contextKey);
         $this->modx->setLogLevel($this->logLevel);
         $this->modx->setLogTarget($this->logTarget);
-        return $contextKey;
     }
 
     /**

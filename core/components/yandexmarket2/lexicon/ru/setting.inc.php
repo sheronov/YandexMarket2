@@ -4,4 +4,6 @@ $_lang = array_merge($_lang ?? [], [
     'area_yandexmarket2_main'              => 'Основные',
     'setting_yandexmarket2_debug_mode'      => 'Режим отладки',
     'setting_yandexmarket2_debug_mode_desc' => 'Покажет количество запросов и потребление памяти в XML',
+    'setting_yandexmarket2_strict_sql'      => 'Стогий режим SQL',
+    'setting_yandexmarket2_strict_sql_desc' => 'Если включён, то в групппировке участвуют все столбцы запроса, иначе только id',
 ]);
