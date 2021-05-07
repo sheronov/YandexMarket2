@@ -223,7 +223,7 @@ class Pricelist extends BaseObject
      *
      * @param  array  $config
      *
-     * @return Generator
+     * @return Generator|Offer[]
      */
     public function offersGenerator(array $config = []): Generator
     {
@@ -251,6 +251,10 @@ class Pricelist extends BaseObject
     public function offersCount(): int
     {
         $query = $this->queryForOffers();
+        if ($this->modx->getOption('yandexmarket2_debug_mode')) {
+            $query->prepare();
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Offers SQL: '.$query->toSQL(true));
+        }
         return $this->modx->getCount($query->getClass(), $query);
     }
 

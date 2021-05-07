@@ -31,29 +31,28 @@ abstract class PricelistWriter
     protected $errors  = [];
     protected $start   = 0;
     protected $preview = false;
-    protected $log     = [];
+
+    protected $logTarget;
+    protected $logLevel;
+    protected $contextKey;
 
     public function __construct(Pricelist $pricelist, modX $modx)
     {
-        $this->start = microtime(true);
-        $this->pricelist = $pricelist;
         $this->modx = $modx;
+        $this->start = microtime(true);
+        if ($modx->getOption('yandexmarket2_debug_mode')) {
+            $this->log('Включён режим отладки. Лог будет более подробный', false, modX::LOG_LEVEL_WARN);
+        }
+
+        $this->pricelist = $pricelist;
         $this->initializeJevix();
+        $this->contextKey = $this->modx->context->key;
+        $this->logTarget = $this->modx->getLogTarget();
+        $this->logLevel = $this->modx->getLogLevel();
         if (!$this->initializePdoTools()) {
-            $this->errorLog('Could not load pdoTools. Code handlers will be skipped');
+            $this->log('Не найден pdoTools. Fenom-обработчики будут пропущены', false, modX::LOG_LEVEL_WARN);
         }
         $this->xml = new XMLWriter();
-    }
-
-    /**
-     * @param  bool  $asString
-     * @param  string  $separator
-     *
-     * @return string|array
-     */
-    public function getLog(bool $asString = false, string $separator = PHP_EOL)
-    {
-        return $asString ? implode($separator, $this->log) : $this->log;
     }
 
     protected function writeHeader()
@@ -76,8 +75,7 @@ abstract class PricelistWriter
         try {
             $this->jevix = new XmlJevix();
         } catch (Exception $exception) {
-            $this->errorLog($exception->getMessage());
-            $this->errors[] = $exception->getMessage();
+            $this->errorLog('Jevix: '.$exception->getMessage());
         }
     }
 
@@ -105,9 +103,11 @@ abstract class PricelistWriter
                 break;
             case Field::TYPE_CATEGORIES:
                 $this->writeCategoriesField($field, $pls);
+                $this->log('Записал категории');
                 break;
             case Field::TYPE_OFFERS:
                 $this->writeOffersField($field, $pls);
+                $this->log('Записал товары');
                 break;
             case Field::TYPE_CURRENCIES:
                 $this->writeCurrenciesField($field, $pls);
@@ -137,7 +137,7 @@ abstract class PricelistWriter
                 }
                 break;
             default:
-                $this->errorLog("Undefined type {$field->type} for field {$field->name} ({$field->id})");
+                $this->errorLog("Неизвестный тип \"{$field->type}\" для поля \"{$field->name}\" (ID: {$field->id})");
         }
     }
 
@@ -165,7 +165,7 @@ abstract class PricelistWriter
         }
         if ($value === '' || $value === null) {
             //пустые значения пропускаются, даже если у них есть атрибуты
-            if ($this->preview && $field->properties['required'] ?? false) {
+            if ($this->preview && ($field->properties['required'] ?? false)) {
                 $this->writeComment("Пустое значение для обязательного элемента {$field->name}");
             }
             return;
@@ -177,6 +177,10 @@ abstract class PricelistWriter
 
         if ($field->type === Field::TYPE_CDATA_VALUE) {
             $this->xml->writeCdata($this->jevix ? $this->jevix->parse($value, $this->errors) : $value);
+            foreach ($this->errors as $i => $error) {
+                $this->errorLog('Jevix: '.$error);
+                unset($this->errors[$i]);
+            }
         } else {
             $this->xml->text($value);
         }
@@ -206,7 +210,7 @@ abstract class PricelistWriter
                 $value = $this->prepareValue($this->resolveColumn($attribute->value, $pls), $attribute->handler, $pls);
                 break;
             default:
-                $this->errorLog("Undefined type {$attribute->type} for attribute {$attribute->name} ({$attribute->id})");
+                $this->errorLog("Неизвестный тип \"{$attribute->type}\" для атрибута \"{$attribute->name}\" (ID: {$attribute->id})");
         }
 
         if ($value !== null && $value !== '') {
@@ -358,7 +362,7 @@ abstract class PricelistWriter
                 $this->writeField($categoryField, $pls);
             }
         } else {
-            $this->errorLog("Empty children for field {$field->name} ({$field->id})");
+            $this->errorLog("Пустой список категорий в поле \"{$field->name}\" (ID: {$field->id})");
         }
 
         $this->xml->endElement();
@@ -376,16 +380,29 @@ abstract class PricelistWriter
         $this->writeAttributes($field->getAttributes(), $pls);
 
         $offers = $this->pricelist->offersGenerator();
+        $contextKey = null;
+
         if (($children = $field->getChildren()) && $offerField = reset($children)) {
             foreach ($offers as $offer) {
+                if ($contextKey !== $offer->get('context_key')) {
+                    $contextKey = $this->switchContext($offer->get('context_key'));
+                }
                 $pls['offer'] = $offer;
                 $this->writeField($offerField, $pls);
             }
         } else {
-            $this->errorLog("Empty children for field {$field->name} ({$field->id})");
+            $this->errorLog("Пустой список товаров в поле \"{$field->name}\" (ID: {$field->id})");
         }
 
         $this->xml->endElement();
+    }
+
+    protected function switchContext(string $contextKey): string
+    {
+        $this->modx->switchContext($contextKey);
+        $this->modx->setLogLevel($this->logLevel);
+        $this->modx->setLogTarget($this->logTarget);
+        return $contextKey;
     }
 
     /**
@@ -407,18 +424,17 @@ abstract class PricelistWriter
         }
     }
 
-    protected function log(string $message, bool $withTime = true)
+    protected function log(string $message, bool $withTime = true, int $level = modX::LOG_LEVEL_INFO)
     {
         if ($withTime) {
             $message = sprintf("%2.4f s: %s", (microtime(true) - $this->start), $message);
         }
-        $this->log[] = $message;
+        $this->modx->log($level, $message, '', 'YandexMarket2');
     }
 
     protected function errorLog(string $message)
     {
-        $this->log($message, false);
-        $this->modx->log(modX::LOG_LEVEL_ERROR, '[YandexMarket2] '.$message);
+        $this->log($message, false, modX::LOG_LEVEL_ERROR);
     }
 
 }

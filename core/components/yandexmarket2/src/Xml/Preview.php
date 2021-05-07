@@ -75,6 +75,7 @@ class Preview extends PricelistWriter
             $offers = $this->pricelist->offersGenerator(['sortBy' => 'RAND()', 'limit' => 1]);
 
             foreach ($offers as $offer) {
+                $this->switchContext($offer->get('context_key'));
                 $this->writeField($offerField, ['offer' => $offer]);
             }
         }
