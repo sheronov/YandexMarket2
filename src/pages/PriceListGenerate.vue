@@ -208,7 +208,7 @@ export default {
       if (!this.pricelist.generated_on || confirm('Вы действительно хотите перегенерировать файл? Старый файл будет перезаписан')) {
         this.loading = true;
         this.log = '';
-        api.post('xml/generate', {id: this.pricelist.id, topic: this.topic})
+        api.post('xml/generate', {id: this.pricelist.id, topic: this.topic, clear: true})
             .then(({data}) => this.$emit('pricelist:updated', {...data.object}, false))
             .catch(error => console.error(error))
             .then(() => this.loading = false);
