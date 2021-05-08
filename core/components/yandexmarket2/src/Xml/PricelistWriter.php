@@ -103,7 +103,7 @@ abstract class PricelistWriter
                 break;
             case Field::TYPE_CATEGORIES:
                 $categoriesCount = $this->writeCategoriesField($field, $pls);
-                $this->log(sprintf('Записано категорий: %d',$categoriesCount));
+                $this->log(sprintf('Записано категорий: %d', $categoriesCount));
                 break;
             case Field::TYPE_OFFERS:
                 $offersCount = $this->writeOffersField($field, $pls);
@@ -347,15 +347,11 @@ abstract class PricelistWriter
         $this->xml->startElement($field->name);
         $this->writeAttributes($field->getAttributes(), $pls);
 
-        if (!$categories = $this->pricelist->getCategories()) {
-            $categories = $this->pricelist->suitableOffersCategoriesGenerator();
-        }
-
         if (($children = $field->getChildren()) && $categoryField = reset($children)) {
+            $categories = $this->pricelist->categoriesGenerator();
             foreach ($categories as $category) {
                 $count++;
                 $pls['category'] = $category;
-                //TODO: переделать здесь, иначе тьма запросов!
                 $resource = $category->getResource();
                 if ($resource && !$resource->parent) {
                     $resource->parent = null;
@@ -389,7 +385,7 @@ abstract class PricelistWriter
 
         if (($children = $field->getChildren()) && $offerField = reset($children)) {
             foreach ($offers as $offer) {
-                $count ++;
+                $count++;
                 if ($contextKey !== $offer->get('context_key')) {
                     $contextKey = $offer->get('context_key');
                     $this->switchContext($contextKey);
