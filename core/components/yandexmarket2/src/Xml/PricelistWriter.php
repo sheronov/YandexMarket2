@@ -380,7 +380,7 @@ abstract class PricelistWriter
         $this->xml->startElement($field->name);
         $this->writeAttributes($field->getAttributes(), $pls);
 
-        $offers = $this->pricelist->offersGenerator();
+        $offers = $this->pricelist->offersGenerator(['sortBy' => 'context_key']);
         $contextKey = null;
 
         if (($children = $field->getChildren()) && $offerField = reset($children)) {
