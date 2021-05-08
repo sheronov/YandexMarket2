@@ -5,6 +5,7 @@ namespace YandexMarket\Models;
 use DateTimeImmutable;
 use Exception;
 use Generator;
+use modResource;
 use modTemplateVar;
 use modX;
 use msOption;
@@ -14,6 +15,7 @@ use xPDOQuery;
 use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Service;
 use YandexMarket\Xml\Generate;
+use ymCategory;
 use ymFieldAttribute;
 use ymPricelist;
 
@@ -90,7 +92,9 @@ class Pricelist extends BaseObject
     {
         if (!isset($this->fields)) {
             $this->fields = [];
-            foreach ($this->object->getMany('Fields') as $ymField) {
+
+            $q = $this->modx->newQuery('ymField', ['pricelist_id' => $this->id])->sortby('rank');
+            foreach ($this->modx->getIterator('ymField', $q) as $ymField) {
                 $field = new Field($this->modx, $ymField);
                 $this->fields[$field->id] = $field;
             }
@@ -102,13 +106,6 @@ class Pricelist extends BaseObject
                     }
                 }
             }
-
-            uasort($this->fields, static function (Field $a, Field $b) {
-                if ($a->rank === $b->rank) {
-                    return 0;
-                }
-                return ($a->rank < $b->rank) ? -1 : 1;
-            });
 
             //It's reduces sql queries
             foreach ($this->fields as $field) {
@@ -196,9 +193,9 @@ class Pricelist extends BaseObject
         }
 
         $resources = $this->modx->getIterator($query->getClass(), $query);
-        /** @var \modResource $resource */
+        /** @var modResource $resource */
         foreach ($resources as $resource) {
-            $ymCategory = new \ymCategory($this->modx);
+            $ymCategory = new ymCategory($this->modx);
             $ymCategory->set('id', $resource->get('category_id') ?: $resource->id);
             $ymCategory->set('name', $resource->get('category_name') ?: $resource->pagetitle);
             $ymCategory->set('properties', $resource->get('category_properties') ?: []);
@@ -215,7 +212,8 @@ class Pricelist extends BaseObject
     {
         if (!isset($this->conditions)) {
             $this->conditions = [];
-            foreach ($this->object->getMany('Conditions') as $ymCondition) {
+            $q = $this->modx->newQuery('ymCondition', ['pricelist_id' => $this->id])->sortby('id');
+            foreach ($this->modx->getIterator('ymCondition', $q) as $ymCondition) {
                 $condition = new Condition($this->modx, $ymCondition);
                 $this->conditions[$condition->id] = $condition;
             }
@@ -658,9 +656,9 @@ class Pricelist extends BaseObject
      * Уведомляем прайслист, что ресурс обновился
      * TODO: можно добавить проверку на изменение категорий
      *
-     * @param  \modResource  $resource
+     * @param  modResource  $resource
      */
-    public function handleResourceChanges(\modResource $resource)
+    public function handleResourceChanges(modResource $resource)
     {
         $q = $this->offersQuery();
         $q->where([$q->getClass().'.id' => $resource->id]);

@@ -4,7 +4,6 @@ namespace YandexMarket\Models;
 
 use DateTimeImmutable;
 use ymField;
-use ymFieldAttribute;
 
 /**
  * @property int $id
@@ -98,9 +97,11 @@ class Field extends BaseObject
     public function getAttributes(): array
     {
         if (!isset($this->attributes)) {
-            $this->attributes = array_map(function (ymFieldAttribute $attribute) {
-                return new Attribute($this->modx, $attribute);
-            }, $this->object->getMany('Attributes'));
+            $this->attributes = [];
+            $q = $this->modx->newQuery('ymFieldAttribute', ['field_id' => $this->id])->sortby('id');
+            foreach ($this->modx->getIterator('ymFieldAttribute', $q) as $ymFieldAttribute) {
+                $this->attributes[] = new Attribute($this->modx, $ymFieldAttribute);
+            }
         }
         return $this->attributes;
     }
@@ -138,6 +139,7 @@ class Field extends BaseObject
 
     /**
      * @param  Field  $child
+     *
      * @return void
      */
     public function addChildren(Field $child)
@@ -151,9 +153,11 @@ class Field extends BaseObject
     public function getChildren(): array
     {
         if (!isset($this->children)) {
-            $this->children = array_map(function (ymField $field) {
-                return new Field($this->modx, $field);
-            }, $this->object->getMany('Children'));
+            $this->children = [];
+            $q = $this->modx->newQuery('ymField', ['parent' => $this->id])->sortby('rank');
+            foreach ($this->modx->getIterator('ymField', $q) as $ymField) {
+                $this->children[] = new Field($this->modx, $ymField);
+            }
         }
 
         return $this->children;

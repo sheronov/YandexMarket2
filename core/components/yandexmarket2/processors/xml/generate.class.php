@@ -31,15 +31,14 @@ class ymXmlGenerateProcessor extends modProcessor
     {
         try {
             $this->xmlGenerator->makeFile();
+        } catch (Exception $exception) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR, $exception->getMessage());
+        } finally {
             if ($debugInfo = Service::debugInfo($this->modx)) {
                 $this->modx->log(modX::LOG_LEVEL_INFO, print_r($debugInfo, true));
             }
             $this->modx->log(modX::LOG_LEVEL_INFO, 'COMPLETED');
-            return $this->success('', $this->pricelist->toArray());
-        } catch (Exception $exception) {
-            $this->modx->log(modX::LOG_LEVEL_ERROR, $exception->getMessage());
-            $this->modx->log(modX::LOG_LEVEL_INFO, 'COMPLETED');
-            return $this->failure($exception->getMessage(), $this->pricelist->toArray());
+            return $this->modx->error->process('', !isset($exception), $this->pricelist->toArray());
         }
     }
 }
