@@ -7,6 +7,10 @@ use modResource;
 use xPDOObject;
 use YandexMarket\Service;
 
+/**
+ * @package YandexMarket\Models
+ * @property \msProduct|modResource $object
+ */
 class Offer extends BaseObject
 {
     /** @var Pricelist */
@@ -51,8 +55,11 @@ class Offer extends BaseObject
                 case 'modresource':
                 case 'product':
                 case 'msproduct':
+                    $field = $key;
+                    break;
                 case 'data':
                 case 'msproductdata':
+                    // возможно лучше Data.
                     $field = $key;
                     break;
                 case 'vendor':
@@ -60,19 +67,27 @@ class Offer extends BaseObject
                     $field = 'vendor.'.$key;
                     break;
                 case 'tv':
-                    $field = 'tv-'.$key;
+                case 'modtemplatevar':
+                case 'modtemplatevarresource':
+                    $field = 'tv.'.$key;
                     break;
                 case 'option':
-                    $field = 'option-'.$key;
+                case 'msoption';
+                case 'msproductoption';
+                    $field = 'option.'.$key;
                     break;
                 case 'msgallery':
+                case 'msproductfile':
+                    $field = 'msgallery.'.$key;
+                    break;
                 case 'ms2gallery':
-                    $field = mb_strtolower($class).'-'.$key;
+                case 'msresourcefile':
+                    $field = 'ms2gallery.'.$key;
                     break;
             }
         }
 
-        return parent::get($field);
+        return $this->object->_fields[$field] ?? parent::get($field);
     }
 
     /***
@@ -82,7 +97,7 @@ class Offer extends BaseObject
      */
     public function getUrl(): string
     {
-        return $this->modx->makeUrl($this->object->get('id'), $this->object->get('context'), '', 'full');
+        return $this->modx->makeUrl($this->object->get('id'), $this->object->get('context_key'), '', 'full');
     }
 
     public function getPrice(): float

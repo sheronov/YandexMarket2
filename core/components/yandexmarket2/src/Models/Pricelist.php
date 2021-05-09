@@ -12,6 +12,7 @@ use msOption;
 use PDO;
 use xPDOObject;
 use xPDOQuery;
+use YandexMarket\Handlers\xPDOLazyIterator;
 use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Service;
 use YandexMarket\Xml\Generate;
@@ -54,6 +55,7 @@ class Pricelist extends BaseObject
     protected $groupedBy = [];
 
     protected $strictSql;
+    protected $reduceQueries;
     protected $debugMode;
 
     public function __construct(modX $modx, xPDOObject $object = null)
@@ -61,7 +63,8 @@ class Pricelist extends BaseObject
         parent::__construct($modx, $object);
         $this->marketplace = Marketplace::getMarketPlace($this->type, $modx);
         $this->strictSql = $modx->getOption('yandexmarket2_strict_sql', null, true);
-        $this->debugMode = $modx->getOption('yandexmarket2_debug_mode', null, true);
+        $this->reduceQueries = $modx->getOption('yandexmarket2_reduce_queries', null, false);
+        $this->debugMode = $modx->getOption('yandexmarket2_debug_mode', null, false);
     }
 
     /**
@@ -187,6 +190,8 @@ class Pricelist extends BaseObject
             $query->limit($limit, $config['offset'] ?? 0);
         }
 
+        // TODO: invoke event here
+
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $query->prepare();
             $this->modx->log(modX::LOG_LEVEL_INFO, 'Categories SQL: '.$query->toSQL(true));
@@ -276,26 +281,42 @@ class Pricelist extends BaseObject
      *
      * @param  array  $config
      *
-     * @return Generator|Offer[]
+     * @return Offer[]|Generator
      */
     public function offersGenerator(array $config = []): Generator
     {
         $query = $this->offersQuery();
 
         if ($sortBy = $config['sortBy'] ?? null) {
-            $query->sortby($sortBy, $config['sortDir'] ?? 'ASC');
+            if (!is_array($sortBy)) {
+                $sortBy = [$sortBy => $config['sortDir'] ?? 'ASC'];
+            }
+            foreach ($sortBy as $by => $dir) {
+                $query->sortby($by, $dir);
+            }
         }
 
         if ($limit = $config['limit'] ?? null) {
             $query->limit($limit, $config['offset'] ?? 0);
         }
 
+        // TODO: invoke event here beforeOffersQuery
+
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $query->prepare();
             $this->modx->log(modX::LOG_LEVEL_INFO, 'Offers SQL: '.$query->toSQL(true));
         }
 
-        $offers = $this->modx->getIterator($query->getClass(), $query);
+        if ($this->reduceQueries) {
+            $offers = new xPDOLazyIterator($this->modx, [
+                'criteria'  => $query,
+                'class'     => $query->getClass(),
+                'cacheFlag' => true,
+            ]);
+        } else {
+            $offers = $this->modx->getIterator($query->getClass(), $query);
+        }
+
         foreach ($offers as $offer) {
             yield new Offer($this->modx, $offer);
         }
@@ -360,13 +381,18 @@ class Pricelist extends BaseObject
 
         if (Service::hasMiniShop2()) {
             if (mb_strtolower($this->class) === mb_strtolower('msProduct')) {
-                $q->join('msProductData', 'Data');
+                $q->innerJoin('msProductData', 'Data', "`Data`.`id` = `{$q->getClass()}`.`id`");
             } else {
-                $q->leftJoin('msProductData', 'Data');
+                $q->leftJoin('msProductData', 'Data', "`Data`.`id` = `{$q->getClass()}`.`id`");
             }
-            $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true);
+            $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', 'data.', ['id'], true);
             $q->select($dataColumns);
             $this->addColumnsToGroupBy($dataColumns);
+
+            $q->leftJoin('msVendor', 'msVendor', "`Data`.`vendor` = `msVendor`.`id`");
+            $vendorColumns = $this->modx->getSelectColumns('msVendor', 'msVendor', 'vendor.');
+            $q->select($vendorColumns);
+            $this->addColumnsToGroupBy($vendorColumns);
         }
 
         if ($externalClassKeys = $this->getExternalClassKeys()) {
@@ -447,11 +473,12 @@ class Pricelist extends BaseObject
             switch (mb_strtolower($class)) {
                 case 'vendor':
                 case 'msvendor':
-                    $alias = $class;
-                    $q->leftJoin('msVendor', $alias, "`Data`.`vendor` = `$alias`.`id`");
-                    $columns = $this->modx->getSelectColumns('msVendor', $alias, $alias.'.', $keys, false);
-                    $q->select($columns);
-                    $this->addColumnsToGroupBy($columns);
+                    // сейчас всегда джойнятся
+                    // $alias = $class;
+                    // $q->leftJoin('msVendor', $alias, "`Data`.`vendor` = `$alias`.`id`");
+                    // $columns = $this->modx->getSelectColumns('msVendor', $alias, 'Vendor.', $keys, false);
+                    // $q->select($columns);
+                    // $this->addColumnsToGroupBy($columns);
                     break;
                 case 'tv':
                 case 'modtemplatevar':
@@ -463,7 +490,7 @@ class Pricelist extends BaseObject
                         $alias = "`{$class}-{$tv->name}`";
                         $q->leftJoin('modTemplateVarResource', $alias,
                             "{$alias}.`contentid` = `{$q->getClass()}`.`id` and {$alias}.`tmplvarid` = {$tv->get('id')}");
-                        $q->select("{$alias}.`value` as {$alias}");
+                        $q->select("{$alias}.`value` as `tv.{$tv->name}`");
                         $this->addColumnsToGroupBy("{$alias}.`value`");
                     }
                     break;
@@ -479,9 +506,9 @@ class Pricelist extends BaseObject
                             "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$option->get('key')}'");
                         if (!in_array("{$alias}.`value`", $this->groupedBy, true)
                             && in_array($option->get('type'), ['combo-multiple', 'combo-options'], true)) {
-                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as {$alias}");
+                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as `option.{$option->get('key')}`");
                         } else {
-                            $q->select("{$alias}.`value` as {$alias}");
+                            $q->select("{$alias}.`value` as `option.{$option->get('key')}`");
                             $this->addColumnsToGroupBy("{$alias}.`value`");
                         }
                     }
@@ -490,7 +517,7 @@ class Pricelist extends BaseObject
                             $alias = "`{$class}-{$key}`";
                             $q->leftJoin('msProductOption', $alias,
                                 "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$key}'");
-                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as {$alias}");
+                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as `option.{$key}`");
                         }
                     }
                     break;
@@ -500,7 +527,7 @@ class Pricelist extends BaseObject
                         $alias = "`$class-$key`";
                         $q->leftJoin('msProductFile', $alias,
                             "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0 and {$alias}.`type` = '{$key}'");
-                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as {$alias}"]);
+                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as `msgallery.{$key}`"]);
                     }
                     break;
                 case 'ms2gallery':
@@ -509,7 +536,7 @@ class Pricelist extends BaseObject
                         $alias = "`$class-$key`";
                         $q->leftJoin('msResourceFile', $alias,
                             "{$alias}.`resource_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0  and {$alias}.`type` = '{$key}'");
-                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as {$alias}"]);
+                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as `ms2gallery.{$key}`"]);
                     }
                     break;
                 case 'offer':
@@ -525,7 +552,8 @@ class Pricelist extends BaseObject
                 default:
                     // приджойнить выбранные столбцы других классов (с моделями что-то придумать нужно)
                     $this->modx->log(modX::LOG_LEVEL_ERROR,
-                        '[YandexMarket2] Unimplemented class '.$class.'. Please contact to the support.');
+                        'Неизвестный класс '.$class.'. Загрузите модель в своём плагине на событие ym2OnBeforeOffersQuery или обратитесь в поддержку.',
+                        '', 'YandexMarket2');
                     break;
             }
         }

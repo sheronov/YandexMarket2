@@ -240,7 +240,7 @@ abstract class PricelistWriter
                     break;
                 case 'offer':
                 default: //все остальные объекты проксируются в оффер, он уже сам разрулит
-                    if (($offer = $pls['offer'] ?? null) && $offer instanceof Offer) {
+                    if (($offer = $pls['offer'] ?? null) && ($offer instanceof Offer)) {
                         $offer->setPricelist($this->pricelist);
                         $value = $offer->get($column);
                     } else {
@@ -267,20 +267,28 @@ abstract class PricelistWriter
                 if (is_object($data)) {
                     if ($data instanceof Offer) {
                         $pls[$key] = $data->toArray();
+                        $pls[ucfirst($key)] = &$pls[$key];
                         $resource = $data->getResource();
                         $pls['resource'] = $resource->toArray();
+                        $pls['Resource'] = &$pls['resource'];
                         if ($resource instanceof msProduct) {
                             $pls['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
+                            $pls['vendor'] = $resource->loadVendor() ? $resource->loadVendor()->toArray() : null;
+                            $pls['Data'] = &$pls['data'];
+                            $pls['Vendor'] = &$pls['vendor'];
                         }
                         $pls['option'] = [];
                         $pls['tv'] = [];
                         foreach ($pls[$key] as $k => $val) {
-                            if (mb_strpos($k, 'option-') === 0) {
-                                $pls['option'][mb_substr($k, mb_strlen('option-'))] = $val;
-                            } elseif (mb_strpos($k, 'tv-') === 0) {
-                                $pls['tv'][mb_substr($k, mb_strlen('tv-'))] = $val;
+                            if (mb_strpos($k, 'option.') === 0) {
+                                $pls['option'][mb_substr($k, mb_strlen('option.'))] = $val;
+                            } elseif (mb_strpos($k, 'tv.') === 0) {
+                                $pls['tv'][mb_substr($k, mb_strlen('tv.'))] = $val;
                             }
                         }
+                        $pls['Option'] = &$pls['option'];
+                        $pls['TV'] = &$pls['tv'];
+                        $pls['Tv'] = &$pls['tv'];
                     } elseif (method_exists($data, 'toArray')) {
                         $pls[$key] = $data->toArray();
                     } else {
@@ -380,10 +388,16 @@ abstract class PricelistWriter
         $this->xml->startElement($field->name);
         $this->writeAttributes($field->getAttributes(), $pls);
 
-        $offers = $this->pricelist->offersGenerator(['sortBy' => 'context_key']);
-        $contextKey = null;
-
         if (($children = $field->getChildren()) && $offerField = reset($children)) {
+            $offers = $this->pricelist->offersGenerator([
+                'sortBy' => [
+                    "context_key = 'web'" => 'DESC',
+                    'context_key'         => 'ASC',
+                    'id'                  => 'ASC',
+                ]
+            ]);
+
+            $contextKey = null;
             foreach ($offers as $offer) {
                 $count++;
                 if ($contextKey !== $offer->get('context_key')) {
@@ -393,11 +407,13 @@ abstract class PricelistWriter
                 $pls['offer'] = $offer;
                 $this->writeField($offerField, $pls);
             }
+
+            if ($this->modx->context->key !== $this->contextKey) {
+                $this->switchContext($this->contextKey);
+            }
         } else {
             $this->errorLog("Пустой список товаров в поле \"{$field->name}\" (ID: {$field->id})");
         }
-
-        $this->switchContext($this->contextKey);
 
         $this->xml->endElement();
         return $count;

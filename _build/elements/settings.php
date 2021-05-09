@@ -11,4 +11,9 @@ return [
         'value' => true,
         'area'  => 'yandexmarket2_main',
     ],
+    'reduce_queries' => [
+        'xtype' => 'combo-boolean',
+        'value' => false,
+        'area' => 'yandexmarket2_main'
+    ]
 ];
