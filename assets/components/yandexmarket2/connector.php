@@ -1,5 +1,21 @@
 <?php
 
+// TODO: do not forget to remove it when building
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Authorization, Cookie, Content-Type, Accept, modAuth, modCookie');
+header('Access-Control-Allow-Methods: OPTIONS, HEAD, POST, GET, PUT, DELETE');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    die;
+}
+if (isset($_SERVER['HTTP_MODCOOKIE'])) {
+    $modCookie = array_map('trim', explode(';', $_SERVER['HTTP_MODCOOKIE']));
+    foreach ($modCookie as $cookie) {
+        list($key, $value) = explode('=', $cookie, 2);
+        $_COOKIE[$key] = $value;
+    }
+}
+// TODO: until here
+
 if (file_exists(dirname(__DIR__, 3).'/config.core.php')) {
     /** @noinspection PhpIncludeInspection */
     require_once dirname(__DIR__, 3).'/config.core.php';
