@@ -58,6 +58,12 @@ class Pricelist extends BaseObject
     protected $reduceQueries;
     protected $debugMode;
 
+    public $categoriesPluginPrepared = false;
+    public $offersPluginPrepared     = false;
+
+    public $categoriesCount = 0; //categoriesGenerator устанавливает количество
+    public $offersCount     = 0; //offersGenerator устанавливает количество
+
     public function __construct(modX $modx, xPDOObject $object = null)
     {
         parent::__construct($modx, $object);
@@ -152,7 +158,7 @@ class Pricelist extends BaseObject
         return null;
     }
 
-    protected function categoriesQuery()
+    protected function categoriesQuery(array $config = []): xPDOQuery
     {
         $q = $this->modx->newQuery('modResource');
         $q->select($this->modx->getSelectColumns('modResource', 'modResource'));
@@ -161,16 +167,46 @@ class Pricelist extends BaseObject
             $q->innerJoin('ymCategory', 'Category', 'Category.resource_id = modResource.id');
             $q->select($this->modx->getSelectColumns('ymCategory', 'Category', 'category_'));
             $q->where(['Category.pricelist_id' => $this->id]);
-        } else {
-            $offersQuery = $this->offersQuery();
+        }
+
+        $q = $this->assignConfigToQuery($q, $config);
+
+        $eventResponse = $this->modx->invokeEvent('ym2OnBeforeCategoriesQuery',
+            ['q' => &$q, 'query' => &$q, 'pricelist' => &$this]);
+        if (!empty($eventResponse)) {
+            $this->categoriesPluginPrepared = true;
+        }
+
+        if (empty($q->query['where'])) {
+            //если в категории ничего не выбрано и не добавлено условий через плагин,
+            $offersQuery = $this->offersQuery([], false);
             $offersQuery->query['columns'] = '';
             $offersQuery->query['groupby'] = '';
             $offersQuery->select('DISTINCT `'.$offersQuery->getClass().'`.`parent`');
             $offersQuery->prepare();
             $q->where('`modResource`.`id` IN ('.$offersQuery->toSQL(true).')');
+            $q->usesOffersQuery = true;
         }
 
         return $q;
+    }
+
+    protected function assignConfigToQuery(xPDOQuery $query, array $config = []): xPDOQuery
+    {
+        if ($sortBy = $config['sortBy'] ?? null) {
+            if (!is_array($sortBy)) {
+                $sortBy = [$sortBy => $config['sortDir'] ?? 'ASC'];
+            }
+            foreach ($sortBy as $by => $dir) {
+                $query->sortby($by, $dir);
+            }
+        }
+
+        if ($limit = $config['limit'] ?? null) {
+            $query->limit($limit, $config['offset'] ?? 0);
+        }
+
+        return $query;
     }
 
     /**
@@ -178,19 +214,18 @@ class Pricelist extends BaseObject
      *
      * @return Generator|Category[]
      */
-    public function categoriesGenerator(array $config = []): Generator
+    public function categoriesGenerator(array $config = [], bool $setCount = false): Generator
     {
-        $query = $this->categoriesQuery();
+        $query = $this->categoriesQuery($config);
 
-        if ($sortBy = $config['sortBy'] ?? null) {
-            $query->sortby($sortBy, $config['sortDir'] ?? 'ASC');
+        if ($setCount) {
+            $countQuery = clone $query;
+            $countQuery->query['limit'] = '';
+            $countQuery->query['offset'] = '';
+            $countQuery->query['orderby'] = [];
+            $countQuery->query['sortby'] = [];
+            $this->categoriesCount = $this->modx->getCount($countQuery->getClass(), $countQuery);
         }
-
-        if ($limit = $config['limit'] ?? null) {
-            $query->limit($limit, $config['offset'] ?? 0);
-        }
-
-        // TODO: invoke event here
 
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $query->prepare();
@@ -270,7 +305,7 @@ class Pricelist extends BaseObject
                 return $attribute->toArray();
             }, array_values($this->getFieldsAttributes(array_keys($this->getFields()))));
 
-            $data['categories'] = $this->selectedResourcesId();
+            $data['categories'] = $this->selectedCategoriesId();
         }
 
         return $data;
@@ -283,24 +318,18 @@ class Pricelist extends BaseObject
      *
      * @return Offer[]|Generator
      */
-    public function offersGenerator(array $config = []): Generator
+    public function offersGenerator(array $config = [], bool $setCount = false): Generator
     {
-        $query = $this->offersQuery();
+        $query = $this->offersQuery($config);
 
-        if ($sortBy = $config['sortBy'] ?? null) {
-            if (!is_array($sortBy)) {
-                $sortBy = [$sortBy => $config['sortDir'] ?? 'ASC'];
-            }
-            foreach ($sortBy as $by => $dir) {
-                $query->sortby($by, $dir);
-            }
+        if ($setCount) {
+            $countQuery = clone $query;
+            $countQuery->query['limit'] = '';
+            $countQuery->query['offset'] = '';
+            $countQuery->query['orderby'] = [];
+            $countQuery->query['sortby'] = [];
+            $this->offersCount = $this->modx->getCount($countQuery->getClass(), $countQuery);
         }
-
-        if ($limit = $config['limit'] ?? null) {
-            $query->limit($limit, $config['offset'] ?? 0);
-        }
-
-        // TODO: invoke event here beforeOffersQuery
 
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $query->prepare();
@@ -322,30 +351,11 @@ class Pricelist extends BaseObject
         }
     }
 
-    /**
-     * Удобный метод для получения количества предложений
-     *
-     * @return int
-     */
-    public function offersCount(): int
-    {
-        $query = $this->offersQuery();
-        return $this->modx->getCount($query->getClass(), $query);
-    }
-
-    protected function selectedResourcesQuery(): xPDOQuery
-    {
-        $query = $this->modx->newQuery('ymCategory');
-        $query->where(['pricelist_id' => $this->id]);
-        $query->select("DISTINCT `ymCategory`.`resource_id`");
-
-        return $query;
-    }
-
-    public function selectedResourcesId(): array
+    public function selectedCategoriesId(): array
     {
         $ids = [];
-        $q = $this->selectedResourcesQuery();
+        $q = $this->modx->newQuery('ymCategory', ['pricelist_id' => $this->id]);
+        $q->select("DISTINCT `ymCategory`.`resource_id`");
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
@@ -361,7 +371,7 @@ class Pricelist extends BaseObject
      *
      * @return xPDOQuery
      */
-    protected function offersQuery(): xPDOQuery
+    protected function offersQuery(array $config = [], bool $withCategoriesIn = true): xPDOQuery
     {
         $this->groupedBy = [];
         $q = $this->modx->newQuery($this->class);
@@ -373,10 +383,14 @@ class Pricelist extends BaseObject
 
         $this->addColumnsToGroupBy($offerColumns);
 
-        $categoriesQuery = $this->selectedResourcesQuery();
-        if ($this->modx->getCount($categoriesQuery->getClass(), $categoriesQuery)) {
-            $categoriesQuery->prepare();
-            $q->where("`{$q->getClass()}`.`parent` IN ({$categoriesQuery->toSQL(true)})");
+        if ($withCategoriesIn) {
+            $categoriesQuery = $this->categoriesQuery();
+            if (!($categoriesQuery->usesOffersQuery ?? false)) {
+                $categoriesQuery->query['columns'] = '';
+                $categoriesQuery->select("DISTINCT `modResource`.`id`");
+                $categoriesQuery->prepare();
+                $q->where("`{$q->getClass()}`.`parent` IN ({$categoriesQuery->toSQL(true)})");
+            }
         }
 
         if (Service::hasMiniShop2()) {
@@ -413,6 +427,14 @@ class Pricelist extends BaseObject
             foreach ($pk as $primaryKey) {
                 $q->groupby("`{$q->getClass()}`.`{$primaryKey}`");
             }
+        }
+
+        $q = $this->assignConfigToQuery($q, $config);
+
+        $eventResponse = $this->modx->invokeEvent('ym2OnBeforeOffersQuery',
+            ['q' => &$q, 'query' => &$q, 'pricelist' => &$this]);
+        if (!empty($eventResponse)) {
+            $this->offersPluginPrepared = true;
         }
 
         return $q;

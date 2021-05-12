@@ -23,6 +23,7 @@ return [
         'settings'  => false,
         'templates' => false,
         'widgets'   => false,
+        'events'    => false,
     ],
     // Which elements should be static by default
     'static'      => [
