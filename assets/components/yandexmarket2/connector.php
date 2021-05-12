@@ -25,6 +25,7 @@ $modx->getRequest();
 /** @var modConnectorRequest $request */
 $request = $modx->request;
 
+$_POST['register'] = 'yandexmarket2'; //for logging (do not forget provide topic param)
 $request->handleRequest([
     'processors_path' => $corePath.'processors/',
     'location'        => '',

@@ -241,9 +241,9 @@ export default {
     }
   },
   mounted() {
-    this.rerender = false;
-    this.$nextTick().then(() => this.rerender = true);
     this.code = !!this.field.handler;
+    this.rerender = false;
+    setTimeout(() => this.rerender = true);
   }
 }
 </script>

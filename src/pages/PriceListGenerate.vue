@@ -47,9 +47,14 @@
           v-model="data.generate_interval"
           type="number"
       ></v-text-field>
-      <v-checkbox v-model="data.active" label="Автоматически отслеживать изменения и формировать файл" hide-details
-                  dense
-                  class="mt-0 mb-2"/>
+      <v-checkbox
+          v-model="data.active"
+          :label="data.active
+          ? 'Прайс-лист активен (отслеживаются изменения настроек и связанных товаров)'
+          : 'Прайс-лист НЕ активен (активируйте после завершения настройки)'"
+          hide-details
+          class="mt-0 mb-2"
+      />
       <v-card-actions class="px-0">
         <v-btn small v-if="hasChanges" @click="cancelChanges" title="Отменить все изменения">
           <v-icon left>icon-undo</v-icon>
@@ -80,7 +85,7 @@
     </v-col>
     <v-col cols="12" md="6">
       <v-alert v-if="pricelist.need_generate" type="warning" dense>
-        Изменились товары. Файл нужно перегенерировать!
+        Изменились товары или настройки. Файл нужно перегенерировать!
       </v-alert>
       <v-alert v-if="prepareDate(pricelist.generated_on)" type="info" color="accent" dense>
         Предыдущий прайс-лист сформирован {{ prepareDate(pricelist.generated_on) }}
@@ -93,15 +98,10 @@
              title="Существующий файл будет перезаписан">
         Сформировать новый файл
       </v-btn>
-      <v-textarea
-          class="yandexmarket-textarea-log mt-3"
-          auto-grow
-          outlined
-          label="Лог выгрузки"
-          :value="log"
-          placeholder="Появится здесь после генерации файла"
-          disabled
-      />
+      <fieldset class="x-window modx-console zoom-in generation-log pa-2">
+        <legend class="px-2">Лог выгрузки</legend>
+        <div v-html="log" class="modx-console-text px-2"></div>
+      </fieldset>
     </v-col>
   </v-row>
 </template>
@@ -127,8 +127,8 @@ export default {
     modes: [
       {
         value: 0,
-        text: 'Только вручную в админ-панели (cron пропустит)',
-        hint: 'Поменяйте после завершения всех настроек'
+        text: 'Только вручную в админ-панели (ручной режим)',
+        hint: 'Если установлена крон задача - то этот прайслист туда не попадёт'
       },
       {
         value: 1,
@@ -167,6 +167,10 @@ export default {
       // eslint-disable-next-line no-unused-vars
       let {fields, categories, attributes, conditions, ...data} = this.pricelist;
       return JSON.stringify(this.data) !== JSON.stringify(data);
+    },
+    topic() {
+      // for logging
+      return `/generate-${this.pricelist.id}/`;
     }
   },
   methods: {
@@ -189,16 +193,26 @@ export default {
     saveChanges() {
       this.$emit('pricelist:updated', {...this.data});
     },
+    getLog() {
+      api.post('xml/log', {topic: this.topic})
+          .then(({data}) => {
+            if (data && data.data) {
+              this.log += data.data;
+            }
+            if (!data.complete) {
+              setTimeout(this.getLog, 1000);
+            }
+          });
+    },
     generateFile() {
       if (!this.pricelist.generated_on || confirm('Вы действительно хотите перегенерировать файл? Старый файл будет перезаписан')) {
         this.loading = true;
-        api.post('xml/generate', {id: this.pricelist.id})
-            .then(({data}) => {
-              this.log = data.message;
-              this.$emit('pricelist:updated', {...data.object}, false);
-            })
+        this.log = '';
+        api.post('xml/generate', {id: this.pricelist.id, topic: this.topic, clear: true})
+            .then(({data}) => this.$emit('pricelist:updated', {...data.object}, false))
             .catch(error => console.error(error))
             .then(() => this.loading = false);
+        setTimeout(this.getLog, 100);
       }
     }
   }
@@ -206,6 +220,24 @@ export default {
 </script>
 
 <style>
+.yandexmarket-pricelist-generate .generation-log {
+  border-color: #bdbdbd;
+  box-shadow: none;
+  border-width: 1px;
+  padding: 8px;
+  border-style: solid;
+}
+
+.yandexmarket-pricelist-generate .generation-log .modx-console-text {
+  line-height: 1.5;
+}
+
+/*noinspection CssUnusedSymbol*/
+.yandexmarket-pricelist-generate .generation-log .info {
+  background-color: inherit !important;
+  border-color: inherit !important;
+}
+
 .yandexmarket-pricelist-generate .yandexmarket-textarea-log textarea {
   font-family: monospace;
   color: #999 !important;

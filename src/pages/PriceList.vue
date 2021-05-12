@@ -110,6 +110,7 @@ export default {
               console.error(error);
               this.categoryRemoved(resourceId, false)
             })
+        this.pricelistUpdated({need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)}, false);
       }
     },
     categoryRemoved(resourceId, send = true) {
@@ -117,7 +118,8 @@ export default {
       if (send) {
         api.post('categories/remove', {pricelist_id: this.pricelist.id, resource_id: resourceId})
             .then(() => this.getXmlPreview())
-            .catch(error => console.error(error)) // можно добавлять назад, если по какой-то причине не удалился
+            .catch(error => console.error(error)); // можно добавлять назад, если по какой-то причине не удалился
+        this.pricelistUpdated({need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)}, false);
       }
     },
     fieldUpdated(field, created = false) {
@@ -127,12 +129,18 @@ export default {
       } else {
         fields.splice(fields.findIndex(item => item.id ? item.id === field.id : item.parent === field.parent), 1, field);
       }
-      this.pricelistUpdated({fields}, false);
+      this.pricelistUpdated({
+        fields,
+        need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)
+      }, false);
     },
     fieldDeleted(field) {
       let fields = this.pricelist.fields.slice();
       fields.splice(fields.findIndex(item => item.id === field.id), 1);
-      this.pricelistUpdated({fields: fields}, false);
+      this.pricelistUpdated({
+        fields: fields,
+        need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)
+      }, false);
     },
     attributeUpdated(attr, created = false) {
       let attributes = this.pricelist.attributes.slice();
@@ -141,12 +149,18 @@ export default {
       } else {
         attributes.splice(attributes.findIndex(item => item.id ? item.id === attr.id : item.field_id === attr.field_id), 1, attr);
       }
-      this.pricelistUpdated({attributes}, false);
+      this.pricelistUpdated({
+        attributes,
+        need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)
+      }, false);
     },
     attributeDeleted(attribute) {
       let attributes = this.pricelist.attributes.slice();
       attributes.splice(attributes.findIndex(item => item.id === attribute.id), 1);
-      this.pricelistUpdated({attributes}, false);
+      this.pricelistUpdated({
+        attributes,
+        need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)
+      }, false);
     },
     conditionUpdated(condition, created = false) {
       let conditions = this.pricelist.conditions.slice();
@@ -155,12 +169,18 @@ export default {
       } else {
         conditions.splice(conditions.findIndex(item => item.id ? item.id === condition.id : !item.id), 1, condition);
       }
-      this.pricelistUpdated({conditions}, false);
+      this.pricelistUpdated({
+        conditions,
+        need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)
+      }, false);
     },
     conditionDeleted(condition) {
       let conditions = this.pricelist.conditions.slice();
       conditions.splice(conditions.findIndex(item => item.id === condition.id), 1);
-      this.pricelistUpdated({conditions}, false);
+      this.pricelistUpdated({
+        conditions,
+        need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)
+      }, false);
     },
     togglePreview() {
       this.preview = !this.preview;
@@ -201,7 +221,10 @@ export default {
           })
     },
     pricelistUpdated(pricelist, save = true) {
-      this.pricelist = {...this.pricelist, ...pricelist};
+      this.pricelist = {
+        ...this.pricelist,
+        ...pricelist,
+      };
       if (save) {
         this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
         // eslint-disable-next-line no-unused-vars

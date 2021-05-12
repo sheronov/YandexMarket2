@@ -479,6 +479,34 @@ class YandexMarket2Package
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Packaged in '.count($objects).' Plugins');
     }
 
+    protected function events()
+    {
+        /** @noinspection PhpIncludeInspection */
+        $eventNames = include($this->config['elements'].'events.php');
+        if (!is_array($eventNames)) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR, 'Could not find events');
+            return;
+        }
+
+        $attributes = [
+            xPDOTransport::PRESERVE_KEYS => true,
+            xPDOTransport::UPDATE_OBJECT => !empty($this->config['update']['events']),
+            xPDOTransport::UNIQUE_KEY    => 'name',
+        ];
+
+        foreach ($eventNames as $eventName) {
+            /** @var modEvent $event */
+            $event = $this->modx->newObject('modEvent', [
+                'service'   => 6, //какая-то магическая константа
+                'groupname' => $this->config['name'],
+            ]);
+            $event->name = $eventName;
+            $vehicle = $this->builder->createVehicle($event, $attributes);
+            $this->builder->putVehicle($vehicle);
+        }
+        $this->modx->log(modX::LOG_LEVEL_INFO, 'Packaged in '.count($eventNames).' Events');
+    }
+
     /**
      * Add snippets
      */

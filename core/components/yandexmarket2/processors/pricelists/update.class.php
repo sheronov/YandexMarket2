@@ -25,6 +25,10 @@ class ymPricelistUpdateProcessor extends modObjectUpdateProcessor
             return $this->modx->lexicon('access_denied');
         }
 
+        if ($this->object->get('active') && $this->object->get('generated_on')) {
+            $this->object->set('need_generate', true);
+        }
+
         return true;
     }
 

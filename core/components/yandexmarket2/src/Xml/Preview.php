@@ -28,14 +28,40 @@ class Preview extends PricelistWriter
      */
     public function previewCategories(): string
     {
-        if ($total = $this->pricelist->offersCount()) {
-            $this->writeComment(' Подходящих предложений: '.$total.' ');
-        } else {
-            $this->writeComment(' Не найдено подходящих предложений ');
-        }
-
         if ($categoriesField = $this->pricelist->getFieldByType(Field::TYPE_CATEGORIES)) {
-            $this->writeField($categoriesField);
+            $categories = $this->pricelist->categoriesGenerator([], true);
+            $categories->valid(); //хак для запуска количества
+
+            if($this->pricelist->categoriesPluginPrepared) {
+                $this->writeComment( ' Могут использоваться условия из плагинов ');
+            }
+
+            $this->writeComment(' Подходящих категорий: '.$this->pricelist->categoriesCount.' ');
+
+            $offers = $this->pricelist->offersGenerator([],true);
+            $offers->valid();
+            if ($total = $this->pricelist->offersCount) {
+                $this->writeComment(' Подходящих предложений: '.$total.' ');
+            } else {
+                $this->writeComment(' Не найдено подходящих предложений ');
+            }
+
+            $this->xml->startElement($categoriesField->name);
+            $this->writeAttributes($categoriesField->getAttributes());
+
+            if ($categoryField = $categoriesField->getChildren()[0] ?? null) {
+                foreach ($categories as $category) {
+                    $resource = $category->getResource();
+                    if ($resource && !$resource->parent) {
+                        $resource->parent = null;
+                    }
+                    $this->writeField($categoryField, ['category' => $category, 'resource' => $resource]);
+                }
+            } else {
+                $this->writeComment(' Не найден элемент category ');
+            }
+
+            $this->xml->endElement();
         } else {
             $this->writeComment(' Не найден элемент categories ');
         }
@@ -66,15 +92,21 @@ class Preview extends PricelistWriter
         if (!$offerField = $this->pricelist->getFieldByType(Field::TYPE_OFFER)) {
             $this->writeComment(' Не найден элемент offer ');
         } else {
-            if ($total = $this->pricelist->offersCount()) {
+            $offers = $this->pricelist->offersGenerator(['sortBy' => 'RAND()', 'limit' => 1], true);
+            $offers->valid(); //хак для запуска количества
+
+            if($this->pricelist->offersPluginPrepared) {
+                $this->writeComment( ' Могут использоваться условия из плагинов ');
+            }
+
+            if ($total = $this->pricelist->offersCount) {
                 $this->writeComment(' Подходящих предложений: '.$total.' ');
             } else {
                 $this->writeComment(' Не найдено подходящих предложений ');
             }
 
-            $offers = $this->pricelist->offersGenerator(['sortBy' => 'RAND()', 'limit' => 1]);
-
             foreach ($offers as $offer) {
+                $this->switchContext($offer->get('context_key'));
                 $this->writeField($offerField, ['offer' => $offer]);
             }
         }

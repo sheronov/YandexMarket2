@@ -1,2 +1,8 @@
 <?php
-class ymField extends xPDOSimpleObject {}
+
+require_once 'PricelistTouch.php';
+
+class ymField extends xPDOSimpleObject
+{
+    use PricelistTouch;
+}

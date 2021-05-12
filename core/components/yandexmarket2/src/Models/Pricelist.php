@@ -3,15 +3,20 @@
 namespace YandexMarket\Models;
 
 use DateTimeImmutable;
+use Exception;
 use Generator;
+use modResource;
 use modTemplateVar;
 use modX;
 use msOption;
 use PDO;
 use xPDOObject;
 use xPDOQuery;
+use YandexMarket\Handlers\xPDOLazyIterator;
 use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Service;
+use YandexMarket\Xml\Generate;
+use ymCategory;
 use ymFieldAttribute;
 use ymPricelist;
 
@@ -30,6 +35,7 @@ use ymPricelist;
  * @property bool $need_generate
  * @property null|string $where //TODO: remove redundant field
  * @property null|array $properties
+ * @property ymPricelist $object
  */
 class Pricelist extends BaseObject
 {
@@ -37,8 +43,6 @@ class Pricelist extends BaseObject
     const GENERATE_MODE_AFTER_SAVE = 1;
     const GENERATE_MODE_CRON_ONLY  = 2;
 
-    /** @var Category[] */
-    protected $categories;
     /** @var Condition[] */
     protected $conditions;
     /** @var Field[] */
@@ -48,13 +52,25 @@ class Pricelist extends BaseObject
 
     /** @var null|Marketplace */
     protected $marketplace;
-
     protected $groupedBy = [];
+
+    protected $strictSql;
+    protected $reduceQueries;
+    protected $debugMode;
+
+    public $categoriesPluginPrepared = false;
+    public $offersPluginPrepared     = false;
+
+    public $categoriesCount = 0; //categoriesGenerator устанавливает количество
+    public $offersCount     = 0; //offersGenerator устанавливает количество
 
     public function __construct(modX $modx, xPDOObject $object = null)
     {
         parent::__construct($modx, $object);
         $this->marketplace = Marketplace::getMarketPlace($this->type, $modx);
+        $this->strictSql = $modx->getOption('yandexmarket2_strict_sql', null, true);
+        $this->reduceQueries = $modx->getOption('yandexmarket2_reduce_queries', null, false);
+        $this->debugMode = $modx->getOption('yandexmarket2_debug_mode', null, false);
     }
 
     /**
@@ -76,11 +92,18 @@ class Pricelist extends BaseObject
         return parent::get($field);
     }
 
+    public function touch()
+    {
+        $this->object->touch();
+    }
+
     public function getFields(bool $withAttributes = false): array
     {
         if (!isset($this->fields)) {
             $this->fields = [];
-            foreach ($this->object->getMany('Fields') as $ymField) {
+
+            $q = $this->modx->newQuery('ymField', ['pricelist_id' => $this->id])->sortby('rank');
+            foreach ($this->modx->getIterator('ymField', $q) as $ymField) {
                 $field = new Field($this->modx, $ymField);
                 $this->fields[$field->id] = $field;
             }
@@ -92,13 +115,6 @@ class Pricelist extends BaseObject
                     }
                 }
             }
-
-            uasort($this->fields, static function (Field $a, Field $b) {
-                if ($a->rank === $b->rank) {
-                    return 0;
-                }
-                return ($a->rank < $b->rank) ? -1 : 1;
-            });
 
             //It's reduces sql queries
             foreach ($this->fields as $field) {
@@ -142,23 +158,102 @@ class Pricelist extends BaseObject
         return null;
     }
 
-    public function getCategories(): array
+    protected function categoriesQuery(array $config = []): xPDOQuery
     {
-        if (!isset($this->categories)) {
-            $this->categories = [];
-            foreach ($this->object->getMany('Categories') as $ymCategory) {
-                $category = new Category($this->modx, $ymCategory);
-                $this->categories[$category->id] = $category;
+        $q = $this->modx->newQuery('modResource');
+        $q->select($this->modx->getSelectColumns('modResource', 'modResource'));
+
+        if ($this->modx->getCount('ymCategory', ['pricelist_id' => $this->id])) {
+            $q->innerJoin('ymCategory', 'Category', 'Category.resource_id = modResource.id');
+            $q->select($this->modx->getSelectColumns('ymCategory', 'Category', 'category_'));
+            $q->where(['Category.pricelist_id' => $this->id]);
+        }
+
+        $q = $this->assignConfigToQuery($q, $config);
+
+        $eventResponse = $this->modx->invokeEvent('ym2OnBeforeCategoriesQuery',
+            ['q' => &$q, 'query' => &$q, 'pricelist' => &$this]);
+        if (!empty($eventResponse)) {
+            $this->categoriesPluginPrepared = true;
+        }
+
+        if (empty($q->query['where'])) {
+            //если в категории ничего не выбрано и не добавлено условий через плагин,
+            $offersQuery = $this->offersQuery([], false);
+            $offersQuery->query['columns'] = '';
+            $offersQuery->query['groupby'] = '';
+            $offersQuery->select('DISTINCT `'.$offersQuery->getClass().'`.`parent`');
+            $offersQuery->prepare();
+            $q->where('`modResource`.`id` IN ('.$offersQuery->toSQL(true).')');
+            $q->usesOffersQuery = true;
+        }
+
+        return $q;
+    }
+
+    protected function assignConfigToQuery(xPDOQuery $query, array $config = []): xPDOQuery
+    {
+        if ($sortBy = $config['sortBy'] ?? null) {
+            if (!is_array($sortBy)) {
+                $sortBy = [$sortBy => $config['sortDir'] ?? 'ASC'];
+            }
+            foreach ($sortBy as $by => $dir) {
+                $query->sortby($by, $dir);
             }
         }
-        return $this->categories;
+
+        if ($limit = $config['limit'] ?? null) {
+            $query->limit($limit, $config['offset'] ?? 0);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param  array  $config
+     *
+     * @return Generator|Category[]
+     */
+    public function categoriesGenerator(array $config = [], bool $setCount = false): Generator
+    {
+        $query = $this->categoriesQuery($config);
+
+        if ($setCount) {
+            $countQuery = clone $query;
+            $countQuery->query['limit'] = '';
+            $countQuery->query['offset'] = '';
+            $countQuery->query['orderby'] = [];
+            $countQuery->query['sortby'] = [];
+            $this->categoriesCount = $this->modx->getCount($countQuery->getClass(), $countQuery);
+        }
+
+        if ($this->modx->getOption('yandexmarket2_debug_mode')) {
+            $query->prepare();
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Categories SQL: '.$query->toSQL(true));
+        }
+
+        $resources = $this->modx->getIterator($query->getClass(), $query);
+        /** @var modResource $resource */
+        foreach ($resources as $resource) {
+            $ymCategory = new ymCategory($this->modx);
+            $ymCategory->set('id', $resource->get('category_id') ?: $resource->id);
+            $ymCategory->set('name', $resource->get('category_name') ?: $resource->pagetitle);
+            $ymCategory->set('properties', $resource->get('category_properties') ?: []);
+            $ymCategory->set('resource_id', $resource->id);
+            $ymCategory->set('pricelist_id', $this->id);
+
+            $category = new Category($this->modx, $ymCategory);
+            $category->setResource($resource);
+            yield $category;
+        }
     }
 
     public function getConditions(): array
     {
         if (!isset($this->conditions)) {
             $this->conditions = [];
-            foreach ($this->object->getMany('Conditions') as $ymCondition) {
+            $q = $this->modx->newQuery('ymCondition', ['pricelist_id' => $this->id])->sortby('id');
+            foreach ($this->modx->getIterator('ymCondition', $q) as $ymCondition) {
                 $condition = new Condition($this->modx, $ymCondition);
                 $this->conditions[$condition->id] = $condition;
             }
@@ -210,9 +305,7 @@ class Pricelist extends BaseObject
                 return $attribute->toArray();
             }, array_values($this->getFieldsAttributes(array_keys($this->getFields()))));
 
-            $data['categories'] = array_map(static function (Category $categoryObject) {
-                return $categoryObject->resource_id;
-            }, array_values($this->getCategories()));
+            $data['categories'] = $this->selectedCategoriesId();
         }
 
         return $data;
@@ -223,35 +316,54 @@ class Pricelist extends BaseObject
      *
      * @param  array  $config
      *
-     * @return Generator
+     * @return Offer[]|Generator
      */
-    public function offersGenerator(array $config = []): Generator
+    public function offersGenerator(array $config = [], bool $setCount = false): Generator
     {
-        $query = $this->queryForOffers();
+        $query = $this->offersQuery($config);
 
-        if ($sortBy = $config['sortBy'] ?? null) {
-            $query->sortby($sortBy, $config['sortDir'] ?? 'ASC');
+        if ($setCount) {
+            $countQuery = clone $query;
+            $countQuery->query['limit'] = '';
+            $countQuery->query['offset'] = '';
+            $countQuery->query['orderby'] = [];
+            $countQuery->query['sortby'] = [];
+            $this->offersCount = $this->modx->getCount($countQuery->getClass(), $countQuery);
         }
 
-        if ($limit = $config['limit'] ?? null) {
-            $query->limit($limit, $config['offset'] ?? 0);
+        if ($this->modx->getOption('yandexmarket2_debug_mode')) {
+            $query->prepare();
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Offers SQL: '.$query->toSQL(true));
         }
 
-        $offers = $this->modx->getIterator($query->getClass(), $query);
+        if ($this->reduceQueries) {
+            $offers = new xPDOLazyIterator($this->modx, [
+                'criteria'  => $query,
+                'class'     => $query->getClass(),
+                'cacheFlag' => true,
+            ]);
+        } else {
+            $offers = $this->modx->getIterator($query->getClass(), $query);
+        }
+
         foreach ($offers as $offer) {
             yield new Offer($this->modx, $offer);
         }
     }
 
-    /**
-     * Удобный метод для получения количества предложений
-     *
-     * @return int
-     */
-    public function offersCount(): int
+    public function selectedCategoriesId(): array
     {
-        $query = $this->queryForOffers();
-        return $this->modx->getCount($query->getClass(), $query);
+        $ids = [];
+        $q = $this->modx->newQuery('ymCategory', ['pricelist_id' => $this->id]);
+        $q->select("DISTINCT `ymCategory`.`resource_id`");
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $ids = $q->stmt->fetchAll(PDO::FETCH_COLUMN);
+        }
+
+        return $ids;
     }
 
     /**
@@ -259,7 +371,7 @@ class Pricelist extends BaseObject
      *
      * @return xPDOQuery
      */
-    protected function queryForOffers(): xPDOQuery
+    protected function offersQuery(array $config = [], bool $withCategoriesIn = true): xPDOQuery
     {
         $this->groupedBy = [];
         $q = $this->modx->newQuery($this->class);
@@ -271,23 +383,30 @@ class Pricelist extends BaseObject
 
         $this->addColumnsToGroupBy($offerColumns);
 
-        if (!empty($this->getCategories())) {
-            $q->where([
-                'parent:IN' => array_map(static function (Category $category) {
-                    return $category->resource_id;
-                }, $this->getCategories())
-            ]);
+        if ($withCategoriesIn) {
+            $categoriesQuery = $this->categoriesQuery();
+            if (!($categoriesQuery->usesOffersQuery ?? false)) {
+                $categoriesQuery->query['columns'] = '';
+                $categoriesQuery->select("DISTINCT `modResource`.`id`");
+                $categoriesQuery->prepare();
+                $q->where("`{$q->getClass()}`.`parent` IN ({$categoriesQuery->toSQL(true)})");
+            }
         }
 
         if (Service::hasMiniShop2()) {
             if (mb_strtolower($this->class) === mb_strtolower('msProduct')) {
-                $q->join('msProductData', 'Data');
+                $q->innerJoin('msProductData', 'Data', "`Data`.`id` = `{$q->getClass()}`.`id`");
             } else {
-                $q->leftJoin('msProductData', 'Data');
+                $q->leftJoin('msProductData', 'Data', "`Data`.`id` = `{$q->getClass()}`.`id`");
             }
-            $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true);
+            $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', 'data.', ['id'], true);
             $q->select($dataColumns);
             $this->addColumnsToGroupBy($dataColumns);
+
+            $q->leftJoin('msVendor', 'msVendor', "`Data`.`vendor` = `msVendor`.`id`");
+            $vendorColumns = $this->modx->getSelectColumns('msVendor', 'msVendor', 'vendor.');
+            $q->select($vendorColumns);
+            $this->addColumnsToGroupBy($vendorColumns);
         }
 
         if ($externalClassKeys = $this->getExternalClassKeys()) {
@@ -296,8 +415,26 @@ class Pricelist extends BaseObject
 
         $this->addConditionsToQuery($q);
 
-        foreach ($this->groupedBy as $column) {
-            $q->groupby($column);
+        if ($this->strictSql) {
+            foreach ($this->groupedBy as $column) {
+                $q->groupby($column);
+            }
+        } else {
+            $pk = $this->modx->getPK($q->getClass());
+            if (!is_array($pk)) {
+                $pk = [$pk];
+            }
+            foreach ($pk as $primaryKey) {
+                $q->groupby("`{$q->getClass()}`.`{$primaryKey}`");
+            }
+        }
+
+        $q = $this->assignConfigToQuery($q, $config);
+
+        $eventResponse = $this->modx->invokeEvent('ym2OnBeforeOffersQuery',
+            ['q' => &$q, 'query' => &$q, 'pricelist' => &$this]);
+        if (!empty($eventResponse)) {
+            $this->offersPluginPrepared = true;
         }
 
         return $q;
@@ -358,11 +495,12 @@ class Pricelist extends BaseObject
             switch (mb_strtolower($class)) {
                 case 'vendor':
                 case 'msvendor':
-                    $alias = $class;
-                    $q->leftJoin('msVendor', $alias, "`Data`.`vendor` = `$alias`.`id`");
-                    $columns = $this->modx->getSelectColumns('msVendor', $alias, $alias.'.', $keys, false);
-                    $q->select($columns);
-                    $this->addColumnsToGroupBy($columns);
+                    // сейчас всегда джойнятся
+                    // $alias = $class;
+                    // $q->leftJoin('msVendor', $alias, "`Data`.`vendor` = `$alias`.`id`");
+                    // $columns = $this->modx->getSelectColumns('msVendor', $alias, 'Vendor.', $keys, false);
+                    // $q->select($columns);
+                    // $this->addColumnsToGroupBy($columns);
                     break;
                 case 'tv':
                 case 'modtemplatevar':
@@ -374,8 +512,8 @@ class Pricelist extends BaseObject
                         $alias = "`{$class}-{$tv->name}`";
                         $q->leftJoin('modTemplateVarResource', $alias,
                             "{$alias}.`contentid` = `{$q->getClass()}`.`id` and {$alias}.`tmplvarid` = {$tv->get('id')}");
-                        $q->select("{$alias}.`value` as {$alias}");
-                        $this->groupedBy[] = "{$alias}.`value`";
+                        $q->select("{$alias}.`value` as `tv.{$tv->name}`");
+                        $this->addColumnsToGroupBy("{$alias}.`value`");
                     }
                     break;
                 case 'option';
@@ -390,10 +528,10 @@ class Pricelist extends BaseObject
                             "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$option->get('key')}'");
                         if (!in_array("{$alias}.`value`", $this->groupedBy, true)
                             && in_array($option->get('type'), ['combo-multiple', 'combo-options'], true)) {
-                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as {$alias}");
+                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as `option.{$option->get('key')}`");
                         } else {
-                            $q->select("{$alias}.`value` as {$alias}");
-                            $this->groupedBy[] = "{$alias}.`value`";
+                            $q->select("{$alias}.`value` as `option.{$option->get('key')}`");
+                            $this->addColumnsToGroupBy("{$alias}.`value`");
                         }
                     }
                     foreach (['size', 'color', 'tags'] as $key) {
@@ -401,7 +539,7 @@ class Pricelist extends BaseObject
                             $alias = "`{$class}-{$key}`";
                             $q->leftJoin('msProductOption', $alias,
                                 "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$key}'");
-                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as {$alias}");
+                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as `option.{$key}`");
                         }
                     }
                     break;
@@ -411,7 +549,7 @@ class Pricelist extends BaseObject
                         $alias = "`$class-$key`";
                         $q->leftJoin('msProductFile', $alias,
                             "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0 and {$alias}.`type` = '{$key}'");
-                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as {$alias}"]);
+                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as `msgallery.{$key}`"]);
                     }
                     break;
                 case 'ms2gallery':
@@ -420,7 +558,7 @@ class Pricelist extends BaseObject
                         $alias = "`$class-$key`";
                         $q->leftJoin('msResourceFile', $alias,
                             "{$alias}.`resource_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0  and {$alias}.`type` = '{$key}'");
-                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as {$alias}"]);
+                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as `ms2gallery.{$key}`"]);
                     }
                     break;
                 case 'offer':
@@ -436,7 +574,8 @@ class Pricelist extends BaseObject
                 default:
                     // приджойнить выбранные столбцы других классов (с моделями что-то придумать нужно)
                     $this->modx->log(modX::LOG_LEVEL_ERROR,
-                        '[YandexMarket2] Unimplemented class '.$class.'. Please contact to the support.');
+                        'Неизвестный класс '.$class.'. Загрузите модель в своём плагине на событие ym2OnBeforeOffersQuery или обратитесь в поддержку.',
+                        '', 'YandexMarket2');
                     break;
             }
         }
@@ -564,39 +703,31 @@ class Pricelist extends BaseObject
     }
 
     /**
-     * Если же категории не выбраны - нужно вернуть все те, что в товарах участвуют (а не все сайта)
-     * Снова генератор для уменьшения памяти
+     * Уведомляем прайслист, что ресурс обновился
+     * TODO: можно добавить проверку на изменение категорий
      *
-     * @return Generator
+     * @param  modResource  $resource
      */
-    public function suitableOffersCategoriesGenerator(): Generator
+    public function handleResourceChanges(modResource $resource)
     {
-        $parentIds = [];
-        $q = $this->queryForOffers();
-        $q->query['columns'] = '';
-        $q->select('DISTINCT `'.$q->getClass().'`.`parent`');
-
-        if ($q->prepare() && $q->stmt->execute()) {
-            $parentIds = $q->stmt->fetchAll(PDO::FETCH_COLUMN);
+        $q = $this->offersQuery();
+        $q->where([$q->getClass().'.id' => $resource->id]);
+        if (!$this->modx->getCount($q->getClass(), $this->id)) {
+            //этого предложения нет в прайс-листе, пропускаем
+            return;
         }
 
-        if (!empty($parentIds)) {
-            $q = $this->modx->newQuery('modResource');
-            $q->sortby('parent');
-            $q->sortby('id');
-            $q->where(['id:IN' => $parentIds]);
-            foreach ($this->modx->getIterator('modResource', $q) as $resource) {
-                $category = new Category($this->modx);
-                $category->setResource($resource);
-                yield $category;
+        if ($this->generate_mode === self::GENERATE_MODE_AFTER_SAVE) {
+            $generator = new Generate($this, $this->modx);
+            try {
+                $generator->makeFile();
+            } catch (Exception $e) {
+                // не удалось сгенерировать файл
+                $this->modx->log(modX::LOG_LEVEL_ERROR, '[YandexMarket2] '.$e->getMessage());
+                $this->touch();
             }
+        } else {
+            $this->touch();
         }
-    }
-
-    public function isOfferFits(int $offerId): bool
-    {
-        $q = $this->queryForOffers();
-        $q->where(['id' => $offerId]);
-        return $this->modx->getCount($q->getClass(), $q) > 0;
     }
 }

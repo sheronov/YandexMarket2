@@ -1,7 +1,8 @@
 <?php
-/** @var modResource $resource */
-
 /** @var modX $modx */
+
+/** @var modResource $resource */
+/** @var array $scriptProperties */
 
 switch ($modx->event->name) {
     case 'OnDocFormSave':
@@ -20,24 +21,7 @@ switch ($modx->event->name) {
             require_once $corePath.'vendor/autoload.php';
 
             foreach ($modx->getIterator('ymPricelist', $q) as $ymPricelist) {
-                $pricelist = new \YandexMarket\Models\Pricelist($modx, $ymPricelist);
-                if (!$pricelist->isOfferFits($resource->id)) {
-                    continue;
-                }
-
-                if ($pricelist->generate_mode === \YandexMarket\Models\Pricelist::GENERATE_MODE_AFTER_SAVE) {
-                    $generator = new \YandexMarket\Xml\Generate($pricelist, $modx);
-                    try {
-                        $generator->makeFile();
-                    } catch (Exception $e) {
-                        $modx->log(modX::LOG_LEVEL_ERROR, '[YandexMarket2] '.$e->getMessage());
-                        $pricelist->need_generate = true;
-                        $pricelist->save();
-                    }
-                } else {
-                    $pricelist->need_generate = true;
-                    $pricelist->save();
-                }
+                (new \YandexMarket\Models\Pricelist($modx, $ymPricelist))->handleResourceChanges($resource);
             }
         }
         break;
