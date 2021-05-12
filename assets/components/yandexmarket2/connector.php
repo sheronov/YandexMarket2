@@ -6,6 +6,9 @@ if (file_exists(dirname(__DIR__, 3).'/config.core.php')) {
 } elseif (file_exists(dirname(__DIR__, 4).'/config.core.php')) {
     /** @noinspection PhpIncludeInspection */
     require_once dirname(__DIR__, 4).'/config.core.php';
+} elseif (file_exists(dirname(__DIR__, 5).'/config.core.php')) {
+    /** @noinspection PhpIncludeInspection */
+    require_once dirname(__DIR__, 5).'/config.core.php';
 } else {
     die;
 }
