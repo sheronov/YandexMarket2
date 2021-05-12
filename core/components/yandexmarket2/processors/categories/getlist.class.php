@@ -35,7 +35,7 @@ class ymCategoryGetListProcessor extends modResourceGetNodesProcessor
         $c = parent::getResourceQuery();
         $c->select([
             'childrenCount' => "(SELECT COUNT(*) FROM {$this->modx->getTableName('modResource')}"
-                                    ." WHERE parent = modResource.id and isfolder = 1)",
+                ." WHERE parent = modResource.id and isfolder = 1)",
         ]);
         $c->where(['isfolder' => true]);
 
@@ -68,6 +68,8 @@ class ymCategoryGetListProcessor extends modResourceGetNodesProcessor
     public function prepareResourceNode(modResource $resource): array
     {
         $node = parent::prepareResourceNode($resource);
+
+        unset($node['menu'], $node['allowDrop']);
 
         $node['selected'] = in_array($resource->id, $this->categories, true);
 
