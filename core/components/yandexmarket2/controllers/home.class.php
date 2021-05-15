@@ -9,6 +9,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
     protected $connectorUrl;
     protected $mgrAssetsUrl;
     // protected $lexicons;
+    protected $xmlLoaded;
 
     public function initialize()
     {
@@ -16,6 +17,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
             $this->modx->getOption('assets_url').'components/yandexmarket2/');
         $this->connectorUrl = $assetsUrl.'connector.php';
         $this->mgrAssetsUrl = $assetsUrl.'mgr/';
+        $this->xmlLoaded = class_exists('XmlWriter');
         // $this->lexicons = json_encode($this->modx->lexicon->fetch('yandexmarket2_', true));
 
         parent::initialize();
@@ -46,6 +48,7 @@ class YandexMarket2HomeManagerController extends modExtraManagerController
         window.ym2Config = {
             apiUrl: \"{$this->connectorUrl}\",
             modAuth: \"{$this->modx->user->getUserToken($this->modx->context->key)}\",
+            xmlLoaded: {$this->xmlLoaded}, 
             lang: {}
         }
         </script>");

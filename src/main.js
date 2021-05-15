@@ -34,6 +34,7 @@ window.onload = function () {
     let ym2Config = window.ym2Config || (process.env.NODE_ENV !== 'production' ? {
         modAuth: process.env.VUE_APP_MOD_AUTH || '',
         apiUrl: process.env.VUE_APP_API_URL || '',
+        xmlLoaded: true,
         lang: {}
     } : {});
 
@@ -43,6 +44,7 @@ window.onload = function () {
         axios.defaults.headers.common['modCookie'] = process.env.VUE_APP_COOKIE;
     }
 
+    Vue.prototype.$xmlLoaded = ym2Config.xmlLoaded;
     Vue.prototype.$t = (key) => ym2Config.lang && ym2Config.lang[key] || key;
 
     new Vue({
