@@ -82,6 +82,7 @@ export default {
     pricelist: null,
     type: 'yandexmarket',
     preview: true,
+    previewLoading: false,
     previewType: null,
     hasChanges: true,
     debug: null,
@@ -100,8 +101,8 @@ export default {
   },
   methods: {
     categoryAdded(resourceId, send = true) {
-      if (this.pricelist.categories.indexOf(resourceId) === -1) {
-        this.pricelist.categories.push(resourceId);
+      if (this.pricelist.categories.indexOf(parseInt(resourceId)) === -1) {
+        this.pricelist.categories.push(parseInt(resourceId));
       }
       if (send) {
         api.post('categories/create', {pricelist_id: this.pricelist.id, resource_id: resourceId})
@@ -198,13 +199,18 @@ export default {
       }
     },
     getXmlPreview() {
+      if (this.previewLoading) {
+        return;
+      }
+      this.previewLoading = true;
       this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
       api.post('xml/preview', {id: this.pricelist.id, method: this.previewType})
           .then(({data}) => {
             this.code = data.message;
             this.debug = data.object;
           })
-          .catch(error => console.log(error));
+          .catch(error => console.log(error))
+          .then(() => this.previewLoading = false);
     },
     loadPricelist() {
       api.post('pricelists/get', {id: this.id})

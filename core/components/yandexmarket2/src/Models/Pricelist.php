@@ -360,7 +360,9 @@ class Pricelist extends BaseObject
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
-            $ids = $q->stmt->fetchAll(PDO::FETCH_COLUMN);
+            $ids = array_map(function ($categoryId) {
+                return (int)$categoryId;
+            }, $q->stmt->fetchAll(PDO::FETCH_COLUMN));
         }
 
         return $ids;
