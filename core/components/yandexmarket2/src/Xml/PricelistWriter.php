@@ -35,6 +35,8 @@ abstract class PricelistWriter
     protected $logTarget;
     protected $logLevel;
     protected $contextKey;
+    protected $prepareArrays = false;
+    protected $arraysGlue    = ', ';
 
     public function __construct(Pricelist $pricelist, modX $modx)
     {
@@ -53,6 +55,8 @@ abstract class PricelistWriter
             $this->log('Не найден pdoTools. Fenom-обработчики будут пропущены', false, modX::LOG_LEVEL_WARN);
         }
         $this->xml = new XMLWriter();
+        $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
+        $this->arraysGlue = $this->modx->getOption('yandexmarket2_arrays_glue', null, ', ');
     }
 
     protected function writeHeader()
@@ -256,8 +260,13 @@ abstract class PricelistWriter
         return $value;
     }
 
-    protected function prepareValue(string $value = null, string $handler = null, array $pls = []): string
+    protected function prepareValue(string $input = null, string $handler = null, array $pls = []): string
     {
+        $value = $input;
+        if ($this->prepareArrays && mb_strpos($value, '||') !== false) {
+            // TODO: в общем PricelistService сделать учёт тех полей, что по типу попадают и джойнятся там же (через запоминающее свойство)
+            $value = explode('||', $value);
+        }
         if (!empty($handler) && $this->pdoTools) {
             if (mb_stripos(trim($handler), '@INLINE') !== 0) {
                 $handler = '@INLINE '.trim($handler);
@@ -318,7 +327,8 @@ abstract class PricelistWriter
                 ]
             ), true);
         }
-        return $value ?? '';
+
+        return is_array($value) ? implode($this->arraysGlue, $value) : ($value ?? '');
     }
 
     protected function initializePdoTools(): bool

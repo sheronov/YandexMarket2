@@ -7,5 +7,7 @@ $_lang = array_merge($_lang ?? [], [
     'setting_yandexmarket2_strict_sql'          => 'Строгий режим SQL',
     'setting_yandexmarket2_strict_sql_desc'     => 'Если включён, то в группировке участвуют все столбцы запроса, иначе только id',
     'setting_yandexmarket2_reduce_queries'      => 'Меньше SQL запросов',
-    'setting_yandexmarket2_reduce_queries_desc' => ' Если да, то используются экспериментальные способы запросов для товаров',
+    'setting_yandexmarket2_reduce_queries_desc' => 'Если да, то используются экспериментальные способы запросов для товаров',
+    'setting_yandexmarket2_prepare_arrays'      => 'Автоматически делать массивы из множественных значений',
+    'setting_yandexmarket2_prepare_arrays_desc' => 'Для Fenom обработки ТВ-полей (где разделитель ||) и опций ms2. Необработанные массивы будут через разделитель ", "',
 ]);

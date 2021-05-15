@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'debug_mode' => [
+    'debug_mode'     => [
         'xtype' => 'combo-boolean',
         'value' => false,
         'area'  => 'yandexmarket2_main',
     ],
-    'strict_sql' => [
+    'strict_sql'     => [
         'xtype' => 'combo-boolean',
         'value' => true,
         'area'  => 'yandexmarket2_main',
@@ -14,6 +14,11 @@ return [
     'reduce_queries' => [
         'xtype' => 'combo-boolean',
         'value' => false,
-        'area' => 'yandexmarket2_main'
+        'area'  => 'yandexmarket2_main'
+    ],
+    'prepare_arrays'    => [
+        'xtype' => 'combo-boolean',
+        'value' => false,
+        'area'  => 'yandexmarket2_main'
     ]
 ];
