@@ -182,9 +182,9 @@ class Pricelist extends BaseObject
             $offersQuery = $this->offersQuery([], false);
             $offersQuery->query['columns'] = '';
             $offersQuery->query['groupby'] = '';
-            $offersQuery->select('DISTINCT `'.$offersQuery->getClass().'`.`parent`');
+            $offersQuery->select(sprintf('DISTINCT `%s`.`parent`', $offersQuery->getAlias()));
             $offersQuery->prepare();
-            $q->where('`modResource`.`id` IN ('.$offersQuery->toSQL(true).')');
+            $q->where(sprintf('`modResource`.`id` IN (%s)', $offersQuery->toSQL(true)));
             $q->usesOffersQuery = true;
         }
 
@@ -367,7 +367,11 @@ class Pricelist extends BaseObject
     }
 
     /**
+     * TODO: перенести в отдельный класс
      * Подготовка запроса для получения товаров
+     *
+     * @param  array  $config
+     * @param  bool  $withCategoriesIn
      *
      * @return xPDOQuery
      */
@@ -376,7 +380,7 @@ class Pricelist extends BaseObject
         $this->groupedBy = [];
         $q = $this->modx->newQuery($this->class);
 
-        $offerColumns = $this->modx->getSelectColumns($q->getClass(), $q->getClass());
+        $offerColumns = $this->modx->getSelectColumns($q->getClass(), $q->getAlias());
         $q->select($offerColumns);
         // TODO: на будущее для интеграций пример SQL для получения постоянного ID предложения при группировках
         //CONCAT(`msProduct`.`id`, 'x', SUBSTR(md5(`option.color`.`value`), 1, 19 - LENGTH(`msProduct`.`id`))) as id
@@ -389,22 +393,20 @@ class Pricelist extends BaseObject
                 $categoriesQuery->query['columns'] = '';
                 $categoriesQuery->select("DISTINCT `modResource`.`id`");
                 $categoriesQuery->prepare();
-                $q->where("`{$q->getClass()}`.`parent` IN ({$categoriesQuery->toSQL(true)})");
+                $q->where(sprintf("`%s`.`parent` IN (%s)", $q->getAlias(), $categoriesQuery->toSQL(true)));
             }
         }
 
         if (Service::hasMiniShop2()) {
-            if (mb_strtolower($this->class) === mb_strtolower('msProduct')) {
-                $q->innerJoin('msProductData', 'Data', "`Data`.`id` = `{$q->getClass()}`.`id`");
-            } else {
-                $q->leftJoin('msProductData', 'Data', "`Data`.`id` = `{$q->getClass()}`.`id`");
-            }
+            $q->join('msProductData', 'Data',
+                mb_strtolower($this->class) === 'msproduct' ? xPDOQuery::SQL_JOIN_CROSS : xPDOQuery::SQL_JOIN_LEFT,
+                sprintf('`Data`.`id` = `%s`.`id`', $q->getAlias()));
             $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', 'data.', ['id'], true);
             $q->select($dataColumns);
             $this->addColumnsToGroupBy($dataColumns);
 
-            $q->leftJoin('msVendor', 'msVendor', "`Data`.`vendor` = `msVendor`.`id`");
-            $vendorColumns = $this->modx->getSelectColumns('msVendor', 'msVendor', 'vendor.');
+            $q->leftJoin('msVendor', 'Vendor', "`Data`.`vendor` = `Vendor`.`id`");
+            $vendorColumns = $this->modx->getSelectColumns('msVendor', 'Vendor', 'vendor.');
             $q->select($vendorColumns);
             $this->addColumnsToGroupBy($vendorColumns);
         }
@@ -425,7 +427,7 @@ class Pricelist extends BaseObject
                 $pk = [$pk];
             }
             foreach ($pk as $primaryKey) {
-                $q->groupby("`{$q->getClass()}`.`{$primaryKey}`");
+                $q->groupby(sprintf('`%s`.`%s`', $q->getAlias(), $primaryKey));
             }
         }
 
@@ -491,17 +493,10 @@ class Pricelist extends BaseObject
      */
     protected function joinExternalColumns(xPDOQuery $q, array $classKeys)
     {
+        // TODO: залоггировать каждый join
+        //TODO: подумать над тем, чтобы джойнить под одним псевдонимом, чтобы дваждый разнонаписанное ТВ не заджойнить
         foreach ($classKeys as $class => $keys) {
             switch (mb_strtolower($class)) {
-                case 'vendor':
-                case 'msvendor':
-                    // сейчас всегда джойнятся
-                    // $alias = $class;
-                    // $q->leftJoin('msVendor', $alias, "`Data`.`vendor` = `$alias`.`id`");
-                    // $columns = $this->modx->getSelectColumns('msVendor', $alias, 'Vendor.', $keys, false);
-                    // $q->select($columns);
-                    // $this->addColumnsToGroupBy($columns);
-                    break;
                 case 'tv':
                 case 'modtemplatevar':
                 case 'modtemplatevarresource':
@@ -509,11 +504,12 @@ class Pricelist extends BaseObject
                     $qTvs->where(['name:IN' => $keys]);
                     foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
                         /** @var modTemplateVar $tv */
-                        $alias = "`{$class}-{$tv->name}`";
-                        $q->leftJoin('modTemplateVarResource', $alias,
-                            "{$alias}.`contentid` = `{$q->getClass()}`.`id` and {$alias}.`tmplvarid` = {$tv->get('id')}");
-                        $q->select("{$alias}.`value` as `tv.{$tv->name}`");
-                        $this->addColumnsToGroupBy("{$alias}.`value`");
+                        $field = sprintf('%s-%s', mb_strtolower($class), $tv->name);
+                        $q->leftJoin('modTemplateVarResource', $field,
+                            sprintf('`%s`.`contentid` = `%s`.`id` AND `%s`.`tmplvarid` = %d',
+                                $field, $q->getAlias(), $field, $tv->id));
+                        $q->select(sprintf('`%s`.`value` as `tv.%s`', $field, $tv->name));
+                        $this->addColumnsToGroupBy(sprintf('`%s`.`value`', $field));
                     }
                     break;
                 case 'option';
@@ -523,42 +519,59 @@ class Pricelist extends BaseObject
                     $qOptions->where(['key:IN' => $keys]);
                     foreach ($this->modx->getIterator($qOptions->getClass(), $qOptions) as $option) {
                         /** @var msOption $option */
-                        $alias = "`{$class}-{$option->get('key')}`";
-                        $q->leftJoin('msProductOption', $alias,
-                            "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$option->get('key')}'");
-                        if (!in_array("{$alias}.`value`", $this->groupedBy, true)
+                        $field = sprintf('%s-%s', mb_strtolower($class), $option->get('key'));
+                        $q->leftJoin('msProductOption', $field,
+                            sprintf("`%s`.`product_id` = `%s`.`id` AND `%s`.`key` = '%s'",
+                                $field, $q->getAlias(), $field, $option->get('key')));
+                        if (!in_array(sprintf('`%s`.`value`', $field), $this->groupedBy, true)
                             && in_array($option->get('type'), ['combo-multiple', 'combo-options'], true)) {
-                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as `option.{$option->get('key')}`");
+                            $q->select(sprintf("GROUP_CONCAT(DISTINCT `%s`.`value` SEPARATOR '||') as `option.%s`",
+                                $field, $option->get('key')));
                         } else {
-                            $q->select("{$alias}.`value` as `option.{$option->get('key')}`");
-                            $this->addColumnsToGroupBy("{$alias}.`value`");
+                            $q->select(sprintf("`%s`.`value` as `option.%s`", $field, $option->get('key')));
+                            $this->addColumnsToGroupBy(sprintf('`%s`.`value`', $field));
                         }
                     }
                     foreach (['size', 'color', 'tags'] as $key) {
                         if (in_array($key, $keys, true)) {
-                            $alias = "`{$class}-{$key}`";
-                            $q->leftJoin('msProductOption', $alias,
-                                "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`key` = '{$key}'");
-                            $q->select("GROUP_CONCAT(DISTINCT {$alias}.`value` SEPARATOR '||') as `option.{$key}`");
+                            $field = sprintf('%s-%s', mb_strtolower($class), $key);
+                            $q->leftJoin('msProductOption', $field,
+                                sprintf("`%s`.`product_id` = `%s`.`id` AND `%s`.`key` = '%s'",
+                                    $field, $q->getAlias(), $field, $key));
+                            $q->select(sprintf("GROUP_CONCAT(DISTINCT `%s`.`value` SEPARATOR '||') as `option.%s`",
+                                $field, $key));
                         }
                     }
                     break;
                 case 'msgallery':
                 case 'msproductfile':
                     foreach ($keys as $key) {
-                        $alias = "`$class-$key`";
-                        $q->leftJoin('msProductFile', $alias,
-                            "{$alias}.`product_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0 and {$alias}.`type` = '{$key}'");
-                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as `msgallery.{$key}`"]);
+                        $field = sprintf('%s-%s', mb_strtolower($class), $key);
+                        $q->leftJoin('msProductFile', $field,
+                            sprintf("`%s`.`product_id` = `%s`.`id` and `%s`.`parent` = 0 and `%s`.`type` = '%s'",
+                                $field, $q->getAlias(), $field, $field, $key));
+                        $q->select([
+                            sprintf("SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT `%s`.`url` ORDER BY `%s`.`rank` ASC SEPARATOR '||'), '||', 10) as `msgallery.%s`",
+                                $field, $field, $key)
+                        ]);
                     }
                     break;
                 case 'ms2gallery':
                 case 'msresourcefile':
-                    foreach ($keys as $key) {
-                        $alias = "`$class-$key`";
-                        $q->leftJoin('msResourceFile', $alias,
-                            "{$alias}.`resource_id` = `{$q->getClass()}`.`id` and {$alias}.`parent` = 0  and {$alias}.`type` = '{$key}'");
-                        $q->select(["SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT {$alias}.`url` ORDER BY {$alias}.`rank` ASC SEPARATOR '||'), '||', 10) as `ms2gallery.{$key}`"]);
+                    if ($this->modx->addPackage('ms2gallery', MODX_CORE_PATH.'components/ms2gallery/model/')) {
+                        foreach ($keys as $key) {
+                            $field = sprintf('%s-%s', mb_strtolower($class), $key);
+                            $q->leftJoin('msResourceFile', $field,
+                                sprintf("`%s`.`resource_id` = `%s`.`id` and `%s`.`parent` = 0  and `%s`.`type` = '%s'",
+                                    $field, $q->getAlias(), $field, $field, $key));
+                            $q->select([
+                                sprintf("SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT `%s`.`url` ORDER BY `%s`.`rank` ASC SEPARATOR '||'), '||', 10) as `ms2gallery.%s`",
+                                    $field, $field, $key)
+                            ]);
+                        }
+                    } else {
+                        $this->modx->log(modX::LOG_LEVEL_ERROR,
+                            'Не удалось загрузить ms2Gallery. Проверьте настройки полей.', '', 'YandexMarket2');
                     }
                     break;
                 case 'offer':
@@ -569,6 +582,8 @@ class Pricelist extends BaseObject
                 case 'msproduct':
                 case 'msproductdata':
                 case 'pricelist':
+                case 'vendor':
+                case 'msvendor':
                     //стандартные классы, не нужно ничего присоединять здесь
                     break;
                 default:
@@ -599,17 +614,17 @@ class Pricelist extends BaseObject
                         case 'option';
                         case 'msoption';
                         case 'msproductoption';
-                            $column = mb_strtolower($class)."-{$key}.value";
+                            $column = sprintf('%s-%s.value', mb_strtolower($class), $key);
                             break;
                         case 'vendor':
                         case 'msvendor':
-                            $column = mb_strtolower($class).'.'.$key;
+                            $column = "Vendor.{$key}"; //по столбцам
                             break;
-                        case 'msgallery':
                         case 'ms2gallery':
-                        case 'msproductfile':
                         case 'msresourcefile':
-                            $column = mb_strtolower($class)."-{$key}.".($key === 'image' ? 'url' : $key);
+                        case 'msproductfile':
+                        case 'msgallery':
+                            $column = sprintf('%s-%s.%s', mb_strtolower($class), $key, $key === 'image' ? 'url' : $key);
                             break;
                         default:
                             $column = $condition->column;
@@ -619,6 +634,7 @@ class Pricelist extends BaseObject
                 }
 
                 if (!array_key_exists($condition->operator, Condition::OPERATOR_SYMBOLS)) {
+                    $this->modx->log(modX::LOG_LEVEL_WARN, 'Неизвестный оператор для условия', '', 'YandexMarket2');
                     continue;
                 }
 
@@ -711,7 +727,7 @@ class Pricelist extends BaseObject
     public function handleResourceChanges(modResource $resource)
     {
         $q = $this->offersQuery();
-        $q->where([$q->getClass().'.id' => $resource->id]);
+        $q->where([$q->getAlias().'.id' => $resource->id]);
         if (!$this->modx->getCount($q->getClass(), $this->id)) {
             //этого предложения нет в прайс-листе, пропускаем
             return;
