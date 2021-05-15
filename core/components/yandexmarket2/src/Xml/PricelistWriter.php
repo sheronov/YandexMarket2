@@ -435,7 +435,10 @@ abstract class PricelistWriter
     protected function writePicturesField(Field $field, array $pls = [])
     {
         if (($offer = $pls['offer'] ?? null) && $offer instanceof Offer && $pictures = $offer->get($field->value)) {
-            foreach (explode('||', $pictures) as $picture) {
+            foreach (explode('||', $pictures) as $i => $picture) {
+                if (($limit = $field->properties['count'] ?? 0) && $i >= $limit) {
+                    break;
+                }
                 $tmpField = new Field($this->modx);
                 $tmpField->name = $field->name;
                 $tmpField->value = Service::preparePath($this->modx, '{images_url}/'.$picture, true);
