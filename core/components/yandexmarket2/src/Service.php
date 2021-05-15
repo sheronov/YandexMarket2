@@ -181,6 +181,17 @@ class Service
             );
         }
 
+        /** Поля родителя вместе с дополнительными */
+        $list = array_merge($list,
+            $withHeaders ? [['header' => 'Поля родительской категории (стандартные)']] : [],
+            [['value' => 'Category.pagetitle', 'text' => 'Заголовок родительской категории']],
+            [['value' => 'Category.name', 'text' => 'Формат под любое другое поле родителя']],
+            $withDividers ? [['divider' => true]] : [],
+            $withHeaders ? [['header' => 'Дополнительные поля категории (TV)']] : [],
+            [['value' => 'CategoryTV.name', 'text' => 'Формат для ТВ-полей категории']],
+            $withDividers ? [['divider' => true]] : []
+        );
+
         if ($withDividers) {
             array_pop($list); //remove last divider
         }
@@ -360,7 +371,7 @@ class Service
         }
         $register->connect();
         $register->subscribe('/modstore/'.md5($key));
-        if ($res = $register->read(['poll_limit' => 1, 'remove_read' => false])) {
+        if ($register->read(['poll_limit' => 1, 'remove_read' => false])) {
             return;
         }
         $c = $this->modx->newQuery('transport.modTransportProvider', ['service_url:LIKE' => '%modstore%']);
@@ -390,7 +401,7 @@ class Service
                 $modxVersion = [];
             }
 
-            $response = $rest->post('stat', [
+            $rest->post('stat', [
                 'package'            => $key,
                 'version'            => str_replace('yandexmarket2-', '', $version),
                 'keys'               => $c->prepare() && $c->stmt->execute()

@@ -80,10 +80,22 @@ class Offer extends BaseObject
                 case 'msproductfile':
                     $field = 'msgallery.'.$key;
                     break;
+                case 'category':
+                case 'parent':
+                    $field = 'category.'.$key;
+                    break;
+                case 'categorytv':
+                case 'parenttv':
+                    $field = 'categorytv.'.$key;
+                    break;
                 case 'ms2gallery':
                 case 'msresourcefile':
                     $field = 'ms2gallery.'.$key;
                     break;
+                case 'setting':
+                    return $this->modx->getOption($field); //можно даже в полях указывать Setting.some_setting
+                case 'pricelist':
+                    return $this->pricelist->get($field);
             }
         }
 

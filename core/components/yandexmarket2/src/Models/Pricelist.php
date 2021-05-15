@@ -53,6 +53,7 @@ class Pricelist extends BaseObject
     /** @var null|Marketplace */
     protected $marketplace;
     protected $groupedBy = [];
+    protected $parentJoined = false;
 
     protected $strictSql;
     protected $reduceQueries;
@@ -499,6 +500,37 @@ class Pricelist extends BaseObject
         //TODO: подумать над тем, чтобы джойнить под одним псевдонимом, чтобы дваждый разнонаписанное ТВ не заджойнить
         foreach ($classKeys as $class => $keys) {
             switch (mb_strtolower($class)) {
+                case 'category':
+                case 'parent':
+                    if(!$this->parentJoined) {
+                        $q->leftJoin('modResource', 'Category',
+                            sprintf('`Category`.`id` = `%s`.`parent`', $q->getAlias()));
+                        $this->parentJoined = true;
+                    }
+                    foreach ($keys as $key) {
+                        $q->select(sprintf("`Category`.`%s` as `category.%s`", $key, $key));
+                        $this->addColumnsToGroupBy(sprintf('`Category`.`%s`', $key));
+                    }
+                    break;
+                case 'categorytv':
+                case 'parenttv':
+                    if(!$this->parentJoined) {
+                        $q->leftJoin('modResource', 'Category',
+                            sprintf('`Category`.`id` = `%s`.`parent`', $q->getAlias()));
+                        $this->parentJoined = true;
+                    }
+                    $qTvs = $this->modx->newQuery('modTemplateVar');
+                    $qTvs->where(['name:IN' => $keys]);
+                    foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
+                        /** @var modTemplateVar $tv */
+                        $field = sprintf('CategoryTV-%s', $tv->name);
+                        $q->leftJoin('modTemplateVarResource', $field,
+                            sprintf('`%s`.`contentid` = `Category`.`id` AND `%s`.`tmplvarid` = %d',
+                                $field, $field, $tv->id));
+                        $q->select(sprintf('`%s`.`value` as `categorytv.%s`', $field, $tv->name));
+                        $this->addColumnsToGroupBy(sprintf('`%s`.`value`', $field));
+                    }
+                    break;
                 case 'tv':
                 case 'modtemplatevar':
                 case 'modtemplatevarresource':

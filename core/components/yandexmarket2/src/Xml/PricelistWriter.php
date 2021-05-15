@@ -221,7 +221,12 @@ abstract class PricelistWriter
     protected function resolveColumn(string $column, array $pls = [])
     {
         $value = null;
-        if (isset($pls['offer']) || mb_strpos($column, '.') !== false) {
+
+        if (($offer = $pls['offer'] ?? null) && ($offer instanceof Offer)) {
+            //всё перехватываем для оффера
+            $offer->setPricelist($this->pricelist);
+            $value = $offer->get($column);
+        } elseif (mb_strpos($column, '.') !== false) {
             $object = explode('.', $column)[0];
             $field = explode('.', $column, 2)[1] ?? null;
             switch (mb_strtolower($object)) {
@@ -238,14 +243,8 @@ abstract class PricelistWriter
                         $value = $pls[$column] ?? null;
                     }
                     break;
-                case 'offer':
-                default: //все остальные объекты проксируются в оффер, он уже сам разрулит
-                    if (($offer = $pls['offer'] ?? null) && ($offer instanceof Offer)) {
-                        $offer->setPricelist($this->pricelist);
-                        $value = $offer->get($column);
-                    } else {
-                        $value = $pls[$column] ?? null;
-                    }
+                default:
+                    $value = $pls[$column] ?? null;
                     break;
             }
         } elseif (($resource = $pls['resource'] ?? null) && $resource instanceof modResource) {
@@ -279,13 +278,27 @@ abstract class PricelistWriter
                         }
                         $pls['option'] = [];
                         $pls['tv'] = [];
+                        $pls['category'] = [
+                            'id' => $pls['parent'] ?? 0
+                        ];
+                        $pls['categoryTV'] = [];
                         foreach ($pls[$key] as $k => $val) {
                             if (mb_strpos($k, 'option.') === 0) {
                                 $pls['option'][mb_substr($k, mb_strlen('option.'))] = $val;
                             } elseif (mb_strpos($k, 'tv.') === 0) {
                                 $pls['tv'][mb_substr($k, mb_strlen('tv.'))] = $val;
+                            } elseif (mb_strpos($k, 'category.') === 0) {
+                                $pls['category'][mb_substr($k, mb_strlen('category.'))] = $val;
+                            } elseif (mb_strpos($k, 'categorytv.') === 0) {
+                                $pls['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
                             }
                         }
+
+                        $pls['Parent'] = &$pls['category'];
+                        $pls['Category'] = &$pls['category'];
+                        $pls['ParentTV'] = &$pls['categoryTV'];
+                        $pls['CategoryTV'] = &$pls['categoryTV'];
+                        $pls['categorytv'] = &$pls['categoryTV'];
                         $pls['Option'] = &$pls['option'];
                         $pls['TV'] = &$pls['tv'];
                         $pls['Tv'] = &$pls['tv'];
@@ -390,10 +403,11 @@ abstract class PricelistWriter
 
         if (($children = $field->getChildren()) && $offerField = reset($children)) {
             $offers = $this->pricelist->offersGenerator([
+                // TODO: тут в pricelistService более правильную сортировку добавить с учётом query
                 'sortBy' => [
-                    "context_key = 'web'" => 'DESC',
-                    'context_key'         => 'ASC',
-                    'id'                  => 'ASC',
+                    // "context_key = 'web'" => 'DESC',
+                    // 'context_key'         => 'ASC',
+                    // 'id'                  => 'ASC',
                 ]
             ]);
 
