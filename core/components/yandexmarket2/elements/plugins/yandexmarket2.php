@@ -21,7 +21,8 @@ switch ($modx->event->name) {
             require_once $corePath.'vendor/autoload.php';
 
             foreach ($modx->getIterator('ymPricelist', $q) as $ymPricelist) {
-                (new \YandexMarket\Models\Pricelist($modx, $ymPricelist))->handleResourceChanges($resource);
+                $pricelist = new \YandexMarket\Models\Pricelist($modx, $ymPricelist);
+                (new \YandexMarket\QueryService($pricelist, $modx))->handleResourceChanges($resource);
             }
         }
         break;

@@ -28,7 +28,7 @@ class Field extends BaseObject
     const TYPE_CATEGORIES = 4; //категории
     const TYPE_OFFERS     = 5; //предложения
     const TYPE_OFFER      = 6; //предложение
-    const TYPE_CATEGORY   = 7; //предложение
+    const TYPE_CATEGORY   = 7; //категория
 
     const TYPE_PARENT      = 10; //обёртка без своего собственного значения
     const TYPE_VALUE       = 11; //значение из поля товара (подходит всегда)

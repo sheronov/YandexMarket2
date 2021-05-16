@@ -10,6 +10,7 @@ use ymCondition;
  * @property string $column
  * @property string $operator
  * @property null|string $value
+ * @property string $group
  * @property null|array $properties
  */
 class Condition extends BaseObject
@@ -29,6 +30,8 @@ class Condition extends BaseObject
         'is null'                  => 'IS NULL',
         'is not null'              => 'IS NOT NULL',
     ];
+    const GROUP_OFFER      = 'offer';
+    const GROUP_CATEGORY   = 'category';
 
     /** @var Pricelist */
     protected $pricelist;

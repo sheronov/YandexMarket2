@@ -8,7 +8,7 @@ return [
     ],
     'strict_sql'     => [
         'xtype' => 'combo-boolean',
-        'value' => true,
+        'value' => false,
         'area'  => 'yandexmarket2_main',
     ],
     'reduce_queries' => [

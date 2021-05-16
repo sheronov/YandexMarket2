@@ -3,15 +3,16 @@
 /** @noinspection PhpIncludeInspection */
 
 use YandexMarket\Models\Pricelist;
+use YandexMarket\QueryService;
 use YandexMarket\Service;
-use YandexMarket\Xml\Generate;
+use YandexMarket\Xml\FileGenerator;
 
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymXmlGenerateProcessor extends modProcessor
 {
 
-    /** @var Generate */
+    /** @var FileGenerator */
     protected $xmlGenerator;
     /** @var Pricelist */
     protected $pricelist;
@@ -22,7 +23,7 @@ class ymXmlGenerateProcessor extends modProcessor
             return $this->modx->lexicon('ym2_pricelist_err_nf', ['id' => $id]);
         }
 
-        $this->xmlGenerator = new Generate($this->pricelist, $this->modx);
+        $this->xmlGenerator = new FileGenerator(new QueryService($this->pricelist, $this->modx));
 
         return true;
     }

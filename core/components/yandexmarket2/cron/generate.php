@@ -1,7 +1,8 @@
 <?php
 
 use YandexMarket\Models\Pricelist;
-use YandexMarket\Xml\Generate;
+use YandexMarket\QueryService;
+use YandexMarket\Xml\FileGenerator;
 
 define('MODX_API_MODE', true);
 /** @noinspection PhpIncludeInspection */
@@ -51,7 +52,7 @@ foreach ($modx->getIterator('ymPricelist', $q) as $ymPricelist) {
         continue;
     }
 
-    $generator = new Generate($pricelist, $modx);
+    $generator = new FileGenerator(new QueryService($pricelist, $modx));
     try {
         $generator->makeFile();
         echo "Succeed generated file for pricelist id = {$pricelist->id} to {$pricelist->getFilePath(true)}\n";

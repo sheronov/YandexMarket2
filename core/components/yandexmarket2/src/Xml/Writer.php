@@ -14,10 +14,14 @@ use YandexMarket\Models\Category;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Offer;
 use YandexMarket\Models\Pricelist;
+use YandexMarket\QueryService;
 use YandexMarket\Service;
 
-abstract class PricelistWriter
+abstract class Writer
 {
+
+    protected $pricelistService;
+
     /** @var XMLWriter */
     protected $xml;
     /** @var XmlJevix */
@@ -38,15 +42,16 @@ abstract class PricelistWriter
     protected $prepareArrays = false;
     protected $arraysGlue    = ', ';
 
-    public function __construct(Pricelist $pricelist, modX $modx)
+    public function __construct(QueryService $pricelistService)
     {
-        $this->modx = $modx;
         $this->start = microtime(true);
-        if ($modx->getOption('yandexmarket2_debug_mode')) {
+        $this->pricelistService = $pricelistService;
+        $this->modx = $pricelistService->getModx();
+        $this->pricelist = $pricelistService->getPricelist();
+        if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $this->log('Включён режим отладки. Лог будет более подробный', false, modX::LOG_LEVEL_WARN);
         }
 
-        $this->pricelist = $pricelist;
         $this->initializeJevix();
         $this->contextKey = $this->modx->context->key;
         $this->logTarget = $this->modx->getLogTarget();
@@ -379,7 +384,7 @@ abstract class PricelistWriter
         $this->writeAttributes($field->getAttributes(), $pls);
 
         if (($children = $field->getChildren()) && $categoryField = reset($children)) {
-            $categories = $this->pricelist->categoriesGenerator();
+            $categories = $this->pricelistService->categoriesGenerator();
             foreach ($categories as $category) {
                 $count++;
                 $pls['category'] = $category;
@@ -412,14 +417,9 @@ abstract class PricelistWriter
         $this->writeAttributes($field->getAttributes(), $pls);
 
         if (($children = $field->getChildren()) && $offerField = reset($children)) {
-            $offers = $this->pricelist->offersGenerator([
-                // TODO: тут в pricelistService более правильную сортировку добавить с учётом query
-                'sortBy' => [
-                    // "context_key = 'web'" => 'DESC',
-                    // 'context_key'         => 'ASC',
-                    // 'id'                  => 'ASC',
-                ]
-            ]);
+            $offersAlias = $this->pricelistService->getOffersAlias();
+            $this->pricelistService->setOffersOrder(sprintf('`%s`.`id`', $offersAlias), 'ASC');
+            $offers = $this->pricelistService->offersGenerator();
 
             $contextKey = null;
             foreach ($offers as $offer) {

@@ -4,17 +4,16 @@ namespace YandexMarket\Xml;
 
 use DateTimeImmutable;
 use Exception;
-use modX;
 use RuntimeException;
 use YandexMarket\Models\Field;
-use YandexMarket\Models\Pricelist;
+use YandexMarket\QueryService;
 
-class Generate extends PricelistWriter
+class FileGenerator extends Writer
 {
 
-    public function __construct(Pricelist $pricelist, modX $modX)
+    public function __construct(QueryService $pricelistService)
     {
-        parent::__construct($pricelist, $modX);
+        parent::__construct($pricelistService);
 
         $this->openFile();
         $this->writeHeader();
@@ -26,7 +25,7 @@ class Generate extends PricelistWriter
      */
     public function makeFile(): bool
     {
-        if (!$field = $this->pricelist->getFieldByType(Field::TYPE_ROOT)) {
+        if (!$field = $this->pricelistService->getFieldByType(Field::TYPE_ROOT)) {
             throw new RuntimeException('Could not find the ROOT element (type='.Field::TYPE_ROOT.')');
         }
 

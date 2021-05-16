@@ -1,16 +1,17 @@
 <?php
 
 use YandexMarket\Models\Pricelist;
+use YandexMarket\QueryService;
 use YandexMarket\Service;
-use YandexMarket\Xml\Preview;
+use YandexMarket\Xml\Previewer;
 
 /** @noinspection PhpIncludeInspection */
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymXmlPreviewProcessor extends modProcessor
 {
-    /** @var Preview */
-    protected $xml;
+    /** @var Previewer */
+    protected $xmlPreviewer;
 
     public function initialize()
     {
@@ -18,7 +19,7 @@ class ymXmlPreviewProcessor extends modProcessor
             return $this->modx->lexicon('ym2_pricelist_err_nf', ['id' => $id]);
         }
         /** @var Pricelist $pricelist */
-        $this->xml = new Preview($pricelist, $this->modx);
+        $this->xmlPreviewer = new Previewer(new QueryService($pricelist, $this->modx));
 
         return true;
     }
@@ -26,14 +27,14 @@ class ymXmlPreviewProcessor extends modProcessor
     public function process()
     {
         switch ($this->getProperty('method')) {
-            case Preview::PREVIEW_CATEGORIES:
-                $xml = $this->xml->previewCategories();
+            case Previewer::PREVIEW_CATEGORIES:
+                $xml = $this->xmlPreviewer->previewCategories();
                 break;
-            case Preview::PREVIEW_OFFERS:
-                $xml = $this->xml->previewOffer();
+            case Previewer::PREVIEW_OFFERS:
+                $xml = $this->xmlPreviewer->previewOffer();
                 break;
-            case Preview::PREVIEW_SHOP:
-                $xml = $this->xml->previewShop();
+            case Previewer::PREVIEW_SHOP:
+                $xml = $this->xmlPreviewer->previewShop();
                 break;
             default:
                 return $this->failure($this->modx->lexicon('ym2_pricelist_err_method'));

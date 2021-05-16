@@ -31,6 +31,10 @@ abstract class BaseObject
         $this->modx = $modx;
     }
 
+    /**
+     * Класс xPDO объекта, который будем оборачивать
+     * @return string
+     */
     abstract public static function getObjectClass(): string;
 
     /**

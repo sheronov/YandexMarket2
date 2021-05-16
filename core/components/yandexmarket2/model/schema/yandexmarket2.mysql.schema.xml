@@ -2,7 +2,7 @@
 <model package="yandexmarket2" baseClass="xPDOObject" platform="mysql" defaultEngine="InnoDB" version="1.1">
     <object class="ymPricelist" table="yandexmarket_pricelists" extends="xPDOSimpleObject">
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="false"/>
-        <field key="file" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="file" dbtype="varchar" precision="191" phptype="string" null="false"/>
         <field key="type" dbtype="varchar" precision="255" phptype="string" null="false"/>
         <field key="class" dbtype="varchar" precision="255" phptype="string" null="false" default="modResource"/>
         <!-- в зависимости от типа будут формировать поля по умолчанию -->
@@ -15,7 +15,6 @@
         <field key="generate_interval" dbtype="int" phptype="integer" null="true"/>
         <field key="need_generate" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0"/>
 
-        <field key="where" dbtype="text" phptype="json" null="true"/>
         <field key="properties" dbtype="text" phptype="json" null="true"/>
         <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="1"/>
 
@@ -36,6 +35,7 @@
         <field key="operator" dbtype="varchar" precision="255" phptype="string" null="false"/>
         <field key="value" dbtype="text" phptype="string" null="true"/>
         <field key="properties" dbtype="text" phptype="json" null="true"/>
+        <field key="group" dbtype="varchar" precision="255" phptype="string" default="offer"/>
 
         <aggregate alias="Pricelist" class="ymPricelist" local="pricelist_id" foreign="id" cardinality="one"
                    owner="foreign"/>
@@ -83,7 +83,7 @@
     </object>
 
     <object class="ymFieldAttribute" table="yandexmarket_field_attributes" extends="xPDOSimpleObject">
-        <field key="name" dbtype="varchar" phptype="string" precision="255" null="false"/>
+        <field key="name" dbtype="varchar" phptype="string" precision="191" null="false"/>
         <field key="field_id" dbtype="int" phptype="integer" null="false"/>
         <field key="type" dbtype="int" phptype="integer" null="false" default="0"/>
         <field key="value" dbtype="varchar" precision="255" phptype="string" null="true"/>

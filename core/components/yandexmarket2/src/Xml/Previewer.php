@@ -3,11 +3,10 @@
 namespace YandexMarket\Xml;
 
 use Exception;
-use modX;
 use YandexMarket\Models\Field;
-use YandexMarket\Models\Pricelist;
+use YandexMarket\QueryService;
 
-class Preview extends PricelistWriter
+class Previewer extends Writer
 {
     const PREVIEW_CATEGORIES = 'categories';
     const PREVIEW_OFFERS     = 'offers';
@@ -15,9 +14,9 @@ class Preview extends PricelistWriter
 
     protected $preview = true;
 
-    public function __construct(Pricelist $pricelist, modX $modx)
+    public function __construct(QueryService $pricelistService)
     {
-        parent::__construct($pricelist, $modx);
+        parent::__construct($pricelistService);
         $this->xml->openMemory();
         $this->writeHeader();
     }
@@ -28,28 +27,26 @@ class Preview extends PricelistWriter
      */
     public function previewCategories(): string
     {
-        if ($categoriesField = $this->pricelist->getFieldByType(Field::TYPE_CATEGORIES)) {
-            $categories = $this->pricelist->categoriesGenerator([], true);
-            $categories->valid(); //хак для запуска количества
+        if ($categoriesField = $this->pricelistService->getFieldByType(Field::TYPE_CATEGORIES)) {
+            $categoriesCount = $this->pricelistService->getCategoriesCount();
+            $this->writeComment(' Подходящих категорий: '.$categoriesCount.' ');
 
-            if($this->pricelist->categoriesPluginPrepared) {
-                $this->writeComment( ' Могут использоваться условия из плагинов ');
+            if ($this->pricelistService->isCategoriesPluginPrepared()) {
+                $this->writeComment(' Возможно используются условия для категорий из плагинов ');
             }
 
-            $this->writeComment(' Подходящих категорий: '.$this->pricelist->categoriesCount.' ');
-
-            $offers = $this->pricelist->offersGenerator([],true);
-            $offers->valid();
-            if ($total = $this->pricelist->offersCount) {
-                $this->writeComment(' Подходящих предложений: '.$total.' ');
-            } else {
+            if (!$offersCount = $this->pricelistService->getOffersCount()) {
                 $this->writeComment(' Не найдено подходящих предложений ');
+                return $this->getPreviewXml();
             }
+
+            $this->writeComment(' Подходящих предложений: '.$offersCount.' ');
 
             $this->xml->startElement($categoriesField->name);
             $this->writeAttributes($categoriesField->getAttributes());
 
             if ($categoryField = $categoriesField->getChildren()[0] ?? null) {
+                $categories = $this->pricelistService->categoriesGenerator();
                 foreach ($categories as $category) {
                     $resource = $category->getResource();
                     if ($resource && !$resource->parent) {
@@ -75,7 +72,7 @@ class Preview extends PricelistWriter
      */
     public function previewShop(): string
     {
-        if ($shopField = $this->pricelist->getFieldByType(Field::TYPE_SHOP)) {
+        if ($shopField = $this->pricelistService->getFieldByType(Field::TYPE_SHOP)) {
             $this->writeField($shopField, [], [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS,]);
         } else {
             $this->writeComment(' Не найден элемент shop ');
@@ -89,22 +86,23 @@ class Preview extends PricelistWriter
      */
     public function previewOffer(): string
     {
-        if (!$offerField = $this->pricelist->getFieldByType(Field::TYPE_OFFER)) {
+        if (!$offerField = $this->pricelistService->getFieldByType(Field::TYPE_OFFER)) {
             $this->writeComment(' Не найден элемент offer ');
         } else {
-            $offers = $this->pricelist->offersGenerator(['sortBy' => 'RAND()', 'limit' => 1], true);
-            $offers->valid(); //хак для запуска количества
+            $this->pricelistService->setOffersOrder('RAND()', '');
+            $this->pricelistService->setOffersLimit(1);
 
-            if($this->pricelist->offersPluginPrepared) {
-                $this->writeComment( ' Могут использоваться условия из плагинов ');
-            }
-
-            if ($total = $this->pricelist->offersCount) {
-                $this->writeComment(' Подходящих предложений: '.$total.' ');
-            } else {
+            if (!$offersCount = $this->pricelistService->getOffersCount()) {
                 $this->writeComment(' Не найдено подходящих предложений ');
+                return $this->getPreviewXml();
+            }
+            $this->writeComment(' Подходящих предложений: '.$offersCount.' ');
+
+            if ($this->pricelistService->isOffersPluginPrepared()) {
+                $this->writeComment(' Возможно используются условия для предложений из плагинов ');
             }
 
+            $offers = $this->pricelistService->offersGenerator();
             foreach ($offers as $offer) {
                 $this->switchContext($offer->get('context_key'));
                 $this->writeField($offerField, ['offer' => $offer]);
