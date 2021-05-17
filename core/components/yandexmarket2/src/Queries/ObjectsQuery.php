@@ -121,9 +121,14 @@ abstract class ObjectsQuery
         $this->addColumnsToGroupBy($columns);
     }
 
-    protected function newQuery(): xPDOQuery
+    protected function newQuery(string $class = 'modResource'): xPDOQuery
     {
-        return $this->modx->newQuery('modResource');
+        $this->modx->invokeEvent('ym2OnBeforeQuery', [
+            'pricelist' => &$this->pricelist,
+            'class'     => $class,
+            'type'      => get_class($this)
+        ]);
+        return $this->modx->newQuery($class);
     }
 
     protected function afterQuery()

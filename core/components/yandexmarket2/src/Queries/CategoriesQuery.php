@@ -34,7 +34,7 @@ class CategoriesQuery extends ObjectsQuery
     protected function afterQuery()
     {
         parent::afterQuery();
-        $eventResponse = $this->modx->invokeEvent('ym2OnBeforeCategoriesQuery',
+        $eventResponse = $this->modx->invokeEvent('ym2OnCategoriesQuery',
             ['q' => &$this->query, 'query' => &$this->query, 'pricelist' => &$this]);
         if (!empty($eventResponse)) {
             $this->plugins = true;

@@ -23,9 +23,9 @@ class OffersQuery extends ObjectsQuery
         $this->usesOtherQuery = true;
     }
 
-    protected function newQuery(): xPDOQuery
+    protected function newQuery(string $class = 'modResource'): xPDOQuery
     {
-        return $this->modx->newQuery($this->pricelist->class);
+        return parent::newQuery($this->pricelist->class);
     }
 
     protected function selectQuery()
@@ -57,7 +57,7 @@ class OffersQuery extends ObjectsQuery
     protected function afterQuery()
     {
         parent::afterQuery();
-        $eventResponse = $this->modx->invokeEvent('ym2OnBeforeOffersQuery',
+        $eventResponse = $this->modx->invokeEvent('ym2OnOffersQuery',
             ['q' => &$this->query, 'query' => &$this->query, 'pricelist' => &$this->pricelist]);
         if (!empty($eventResponse)) {
             $this->plugins = true;
