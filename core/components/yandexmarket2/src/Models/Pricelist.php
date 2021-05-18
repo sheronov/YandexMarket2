@@ -33,6 +33,8 @@ class Pricelist extends BaseObject
     const GENERATE_MODE_AFTER_SAVE = 1;
     const GENERATE_MODE_CRON_ONLY  = 2;
 
+    public $temp = []; //для хранения временных значений при генерации листа
+
     /** @var Condition[] */
     protected $conditions;
     /** @var Field[] */

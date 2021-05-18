@@ -3,7 +3,6 @@
 namespace YandexMarket\Xml;
 
 use Exception;
-use modResource;
 use modX;
 use msProduct;
 use pdoTools;
@@ -28,6 +27,10 @@ abstract class Writer
     protected $jevix;
     /** @var Pricelist */
     protected $pricelist;
+    /** @var Offer */
+    protected $currentOffer;
+    /** @var Category */
+    protected $currentCategory;
     /** @var null|pdoTools */
     protected $pdoTools;
     /** @var modX */
@@ -104,10 +107,24 @@ abstract class Writer
             return;
         }
         switch ($field->type) {
+            case Field::TYPE_ROOT:
+            case Field::TYPE_SHOP:
+            case Field::TYPE_PARENT:
+            case Field::TYPE_OFFER:
+                if (!$children = $field->getChildren()) {
+                    return;
+                }
+                $this->xml->startElement($field->name);//
+                $this->writeAttributes($field->getAttributes(), $pls);
+                foreach ($children as $child) {
+                    $this->writeField($child, $pls, $skipTypes);
+                }
+                $this->xml->endElement();
+                break;
+            case Field::TYPE_CATEGORY:
             case Field::TYPE_TEXT:
             case Field::TYPE_VALUE:
             case Field::TYPE_CDATA_VALUE:
-            case Field::TYPE_CATEGORY:
                 $this->writeValuableField($field, $pls);
                 break;
             case Field::TYPE_CATEGORIES:
@@ -123,20 +140,6 @@ abstract class Writer
                 break;
             case Field::TYPE_PICTURE:
                 $this->writePicturesField($field, $pls);
-                break;
-            case Field::TYPE_ROOT:
-            case Field::TYPE_SHOP:
-            case Field::TYPE_PARENT:
-            case Field::TYPE_OFFER:
-                if (!$children = $field->getChildren()) {
-                    return;
-                }
-                $this->xml->startElement($field->name);//
-                $this->writeAttributes($field->getAttributes(), $pls);
-                foreach ($children as $child) {
-                    $this->writeField($child, $pls, $skipTypes);
-                }
-                $this->xml->endElement();
                 break;
             case Field::TYPE_EMPTY:
                 if ($attributes = $field->getAttributes()) {
@@ -231,35 +234,19 @@ abstract class Writer
     {
         $value = null;
 
-        if (($offer = $pls['offer'] ?? null) && ($offer instanceof Offer)) {
-            //всё перехватываем для оффера
-            $offer->setPricelist($this->pricelist);
-            $value = $offer->get($column);
-        } elseif (mb_strpos($column, '.') !== false) {
-            $object = explode('.', $column)[0];
-            $field = explode('.', $column, 2)[1] ?? null;
-            switch (mb_strtolower($object)) {
-                case 'setting':
-                    $value = $this->modx->getOption($field); //можно даже в полях указывать Setting.some_setting
-                    break;
-                case 'pricelist':
-                    $value = $this->pricelist->get($field);
-                    break;
-                case 'category':
-                    if (($category = $pls['category'] ?? null) && $category instanceof Category) {
-                        $value = $category->get($column);
-                    } else {
-                        $value = $pls[$column] ?? null;
-                    }
-                    break;
-                default:
-                    $value = $pls[$column] ?? null;
-                    break;
-            }
-        } elseif (($resource = $pls['resource'] ?? null) && $resource instanceof modResource) {
-            $value = $resource->get($column);
+        if (isset($this->currentOffer)) {
+            $value = $this->currentOffer->get($column);
+        } elseif (isset($this->currentCategory)) {
+            $value = $this->currentCategory->get($column);
+        } elseif (mb_stripos($column, 'pricelist.') === 0) {
+            $value = $this->pricelist->get($column);
+        } elseif (mb_stripos($column, 'setting.') === 0) {
+            $option = explode('.', $column, 2)[1] ?? null;
+            $value = $this->modx->getOption($option);
         } elseif (isset($pls[$column])) {
             $value = $pls[$column];
+        } else {
+            $this->log(sprintf('Could not resolve column "%s"', $column), false, modX::LOG_LEVEL_WARN);
         }
 
         return $value;
@@ -269,7 +256,7 @@ abstract class Writer
     {
         $value = $input;
         if ($this->prepareArrays && mb_strpos($value, '||') !== false) {
-            // TODO: в общем PricelistService сделать учёт тех полей, что по типу попадают и джойнятся там же (через запоминающее свойство)
+            // TODO: в PricelistService сделать учёт тех полей, что по типу попадают и джойнятся там же (через запоминающее свойство)
             $value = explode('||', $value);
         }
         if (!empty($handler) && $this->pdoTools) {
@@ -278,45 +265,7 @@ abstract class Writer
             }
             foreach ($pls as $key => $data) {
                 if (is_object($data)) {
-                    if ($data instanceof Offer) {
-                        $pls[$key] = $data->toArray();
-                        $pls[ucfirst($key)] = &$pls[$key];
-                        $resource = $data->getResource();
-                        $pls['resource'] = $resource->toArray();
-                        $pls['Resource'] = &$pls['resource'];
-                        if ($resource instanceof msProduct) {
-                            $pls['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
-                            $pls['vendor'] = $resource->loadVendor() ? $resource->loadVendor()->toArray() : null;
-                            $pls['Data'] = &$pls['data'];
-                            $pls['Vendor'] = &$pls['vendor'];
-                        }
-                        $pls['option'] = [];
-                        $pls['tv'] = [];
-                        $pls['category'] = [
-                            'id' => $pls['parent'] ?? 0
-                        ];
-                        $pls['categoryTV'] = [];
-                        foreach ($pls[$key] as $k => $val) {
-                            if (mb_strpos($k, 'option.') === 0) {
-                                $pls['option'][mb_substr($k, mb_strlen('option.'))] = $val;
-                            } elseif (mb_strpos($k, 'tv.') === 0) {
-                                $pls['tv'][mb_substr($k, mb_strlen('tv.'))] = $val;
-                            } elseif (mb_strpos($k, 'category.') === 0) {
-                                $pls['category'][mb_substr($k, mb_strlen('category.'))] = $val;
-                            } elseif (mb_strpos($k, 'categorytv.') === 0) {
-                                $pls['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
-                            }
-                        }
-
-                        $pls['Parent'] = &$pls['category'];
-                        $pls['Category'] = &$pls['category'];
-                        $pls['ParentTV'] = &$pls['categoryTV'];
-                        $pls['CategoryTV'] = &$pls['categoryTV'];
-                        $pls['categorytv'] = &$pls['categoryTV'];
-                        $pls['Option'] = &$pls['option'];
-                        $pls['TV'] = &$pls['tv'];
-                        $pls['Tv'] = &$pls['tv'];
-                    } elseif (method_exists($data, 'toArray')) {
+                    if (method_exists($data, 'toArray')) {
                         $pls[$key] = $data->toArray();
                     } else {
                         unset($pls[$key]);
@@ -387,18 +336,13 @@ abstract class Writer
             $categories = $this->pricelistService->categoriesGenerator();
             foreach ($categories as $category) {
                 $count++;
-                $pls['category'] = $category;
-                $resource = $category->getResource();
-                if ($resource && !$resource->parent) {
-                    $resource->parent = null;
-                }
-                $pls['resource'] = $resource;
-                $this->writeField($categoryField, $pls);
+                $this->writeCategoryField($categoryField, $category, $pls);
             }
         } else {
             $this->errorLog("Пустой список категорий в поле \"{$field->name}\" (ID: {$field->id})");
         }
 
+        $this->currentCategory = null;
         $this->xml->endElement();
 
         return $count;
@@ -408,6 +352,7 @@ abstract class Writer
      * @param  Field  $field
      * @param  array  $pls
      *
+     * @return int
      * @throws Exception
      */
     protected function writeOffersField(Field $field, array $pls = []): int
@@ -428,8 +373,7 @@ abstract class Writer
                     $contextKey = $offer->get('context_key');
                     $this->switchContext($contextKey);
                 }
-                $pls['offer'] = $offer;
-                $this->writeField($offerField, $pls);
+                $this->writeOfferField($offerField, $offer, $pls);
             }
 
             if ($this->modx->context->key !== $this->contextKey) {
@@ -439,8 +383,110 @@ abstract class Writer
             $this->errorLog("Пустой список товаров в поле \"{$field->name}\" (ID: {$field->id})");
         }
 
+        $this->currentOffer = null;
         $this->xml->endElement();
         return $count;
+    }
+
+    protected function writeCategoryField(Field $field, Category $category, array $pls = [])
+    {
+        $category->setPricelist($this->pricelist);
+        $this->currentCategory = $category;
+        if ($this->pricelistService->categoriesHaveCodeHandler()) {
+            $pls = array_merge($pls, $this->prepareCategoryData($category));
+        }
+
+        $this->writeField($field, $pls);
+    }
+
+    protected function writeOfferField(Field $field, Offer $offer, array $pls = [])
+    {
+        $offer->setPricelist($this->pricelist);
+        $this->currentOffer = $offer;
+        if ($this->pricelistService->offersHaveCodeHandler()) {
+            $pls = array_merge($pls, $this->prepareOfferData($offer));
+        }
+        $this->writeField($field, $pls);
+    }
+
+    protected function prepareCategoryData(Category $category): array
+    {
+        $data = [
+            'category' => $category->toArray(),
+        ];
+        if ($resource = $category->getResource()) {
+            $data['resource'] = $resource->toArray();
+            $data['Resource'] = &$data['resource'];
+            $data['modResource'] = &$data['resource'];
+        }
+        $data['Category'] = &$data['category'];
+
+        $this->modx->invokeEvent('ym2OnBeforeWritingCategory', [
+            'data'      => &$data,
+            'category'  => &$category,
+            'resource'  => &$resource,
+            'pricelist' => &$this->pricelist
+        ]);
+
+        return $data;
+    }
+
+    // возможно весь метод можно перенести в сам Offer, но надо подумать
+    protected function prepareOfferData(Offer $offer): array
+    {
+        $offerArray = $offer->toArray();
+        $resource = $offer->getResource();
+        $pls = [
+            'offer'    => $offerArray,
+            'resource' => $resource->toArray()
+        ];
+        $pls['Offer'] = &$pls['offer'];
+        $pls['Resource'] = &$pls['resource'];
+        $pls['modResource'] = &$pls['resource'];
+        if ($resource instanceof msProduct) {
+            $pls['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
+            $pls['vendor'] = $resource->loadVendor() ? $resource->loadVendor()->toArray() : null;
+            $pls['Data'] = &$pls['data'];
+            $pls['msProductData'] = &$pls['data'];
+            $pls['Vendor'] = &$pls['vendor'];
+            $pls['msVendor'] = &$pls['vendor'];
+        }
+        $pls['option'] = [];
+        $pls['tv'] = [];
+        $pls['category'] = [
+            'id' => $pls['parent'] ?? 0
+        ];
+        $pls['categoryTV'] = [];
+        foreach ($offerArray as $k => $val) {
+            if (mb_strpos($k, 'option.') === 0) {
+                $pls['option'][mb_substr($k, mb_strlen('option.'))] = $val;
+            } elseif (mb_strpos($k, 'tv.') === 0) {
+                $pls['tv'][mb_substr($k, mb_strlen('tv.'))] = $val;
+            } elseif (mb_strpos($k, 'category.') === 0) {
+                $pls['category'][mb_substr($k, mb_strlen('category.'))] = $val;
+            } elseif (mb_strpos($k, 'categorytv.') === 0) {
+                $pls['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
+            }
+        }
+
+        $pls['Parent'] = &$pls['category'];
+        $pls['Category'] = &$pls['category'];
+        $pls['ParentTV'] = &$pls['categoryTV'];
+        $pls['CategoryTV'] = &$pls['categoryTV'];
+        $pls['categorytv'] = &$pls['categoryTV'];
+        $pls['Option'] = &$pls['option'];
+        $pls['msProductOption'] = &$pls['option'];
+        $pls['TV'] = &$pls['tv'];
+        $pls['Tv'] = &$pls['tv'];
+        $pls['modTemplateVar'] = &$pls['tv'];
+
+        $this->modx->invokeEvent('ym2OnBeforeWritingOffer', [
+            'data'      => &$pls,
+            'offer'     => &$offer,
+            'pricelist' => &$this->pricelist
+        ]);
+
+        return $pls;
     }
 
     protected function switchContext(string $contextKey)

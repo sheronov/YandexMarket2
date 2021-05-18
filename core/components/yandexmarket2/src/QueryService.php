@@ -114,6 +114,16 @@ class QueryService
         $this->categoriesQuery->setLimit($limit, $offset);
     }
 
+    public function offersHaveCodeHandler(): bool
+    {
+        return $this->offersQuery->hasCodeHandlers();
+    }
+
+    public function categoriesHaveCodeHandler(): bool
+    {
+        return $this->categoriesQuery->hasCodeHandlers();
+    }
+
     /**
      * Уведомляем прайслист, что ресурс обновился
      * TODO: можно добавить проверку на изменение категорий
@@ -125,7 +135,7 @@ class QueryService
         $q = $this->getOffersQuery();
         $q->where([$q->getAlias().'.id' => $resource->id]);
         if (!$this->modx->getCount($q->getClass(), $this->pricelist->id)) {
-            //этого предложения нет в прайс-листе, пропускаем
+            //предложения нет в прайс-листе, пропускаем
             return;
         }
 

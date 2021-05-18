@@ -14,14 +14,15 @@ abstract class ObjectsQuery
 {
     /** @var xPDOQuery $query */
     protected $query;
-    protected $classKeys      = [];
-    protected $join           = [];
-    protected $groupBy        = [];
-    protected $limit          = 0;
-    protected $offset         = 0;
-    protected $count          = null;
-    protected $plugins        = false;
-    protected $usesOtherQuery = false;
+    protected $classKeys       = [];
+    protected $join            = [];
+    protected $groupBy         = [];
+    protected $limit           = 0;
+    protected $offset          = 0;
+    protected $count           = null;
+    protected $plugins         = false;
+    protected $usesOtherQuery  = false;
+    protected $hasCodeHandlers = false;
 
     protected $pricelist;
     protected $modx;
@@ -32,6 +33,8 @@ abstract class ObjectsQuery
 
     protected $queryPrepared = false;
 
+    protected $type;
+
     public function __construct(Pricelist $pricelist, modX $modx)
     {
         $this->pricelist = $pricelist;
@@ -40,6 +43,7 @@ abstract class ObjectsQuery
         $this->strictSql = $this->modx->getOption('yandexmarket2_strict_sql', null, false);
         $this->reduceQueries = $this->modx->getOption('yandexmarket2_reduce_queries', null, false);
         $this->debugMode = $this->modx->getOption('yandexmarket2_debug_mode', null, false);
+        $this->type = str_replace('YandexMarket\\Queries\\', '', get_class($this));
         $this->resetQuery();
     }
 
@@ -53,6 +57,7 @@ abstract class ObjectsQuery
         $this->count = null;
         $this->plugins = false;
         $this->usesOtherQuery = false;
+        $this->hasCodeHandlers = false;
         $this->query = $this->newQuery();
     }
 
@@ -98,6 +103,11 @@ abstract class ObjectsQuery
         return $this->plugins;
     }
 
+    public function hasCodeHandlers(): bool
+    {
+        return $this->hasCodeHandlers;
+    }
+
     public function isUsesOtherQuery(): bool
     {
         return $this->usesOtherQuery;
@@ -126,7 +136,7 @@ abstract class ObjectsQuery
         $this->modx->invokeEvent('ym2OnBeforeQuery', [
             'pricelist' => &$this->pricelist,
             'class'     => $class,
-            'type'      => get_class($this)
+            'type'      => $this->type,
         ]);
         return $this->modx->newQuery($class);
     }
@@ -139,6 +149,9 @@ abstract class ObjectsQuery
     {
         $classKeys = $this->collectExternalClassKeys();
         foreach ($classKeys as $class => $keys) {
+            $this->modx->log(modX::LOG_LEVEL_INFO,
+                sprintf('Joined `%s` table with "%s" columns to %s', $class, implode(',', $keys), $this->type),
+                '', 'YandexMarket2');
             $this->joinExternalClassKey($class, $keys);
         }
     }
@@ -231,10 +244,13 @@ abstract class ObjectsQuery
      */
     protected function addClassKeyFromCodeHandler(string $code)
     {
-        if (!empty($code) && preg_match_all('/{\$([A-z]+)\.([0-9A-z-_]+)[^}]*}/m', $code, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as list(, $class, $key)) {
-                if (!in_array($key, $this->classKeys[mb_strtolower($class)] ?? [], true)) {
-                    $this->classKeys[mb_strtolower($class)][] = $key;
+        if (!empty($code)) {
+            $this->hasCodeHandlers = true;
+            if (preg_match_all('/{\$([A-z]+)\.([0-9A-z-_]+)[^}]*}/m', $code, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as list(, $class, $key)) {
+                    if (!in_array($key, $this->classKeys[mb_strtolower($class)] ?? [], true)) {
+                        $this->classKeys[mb_strtolower($class)][] = $key;
+                    }
                 }
             }
         }
@@ -371,7 +387,7 @@ abstract class ObjectsQuery
     }
 
     /**
-     * TODO: сделать более логично, чтобы не дублировать case
+     * TODO: сделать более логично, чтобы не дублировать switch с методов выше
      */
     protected function addConditionsToQuery()
     {

@@ -107,8 +107,7 @@ class OffersQuery extends ObjectsQuery
                         sprintf('`Category`.`id` = `%s`.`parent`', $this->query->getAlias()));
                     $this->join['Category'] = true;
                 }
-                $qTvs = $this->modx->newQuery('modTemplateVar');
-                $qTvs->where(['name:IN' => $keys]);
+                $qTvs = $this->modx->newQuery('modTemplateVar', ['name:IN' => $keys]);
                 foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
                     /** @var modTemplateVar $tv */
                     $alias = sprintf('CategoryTV-%s', $tv->name);

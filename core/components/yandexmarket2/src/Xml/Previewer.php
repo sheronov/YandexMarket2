@@ -48,11 +48,7 @@ class Previewer extends Writer
             if ($categoryField = $categoriesField->getChildren()[0] ?? null) {
                 $categories = $this->pricelistService->categoriesGenerator();
                 foreach ($categories as $category) {
-                    $resource = $category->getResource();
-                    if ($resource && !$resource->parent) {
-                        $resource->parent = null;
-                    }
-                    $this->writeField($categoryField, ['category' => $category, 'resource' => $resource]);
+                    $this->writeCategoryField($categoryField, $category);
                 }
             } else {
                 $this->writeComment(' Не найден элемент category ');
@@ -105,7 +101,7 @@ class Previewer extends Writer
             $offers = $this->pricelistService->offersGenerator();
             foreach ($offers as $offer) {
                 $this->switchContext($offer->get('context_key'));
-                $this->writeField($offerField, ['offer' => $offer]);
+                $this->writeOfferField($offerField, $offer);
             }
         }
         return $this->getPreviewXml();
