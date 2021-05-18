@@ -29,6 +29,10 @@ class FileGenerator extends Writer
             throw new RuntimeException('Could not find the ROOT element (type='.Field::TYPE_ROOT.')');
         }
 
+        $this->modx->invokeEvent('ym2OnBeforePricelistGenerate',[
+           'pricelist' => &$this->pricelist
+        ]);
+
         $this->pricelist->need_generate = false;
         $this->pricelist->generated_on = new DateTimeImmutable();
         $this->pricelist->save(); //lock для долгого экспорта
@@ -40,7 +44,13 @@ class FileGenerator extends Writer
 
         $this->log('Файл успешно сформирован');
 
-        return $this->pricelist->save();
+        $saved =  $this->pricelist->save();
+
+        $this->modx->invokeEvent('ym2OnAfterPricelistGenerate',[
+            'pricelist' => &$this->pricelist
+        ]);
+
+        return $saved;
     }
 
     /**
