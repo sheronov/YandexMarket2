@@ -122,8 +122,15 @@ class Service
 
     public function listClassKeys(bool $withHeaders = false, bool $withDividers = false): array
     {
+        $groups = [];
+
         $list = [];
         if ($resourceFields = $this->getModResourceFields()) {
+            $groups[] = [
+                'header' => 'Поля ресурса',
+                'groups' => ['offers', 'categories'],
+                'fields' => $resourceFields,
+            ];
             $list = array_merge($list,
                 $withHeaders ? [['header' => 'Поля ресурса']] : [],
                 $resourceFields,
@@ -131,6 +138,11 @@ class Service
             );
         }
 
+        $groups[] = [
+            'header' => 'Вспомогательные поля предложений',
+            'groups' => ['offers'],
+            'fields' => $this->getOfferFields(),
+        ];
         $list = array_merge($list,
             $withHeaders ? [['header' => 'Вспомогательные поля компонента']] : [],
             $this->getOfferFields(),
@@ -138,6 +150,11 @@ class Service
         );
 
         if (self::hasMs2Gallery()) {
+            $groups[] = [
+                'header' => 'Изображения ресурса ms2Gallery',
+                'groups' => ['offers', 'categories'],
+                'fields' => [['value' => 'ms2Gallery.image', 'text' => 'Изображения ресурса ms2Gallery']]
+            ];
             $list = array_merge($list,
                 $withDividers ? [['divider' => true]] : [],
                 [['value' => 'ms2Gallery.image', 'text' => 'Изображения ресурса ms2Gallery']],
@@ -147,6 +164,16 @@ class Service
 
         if (self::hasMiniShop2()) {
             if ($productFields = $this->getMsProductFields()) {
+                $groups[] = [
+                    'header' => 'Поля товара miniShop2',
+                    'groups' => ['offers'],
+                    'fields' => $productFields,
+                ];
+                $groups[] = [
+                    'header' => 'Галерея miniShop2',
+                    'groups' => ['offers'],
+                    'fields' => [['value' => 'msGallery.image', 'text' => 'Изображения товара miniShop2']],
+                ];
                 $list = array_merge($list,
                     $withHeaders ? [['header' => 'Поля товара miniShop2']] : [],
                     $productFields,
@@ -157,6 +184,12 @@ class Service
             }
 
             if ($optionFields = $this->getMsOptionFields()) {
+                $groups[] = [
+                    'header' => 'Опции miniShop2',
+                    'groups' => ['offers'],
+                    'fields' => $optionFields,
+                ];
+
                 $list = array_merge($list,
                     $withHeaders ? [['header' => 'Опции miniShop2']] : [],
                     $optionFields,
@@ -165,6 +198,11 @@ class Service
             }
 
             if ($vendorFields = $this->getMsVendorFields()) {
+                $groups[] = [
+                    'header' => 'Производитель miniShop2',
+                    'groups' => ['offers'],
+                    'fields' => $vendorFields,
+                ];
                 $list = array_merge($list,
                     $withHeaders ? [['header' => 'Производитель miniShop2']] : [],
                     $vendorFields,
@@ -174,12 +212,32 @@ class Service
         }
 
         if ($tvFields = $this->getTvFields()) {
+            $groups[] = [
+                'header' => 'Дополнительные поля (TV)',
+                'groups' => ['offers', 'categories'],
+                'fields' => $tvFields,
+            ];
             $list = array_merge($list,
                 $withHeaders ? [['header' => 'Дополнительные поля (TV)']] : [],
                 $tvFields,
                 $withDividers ? [['divider' => true]] : []
             );
         }
+
+        $groups[] = [
+            'header' => 'Поля родительской категории (стандартные)',
+            'groups' => ['offers'],
+            'fields' => [
+                ['value' => 'Category.pagetitle', 'text' => 'Заголовок родительской категории'],
+                ['value' => 'Category.name', 'text' => 'Формат под любое другое поле родителя']
+            ]
+        ];
+
+        $groups[] = [
+            'header' => 'Дополнительные поля категории (TV)',
+            'groups' => ['offers'],
+            'fields' => [['value' => 'CategoryTV.name', 'text' => 'Формат для ТВ-полей категории']]
+        ];
 
         /** Поля родителя вместе с дополнительными */
         $list = array_merge($list,
@@ -196,7 +254,7 @@ class Service
             array_pop($list); //remove last divider
         }
 
-        return $list;
+        return $groups;
     }
 
     protected function getModResourceFields(

@@ -256,7 +256,7 @@ abstract class Writer
     {
         $value = $input;
         if ($this->prepareArrays && mb_strpos($value, '||') !== false) {
-            // TODO: в PricelistService сделать учёт тех полей, что по типу попадают и джойнятся там же (через запоминающее свойство)
+            // TODO: когда-нибудь в PricelistService сделать учёт тех полей, что по типу попадают и джойнятся там же
             $value = explode('||', $value);
         }
         if (!empty($handler) && $this->pdoTools) {
@@ -411,6 +411,7 @@ abstract class Writer
 
     protected function prepareCategoryData(Category $category): array
     {
+        $category->data = [];
         $data = [
             'category' => $category->toArray(),
         ];
@@ -425,8 +426,12 @@ abstract class Writer
             'data'      => &$data,
             'category'  => &$category,
             'resource'  => &$resource,
-            'pricelist' => &$this->pricelist
+            'pricelist' => &$this->pricelist,
         ]);
+
+        if (!empty($category->data)) {
+            $data = array_merge($data, $category->data);
+        }
 
         return $data;
     }
@@ -434,59 +439,64 @@ abstract class Writer
     // возможно весь метод можно перенести в сам Offer, но надо подумать
     protected function prepareOfferData(Offer $offer): array
     {
+        $offer->data = [];
         $offerArray = $offer->toArray();
         $resource = $offer->getResource();
-        $pls = [
+        $data = [
             'offer'    => $offerArray,
             'resource' => $resource->toArray()
         ];
-        $pls['Offer'] = &$pls['offer'];
-        $pls['Resource'] = &$pls['resource'];
-        $pls['modResource'] = &$pls['resource'];
+        $data['Offer'] = &$data['offer'];
+        $data['Resource'] = &$data['resource'];
+        $data['modResource'] = &$data['resource'];
         if ($resource instanceof msProduct) {
-            $pls['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
-            $pls['vendor'] = $resource->loadVendor() ? $resource->loadVendor()->toArray() : null;
-            $pls['Data'] = &$pls['data'];
-            $pls['msProductData'] = &$pls['data'];
-            $pls['Vendor'] = &$pls['vendor'];
-            $pls['msVendor'] = &$pls['vendor'];
+            $data['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
+            $data['vendor'] = $resource->loadVendor() ? $resource->loadVendor()->toArray() : null;
+            $data['Data'] = &$data['data'];
+            $data['msProductData'] = &$data['data'];
+            $data['Vendor'] = &$data['vendor'];
+            $data['msVendor'] = &$data['vendor'];
         }
-        $pls['option'] = [];
-        $pls['tv'] = [];
-        $pls['category'] = [
-            'id' => $pls['parent'] ?? 0
+        $data['option'] = [];
+        $data['tv'] = [];
+        $data['category'] = [
+            'id' => $data['parent'] ?? 0
         ];
-        $pls['categoryTV'] = [];
+        $data['categoryTV'] = [];
         foreach ($offerArray as $k => $val) {
             if (mb_strpos($k, 'option.') === 0) {
-                $pls['option'][mb_substr($k, mb_strlen('option.'))] = $val;
+                $data['option'][mb_substr($k, mb_strlen('option.'))] = $val;
             } elseif (mb_strpos($k, 'tv.') === 0) {
-                $pls['tv'][mb_substr($k, mb_strlen('tv.'))] = $val;
+                $data['tv'][mb_substr($k, mb_strlen('tv.'))] = $val;
             } elseif (mb_strpos($k, 'category.') === 0) {
-                $pls['category'][mb_substr($k, mb_strlen('category.'))] = $val;
+                $data['category'][mb_substr($k, mb_strlen('category.'))] = $val;
             } elseif (mb_strpos($k, 'categorytv.') === 0) {
-                $pls['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
+                $data['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
             }
         }
 
-        $pls['Parent'] = &$pls['category'];
-        $pls['Category'] = &$pls['category'];
-        $pls['ParentTV'] = &$pls['categoryTV'];
-        $pls['CategoryTV'] = &$pls['categoryTV'];
-        $pls['categorytv'] = &$pls['categoryTV'];
-        $pls['Option'] = &$pls['option'];
-        $pls['msProductOption'] = &$pls['option'];
-        $pls['TV'] = &$pls['tv'];
-        $pls['Tv'] = &$pls['tv'];
-        $pls['modTemplateVar'] = &$pls['tv'];
+        $data['Parent'] = &$data['category'];
+        $data['Category'] = &$data['category'];
+        $data['ParentTV'] = &$data['categoryTV'];
+        $data['CategoryTV'] = &$data['categoryTV'];
+        $data['categorytv'] = &$data['categoryTV'];
+        $data['Option'] = &$data['option'];
+        $data['msProductOption'] = &$data['option'];
+        $data['TV'] = &$data['tv'];
+        $data['Tv'] = &$data['tv'];
+        $data['modTemplateVar'] = &$data['tv'];
 
         $this->modx->invokeEvent('ym2OnBeforeWritingOffer', [
-            'data'      => &$pls,
+            'data'      => &$data,
             'offer'     => &$offer,
-            'pricelist' => &$this->pricelist
+            'pricelist' => &$this->pricelist,
         ]);
 
-        return $pls;
+        if (!empty($offer->data)) {
+            $data = array_merge($data, $offer->data);
+        }
+
+        return $data;
     }
 
     protected function switchContext(string $contextKey)

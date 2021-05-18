@@ -79,7 +79,6 @@ abstract class ObjectsQuery
         return $this->query;
     }
 
-    //TODO: неправильно считает категории
     public function getCount(): int
     {
         if (!isset($this->count)) {
@@ -149,10 +148,10 @@ abstract class ObjectsQuery
     {
         $classKeys = $this->collectExternalClassKeys();
         foreach ($classKeys as $class => $keys) {
-            $this->modx->log(modX::LOG_LEVEL_INFO,
-                sprintf('Joined `%s` table with "%s" columns to %s', $class, implode(',', $keys), $this->type),
-                '', 'YandexMarket2');
             $this->joinExternalClassKey($class, $keys);
+            $this->modx->log(modX::LOG_LEVEL_INFO,
+                sprintf('Приджойнена таблица `%s` со столбцами "%s" к %s', $class, implode(',', $keys), $this->type),
+                '', 'YandexMarket2');
         }
     }
 
@@ -265,8 +264,6 @@ abstract class ObjectsQuery
     }
 
     /**
-     *  TODO: залоггировать каждый join
-     *
      * @param  string  $class
      * @param  array  $keys
      */
@@ -387,7 +384,7 @@ abstract class ObjectsQuery
     }
 
     /**
-     * TODO: сделать более логично, чтобы не дублировать switch с методов выше
+     * TODO: когда-нибудь сделать более логично, чтобы не дублировать switch с методов выше
      */
     protected function addConditionsToQuery()
     {

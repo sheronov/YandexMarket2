@@ -14,6 +14,8 @@ abstract class BaseObject
     protected $xpdo;
     protected $object;
 
+    public $data = []; //для хранения временных значений при каких-либо манипуляциях
+
     const DATETIME_FIELDS = ['created_on', 'edited_on', 'generated_on'];
     const ARRAY_FIELDS    = ['properties'];
 
@@ -33,6 +35,7 @@ abstract class BaseObject
 
     /**
      * Класс xPDO объекта, который будем оборачивать
+     *
      * @return string
      */
     abstract public static function getObjectClass(): string;
@@ -45,8 +48,8 @@ abstract class BaseObject
      */
     public static function getById(int $id, modX $modX)
     {
-        $object = $modX->getObject(static::getObjectClass(),$id);
-        return $object ? new static($modX,$object) : null;
+        $object = $modX->getObject(static::getObjectClass(), $id);
+        return $object ? new static($modX, $object) : null;
     }
 
     /**
@@ -116,7 +119,5 @@ abstract class BaseObject
         }
         return $data;
     }
-
-
 
 }

@@ -62,7 +62,7 @@
             :value="value"
             @input="changedValue"
             :filter="valueSearch"
-            :items="dataColumns"
+            :items="classKeys"
             :attach="true"
             label="Выберите поле объекта"
             placeholder='или введите в формате "Class.key" и нажмите Enter'
@@ -131,8 +131,7 @@
           независимых значений.
           <br><br>
           Доступны поля ресурса {$resource.pagetitle}, товаров miniShop2 {$data.price}, опций ms2 {$option.color},
-          тв
-          полей {$tv.tag}.<br>
+          тв полей {$tv.tag}.<br>
           Все нужные ТВ-поля, опции будут приджойнены автоматически.<br>
           <br>
           Писать @INLINE перед кодом НЕ нужно.
@@ -179,6 +178,29 @@ export default {
       'isShop',
       'isPicture'
     ]),
+    classKeys() {
+      let classKeys = [];
+      let group = null;
+      if (this.$route.name.indexOf('.categories') !== -1) {
+        group = 'categories';
+      } else if (this.$route.name.indexOf('.offers') !== -1) {
+        group = 'offers';
+      }
+
+      this.dataColumns.forEach((data) => {
+        if (data.groups.indexOf(group) !== -1) {
+          if (data.header) {
+            classKeys.push({header: data.header});
+          }
+          if (data.fields) {
+            classKeys.push(...data.fields);
+          }
+          classKeys.push({divider: true});
+        }
+      });
+
+      return classKeys;
+    },
     value() {
       if (typeof this.field.value === 'object') {
         return this.field.value;

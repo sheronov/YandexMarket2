@@ -16,7 +16,6 @@
       <h4 class="mb-1 mt-2">Настройки элемента категории в XML</h4>
       <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
         <pricelist-field
-
             :item="categoryField"
             :fields="pricelist.fields"
             :attributes="pricelist.attributes"
@@ -26,9 +25,6 @@
             :available-types="[]"
         />
       </v-expansion-panels>
-      <p>Для выбора столбца для названия категории пока доступны только поля ресурса.
-        <br/>Значения ТВ-полей можно получить в Fenom-обработчике <code>{$resource.id|resource:'tvname'}</code>
-      </p>
     </template>
   </div>
 </template>
