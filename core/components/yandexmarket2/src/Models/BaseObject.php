@@ -109,7 +109,8 @@ abstract class BaseObject
                     $data[$key] = json_decode($value, true);
                 } elseif (in_array($key, self::DATETIME_FIELDS, true)) {
                     try {
-                        $data[$key] = new DateTimeImmutable($value);
+                        $data[$key] = $value;
+                        // $data[$key] = new DateTimeImmutable($value);
                     } catch (Exception $exception) {
                         $this->modx->log(modX::LOG_LEVEL_ERROR, "[YandexMarket] wrong datetime {$key} = {$value}");
                         $data[$key] = $value;

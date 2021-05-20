@@ -245,7 +245,7 @@ abstract class ObjectsQuery
     {
         if (!empty($code)) {
             $this->hasCodeHandlers = true;
-            if (preg_match_all('/{\$([A-z]+)\.([0-9A-z-_]+)[^}]*}/m', $code, $matches, PREG_SET_ORDER)) {
+            if (preg_match_all('/\$(?>_pls\[[\"\'])?([0-9A-z_]+)\.([0-9A-z-_]+)\b/m', $code, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as list(, $class, $key)) {
                     if (!in_array($key, $this->classKeys[mb_strtolower($class)] ?? [], true)) {
                         $this->classKeys[mb_strtolower($class)][] = $key;
