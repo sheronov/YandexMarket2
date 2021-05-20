@@ -65,7 +65,7 @@
           itemsPerPageText: 'Показывать по',
           itemsPerPageOptions:[pagination.limit],
           showCurrentPage: true,
-          showFirstLastPage: true,
+          showFirstLastPage: true
         }"
     >
       <template v-slot:footer.page-text="{pageStart, pageStop, itemsLength}">
@@ -78,7 +78,7 @@
         {{ value ? 'Да' : 'Нет' }}
       </template>
       <template v-slot:item.generated_on="{ value }">
-        {{ value ? value.date.replace('.000000', '') : 'Файл ещё не сгенерирован' }}
+        {{ value || 'Файл ещё не сгенерирован' }}
       </template>
       <template v-slot:item.generate_mode="{ value }">
         <template v-if="parseInt(value) === 2">

@@ -87,8 +87,8 @@
       <v-alert v-if="pricelist.need_generate" type="warning" dense>
         Изменились товары или настройки. Файл нужно перегенерировать!
       </v-alert>
-      <v-alert v-if="prepareDate(pricelist.generated_on)" type="info" color="accent" dense>
-        Предыдущий прайс-лист сформирован {{ prepareDate(pricelist.generated_on) }}
+      <v-alert v-if="pricelist.generated_on" type="info" color="accent" dense>
+        Предыдущий прайс-лист сформирован {{ pricelist.generated_on }}
       </v-alert>
       <p v-if="pricelist.generated_on">Ссылка на файл:
         <a :href="pricelist.fileUrl" title="Файл откроется в новом окне" target="_blank">{{ pricelist.fileUrl }}</a>
@@ -174,17 +174,6 @@ export default {
     }
   },
   methods: {
-    prepareDate(input) {
-      let date = '';
-      if (input) {
-        if (typeof input === 'object' && input.date) {
-          date = input.date;
-        } else if (typeof input === 'string') {
-          date = input;
-        }
-      }
-      return date.replace('.000000', '');
-    },
     cancelChanges() {
       // eslint-disable-next-line no-unused-vars
       let {fields, categories, attributes, conditions, ...data} = this.pricelist;
