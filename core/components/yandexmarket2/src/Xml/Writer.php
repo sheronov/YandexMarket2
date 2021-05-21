@@ -412,15 +412,21 @@ abstract class Writer
     protected function prepareCategoryData(Category $category): array
     {
         $category->data = [];
-        $data = [
-            'category' => $category->toArray(),
-        ];
+        $data = [];
+        $categoryArray = $category->toArray();
+        $data['category'] = $categoryArray;
+        $data['Category'] = &$data['category'];
         if ($resource = $category->getResource()) {
             $data['resource'] = $resource->toArray();
             $data['Resource'] = &$data['resource'];
             $data['modResource'] = &$data['resource'];
         }
-        $data['Category'] = &$data['category'];
+        foreach ($categoryArray as $key => $value) {
+            $path = explode('.', $key)[0];
+            if (!isset($data[$path])) {
+                $data[$key] = $value;
+            }
+        }
 
         $this->modx->invokeEvent('ym2OnBeforeWritingCategory', [
             'data'      => &$data,
@@ -440,13 +446,12 @@ abstract class Writer
     protected function prepareOfferData(Offer $offer): array
     {
         $offer->data = [];
-        $offerArray = $offer->toArray();
+        $data = [];
         $resource = $offer->getResource();
-        $data = [
-            'offer'    => $offerArray,
-            'resource' => $resource->toArray()
-        ];
+        $offerArray = $offer->toArray();
+        $data['offer'] = $offerArray;
         $data['Offer'] = &$data['offer'];
+        $data['resource'] = $resource->toArray();
         $data['Resource'] = &$data['resource'];
         $data['modResource'] = &$data['resource'];
         if ($resource instanceof msProduct) {
@@ -474,7 +479,6 @@ abstract class Writer
                 $data['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
             }
         }
-
         $data['Parent'] = &$data['category'];
         $data['Category'] = &$data['category'];
         $data['ParentTV'] = &$data['categoryTV'];
@@ -485,6 +489,12 @@ abstract class Writer
         $data['TV'] = &$data['tv'];
         $data['Tv'] = &$data['tv'];
         $data['modTemplateVar'] = &$data['tv'];
+        foreach ($offerArray as $key => $value) {
+            $path = explode('.', $key)[0];
+            if (!isset($data[$path])) {
+                $data[$key] = $value;
+            }
+        }
 
         $this->modx->invokeEvent('ym2OnBeforeWritingOffer', [
             'data'      => &$data,
