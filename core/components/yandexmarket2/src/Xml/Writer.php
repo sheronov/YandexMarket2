@@ -92,13 +92,15 @@ abstract class Writer
     }
 
     /**
+     * TODO: подумать над invoke beforeWriteFieldToXml и afterWriteFieldToXml, чтобы можно добавлять через плагин поля
+     *
      * @param  Field  $field
      * @param  array  $pls
      * @param  array  $skipTypes
      *
      * @throws Exception
      */
-    protected function writeField(Field $field, array $pls = [], array $skipTypes = [])
+    public function writeField(Field $field, array $pls = [], array $skipTypes = [])
     {
         if (!empty($skipTypes) && in_array($field->type, $skipTypes, true)) {
             if ($this->preview) {
