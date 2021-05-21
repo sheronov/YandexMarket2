@@ -514,16 +514,14 @@ abstract class Writer
      */
     protected function writePicturesField(Field $field, array $pls = [])
     {
-        if (($offer = $pls['offer'] ?? null) && $offer instanceof Offer && $pictures = $offer->get($field->value)) {
+        if ($this->currentOffer && $pictures = $this->currentOffer->get($field->value)) {
             foreach (explode('||', $pictures) as $i => $picture) {
                 if (($limit = $field->properties['count'] ?? 0) && $i >= $limit) {
                     break;
                 }
-                $tmpField = new Field($this->modx);
-                $tmpField->name = $field->name;
-                $tmpField->value = Service::preparePath($this->modx, '{images_url}/'.$picture, true);
-                $tmpField->type = Field::TYPE_TEXT;
-                $this->writeField($tmpField, $pls);
+                $field->value = Service::preparePath($this->modx, '{images_url}/'.$picture, true);
+                $field->type = Field::TYPE_TEXT; //делаем его уже обработанным
+                $this->writeField($field, $pls);
             }
         }
     }
