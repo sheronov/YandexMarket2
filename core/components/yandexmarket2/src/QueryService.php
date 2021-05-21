@@ -6,6 +6,7 @@ use Exception;
 use Generator;
 use modResource;
 use modX;
+use PDO;
 use xPDOQuery;
 use YandexMarket\Handlers\xPDOLazyIterator;
 use YandexMarket\Models\Category;
@@ -205,9 +206,51 @@ class QueryService
         if (empty($q->query['where'])) {
             //если в категории ничего не выбрано и не добавлено условий через плагин,
             $this->categoriesQuery->setOffersQuery($this->offersQuery->getQuery());
+
+            $this->addUnlistedCategoriesToQuery($q); //добавляем пропущенные родительские категории
         }
 
         return $q;
+    }
+
+    protected function addUnlistedCategoriesToQuery(xPDOQuery $query)
+    {
+        //значит условие только от товаров и категории следует добрать
+        $addedQuery = clone $query;
+        $addedQuery->query['columns'] = '';
+        $addedQuery->select($this->modx->getSelectColumns($query->getClass(), $query->getAlias(), '',
+            ['context_key', 'id', 'parent'])); //не рассматриваем, что родитель в другом контексте
+        $tstart = microtime(true);
+        if ($addedQuery->prepare() && $addedQuery->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+
+            $neededToAdd = [];
+            $contextResources = $addedQuery->stmt->fetchAll(PDO::FETCH_GROUP | PDO::FETCH_ASSOC);
+            foreach ($contextResources as $context => $resources) {
+                $ids = array_column($resources, 'id');
+                $parents = array_unique(array_column($resources, 'parent'));
+                $unlistedCategories = array_diff($parents, $ids);
+                if (!empty($unlistedCategories)) {
+                    foreach ($unlistedCategories as $category) {
+                        $neededToAdd[] = (int)$category;
+                        $categoryParents = $this->modx->getParentIds($category, 10, ['context' => $context]);
+                        foreach ($categoryParents as $categoryParent) {
+                            if ($categoryParent && !in_array($categoryParent, $neededToAdd, true)) {
+                                $neededToAdd[] = $categoryParent;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!empty($neededToAdd)) {
+                $query->where(['OR:'.$query->getAlias().'.id:IN' => array_unique($neededToAdd)]);
+                $this->modx->log(modX::LOG_LEVEL_INFO,
+                    sprintf('К запросу категорий добавлены недостающие категории: %s',
+                        implode(',', $neededToAdd)), '', 'YandexMarket2');
+            }
+        }
     }
 
     /**
@@ -242,7 +285,7 @@ class QueryService
     protected function getOffersQuery(): xPDOQuery
     {
         $categoriesQuery = $this->getCategoriesQuery();
-        if(!$this->categoriesQuery->isUsesOtherQuery()) {
+        if (!$this->categoriesQuery->isUsesOtherQuery()) {
             $this->offersQuery->setCategoriesQuery($categoriesQuery);
         }
         return $this->offersQuery->getQuery();
