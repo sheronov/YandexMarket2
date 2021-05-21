@@ -219,6 +219,7 @@ export default {
 
 .yandexmarket-pricelist-generate .generation-log .modx-console-text {
   line-height: 1.5;
+  word-break: break-word;
 }
 
 /*noinspection CssUnusedSymbol*/

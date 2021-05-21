@@ -295,6 +295,12 @@ export default {
   border-top-left-radius: 0;
 }
 
+
+.yandexmarket-xml-preview {
+  position: relative;
+  z-index: 0;
+}
+
 .yandexmarket-xml-preview >>> .CodeMirror {
   height: auto;
 }

@@ -31,12 +31,22 @@ export default new Vuex.Store({
         ],
     },
     getters: {
-        dataColumns: state => state.classKeys.filter(ck => !ck.skipped),
+        dataColumnsForGroup: state => group => {
+            let classKeys = [];
+            state.classKeys.forEach((data) => {
+                if (!group || data.groups.indexOf(group) !== -1) {
+                    if (data.header) {
+                        classKeys.push({header: data.header});
+                    }
+                    if (data.fields) {
+                        classKeys.push(...data.fields);
+                    }
+                    classKeys.push({divider: true});
+                }
+            });
+            return classKeys;
+        },
         operatorsList: state => state.operators,
-        columnText: state => value => {
-            let found = state.classKeys.find(classKey => classKey.value === value);
-            return found ? found.text : null;
-        }
     },
     mutations: {
         setClassKeys(state, payload) {

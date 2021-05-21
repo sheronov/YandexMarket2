@@ -169,7 +169,7 @@ export default {
     },
   }),
   computed: {
-    ...mapGetters(['dataColumns', 'columnText']),
+    ...mapGetters(['dataColumnsForGroup']),
     ...mapGetters('field', [
       'isSimpleString',
       'isCurrencies',
@@ -179,35 +179,22 @@ export default {
       'isPicture'
     ]),
     classKeys() {
-      let classKeys = [];
       let group = null;
       if (this.$route.name.indexOf('.categories') !== -1) {
         group = 'categories';
       } else if (this.$route.name.indexOf('.offers') !== -1) {
         group = 'offers';
       }
-
-      this.dataColumns.forEach((data) => {
-        if (data.groups.indexOf(group) !== -1) {
-          if (data.header) {
-            classKeys.push({header: data.header});
-          }
-          if (data.fields) {
-            classKeys.push(...data.fields);
-          }
-          classKeys.push({divider: true});
-        }
-      });
-
-      return classKeys;
+      return this.dataColumnsForGroup(group);
     },
     value() {
       if (typeof this.field.value === 'object') {
         return this.field.value;
       }
+      let found = this.classKeys.find(classKey => classKey.value === this.field.value);
       return {
         value: this.field.value,
-        text: this.columnText(this.field.value) || this.field.value
+        text: found ? found.text : this.field.value
       };
     },
     valuePrepend() {

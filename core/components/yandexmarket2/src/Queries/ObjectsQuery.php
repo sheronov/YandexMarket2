@@ -6,6 +6,7 @@ use modTemplateVar;
 use modX;
 use msOption;
 use xPDOQuery;
+use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Condition;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
@@ -205,15 +206,21 @@ abstract class ObjectsQuery
     protected function collectExternalClassKeys(): array
     {
         foreach ($this->getFields() as $field) {
-            $this->addClassKeyFromValue($field->value ?? '');
-            $this->addClassKeyFromCodeHandler($field->handler ?? '');
-
             if ($attributes = $field->getAttributes()) {
                 foreach ($attributes as $attribute) {
+                    if ($attribute->type === Attribute::TYPE_TEXT) {
+                        continue;
+                    }
                     $this->addClassKeyFromValue($attribute->value ?? '');
                     $this->addClassKeyFromCodeHandler($attribute->handler ?? '');
                 }
             }
+
+            if ($field->type === Field::TYPE_TEXT) {
+                continue;
+            }
+            $this->addClassKeyFromValue($field->value ?? '');
+            $this->addClassKeyFromCodeHandler($field->handler ?? '');
         }
 
         if ($conditions = $this->getConditions()) {

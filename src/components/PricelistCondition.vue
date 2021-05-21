@@ -6,7 +6,7 @@
             :value="column"
             @input="changedColumn"
             :filter="valueSearch"
-            :items="dataColumns"
+            :items="classKeys"
             :attach="true"
             :label="columnLabel"
             placeholder='Или введите в формате "Class.key"'
@@ -136,7 +136,16 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['operatorsList', 'dataColumns', 'columnText']),
+    ...mapGetters(['operatorsList', 'dataColumnsForGroup']),
+    classKeys() {
+      let group = null;
+      if (this.$route.name.indexOf('.categories') !== -1) {
+        group = 'categories';
+      } else if (this.$route.name.indexOf('.offers') !== -1) {
+        group = 'offers';
+      }
+      return this.dataColumnsForGroup(group);
+    },
     edited() {
       return JSON.stringify(this.item) !== JSON.stringify(this.condition);
     },
@@ -156,9 +165,10 @@ export default {
       if (typeof this.condition.column === 'object') {
         return this.condition.column;
       }
+      let found = this.classKeys.find(classKey => classKey.value === this.condition.column);
       return {
         value: this.condition.column,
-        text: this.columnText(this.condition.column) || this.condition.column
+        text: found ? found.text : this.condition.column
       };
     },
     columnLabel() {
