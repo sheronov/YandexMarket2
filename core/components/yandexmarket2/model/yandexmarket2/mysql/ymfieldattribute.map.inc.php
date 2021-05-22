@@ -23,7 +23,7 @@ $xpdo_meta_map['ymFieldAttribute']= array (
     array (
       'dbtype' => 'varchar',
       'phptype' => 'string',
-      'precision' => '255',
+      'precision' => '191',
       'null' => false,
     ),
     'field_id' => 
