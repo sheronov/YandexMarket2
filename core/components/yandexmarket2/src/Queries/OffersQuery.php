@@ -18,7 +18,7 @@ class OffersQuery extends ObjectsQuery
         $categoriesQuery->select("DISTINCT `modResource`.`id`");
         $categoriesQuery->prepare();
         $this->query->where(sprintf("`%s`.`parent` IN (%s)", $this->query->getAlias(), $categoriesQuery->toSQL(true)));
-        $this->modx->log(modX::LOG_LEVEL_INFO, 'Добавлено условие parent IN (parents ids) для товаров', '',
+        $this->modx->log(modX::LOG_LEVEL_INFO, 'Добавлено условие parent IN (select id from parentsQuery) для товаров', '',
             'YandexMarket2');
         $this->usesOtherQuery = true;
     }

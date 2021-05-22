@@ -21,7 +21,8 @@ if (file_exists(dirname(__FILE__, 5).'/index.php')) {
 /** @var modX $modx */
 // Включаем обработку ошибок
 $modx->getService('error', 'error.modError');
-$modx->setLogLevel(modX::LOG_LEVEL_INFO);
+$modx->setLogLevel($modx->getOption('yandexmarket2_debug_mode', null,
+    false) ? modX::LOG_LEVEL_INFO : modX::LOG_LEVEL_WARN);
 $modx->setLogTarget(XPDO_CLI_MODE ? 'ECHO' : 'HTML');
 
 $corePath = $modx->getOption('yandexmarket2_core_path', null,

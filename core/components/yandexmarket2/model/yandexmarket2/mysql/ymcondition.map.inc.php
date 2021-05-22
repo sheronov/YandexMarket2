@@ -15,6 +15,7 @@ $xpdo_meta_map['ymCondition']= array (
     'operator' => NULL,
     'value' => NULL,
     'properties' => NULL,
+    'group' => 'offer',
   ),
   'fieldMeta' => 
   array (
@@ -50,6 +51,13 @@ $xpdo_meta_map['ymCondition']= array (
       'dbtype' => 'text',
       'phptype' => 'json',
       'null' => true,
+    ),
+    'group' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '255',
+      'phptype' => 'string',
+      'default' => 'offer',
     ),
   ),
   'aggregates' => 

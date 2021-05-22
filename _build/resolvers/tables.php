@@ -13,15 +13,15 @@ if ($transport->xpdo) {
             $modx->addPackage('yandexmarket2', MODX_CORE_PATH.'components/yandexmarket2/model/');
             $manager = $modx->getManager();
             $objects = [];
-            //$schemaFile = MODX_CORE_PATH.'components/yandexmarket2/model/schema/yandexmarket2.mysql.schema.xml';
+            $schemaFile = MODX_CORE_PATH.'components/yandexmarket2/model/schema/yandexmarket2.mysql.schema.xml';
 
-            $schemaFile = null;
-            $tmpPackage = $transport->path.$transport->signature.'/';
-            $filePath = $tmpPackage.$transport->vehicles[$manifestIndex]['filename'];
-            if (file_exists($filePath)) {
-                $payload = include($filePath);
-                $schemaFile = $tmpPackage.$payload['class'].'/'.$payload['signature'].'/yandexmarket2.mysql.schema.xml';
-            }
+            // $schemaFile = null;
+            // $tmpPackage = $transport->path.$transport->signature.'/';
+            // $filePath = $tmpPackage.$transport->vehicles[$manifestIndex]['filename'];
+            // if (file_exists($filePath)) {
+            //     $payload = include($filePath);
+            //     $schemaFile = $tmpPackage.$payload['class'].'/'.$payload['signature'].'/yandexmarket2.mysql.schema.xml';
+            // }
 
             if (is_file($schemaFile)) {
                 $schema = new SimpleXMLElement($schemaFile, 0, true);
