@@ -74,7 +74,7 @@ class YandexMarket2Package
         $this->builder->createPackage($this->config['name_lower'], $this->config['version'], $this->config['release']);
 
         $this->addEncryptionHelpers();
-        $this->addSchemeFile();
+        // $this->addSchemeFile();
 
         $this->builder->registerNamespace($this->config['name_lower'], false, true,
             '{core_path}components/'.$this->config['name_lower'].'/');
@@ -99,24 +99,19 @@ class YandexMarket2Package
     {
         // /** @noinspection PhpIncludeInspection */
         // require_once $this->config['core'].'model/encryptedvehicle.class.php';
-        $guid = md5(uniqid(rand(), true));
         $this->builder->package->put(new xPDOFileVehicle(), [
-            'vehicle_class'                => xPDOFileVehicle::class,
-            'guid'                         => $guid,
-            'native_key'                   => $guid,
+            'vehicle_class' => xPDOFileVehicle::class,
+            'namespace'     => 'yandexmarket2',
             xPDOTransport::UNINSTALL_FILES => false,
-            'object'                       => [
+            'object'        => [
                 'source' => $this->config['helpers'].'encryptedvehicle.class.php',
-                'target' => "return MODX_CORE_PATH .'cache/default/yandexmarket2/';",
+                'target' => "return MODX_CORE_PATH . 'components/yandexmarket2/';",
             ]
         ]);
 
-        $guid = md5(uniqid(rand(), true));
         $this->builder->package->put(new xPDOScriptVehicle(), [
             'vehicle_class' => xPDOScriptVehicle::class,
             'namespace'     => 'yandexmarket2',
-            'guid'          => $guid,
-            'native_key'    => $guid,
             'object'        => [
                 'source' => $this->config['helpers'].'encryption.php'
             ]
@@ -135,32 +130,6 @@ class YandexMarket2Package
         //     ],
         // ]);
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Initialized encryption');
-    }
-
-    protected function addSchemeFile()
-    {
-        $guid = md5(uniqid(rand(), true));
-        $this->builder->package->put(new xPDOFileVehicle(), [
-            'vehicle_class'                => xPDOFileVehicle::class,
-            'guid'                         => $guid,
-            'native_key'                   => $guid,
-            xPDOTransport::UNINSTALL_FILES => false,
-            'object'                       => [
-                'source' => $this->config['core'].'model/schema/yandexmarket2.mysql.schema.xml',
-                'target' => "return MODX_CORE_PATH .'cache/default/yandexmarket2/';",
-            ]
-        ]);
-
-        // $vehicle = $this->builder->createVehicle(new xPDOFileVehicle(), [
-        //     xPDOTransport::PRESERVE_KEYS => true,
-        //     'vehicle_class'              => xPDOFileVehicle::class,
-        //     'namespace'                  => 'yandexmarket2',
-        //     'object'                     => [
-        //         'source' => $this->config['core'].'model/schema/yandexmarket2.mysql.schema.xml',
-        //         // 'target' => "return MODX_CORE_PATH .'components/yandexmarket2/model/schema/';"
-        //     ]
-        // ]);
-        // $this->builder->putVehicle($vehicle);
     }
 
     protected function defineEncodeKey(): string
@@ -201,7 +170,7 @@ class YandexMarket2Package
                 $data = $response->process();
                 if (!empty($data['key'])) {
                     $key = $data['key'];
-                    $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Received key from modstore');
+                    $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Received key from modstore: '.$key);
                 } elseif (!empty($data->message)) {
                     $this->modx->log(xPDO::LOG_LEVEL_ERROR, $data->message);
                 }
@@ -236,7 +205,6 @@ class YandexMarket2Package
 
         /** @var xPDOManager $manager */
         $manager = $this->modx->getManager();
-        /** @var xPDOGenerator $generator */
         $generator = $manager->getGenerator();
         $generator->parseSchema(
             $this->config['core'].'model/schema/'.$this->config['name_lower'].'.mysql.schema.xml',
@@ -284,14 +252,15 @@ class YandexMarket2Package
         $settings = include($this->config['elements'].'settings.php');
         if (!is_array($settings)) {
             $this->modx->log(modX::LOG_LEVEL_ERROR, 'Could not package in System Settings');
-
             return;
         }
         $attributes = [
-            xPDOTransport::UNIQUE_KEY      => 'key',
-            xPDOTransport::PRESERVE_KEYS   => true,
-            xPDOTransport::UPDATE_OBJECT   => !empty($this->config['update']['settings']),
-            xPDOTransport::RELATED_OBJECTS => false,
+            'vehicle_class'                              => EncryptedVehicle::class,
+            xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
+            xPDOTransport::UNIQUE_KEY                    => 'key',
+            xPDOTransport::PRESERVE_KEYS                 => true,
+            xPDOTransport::UPDATE_OBJECT                 => !empty($this->config['update']['settings']),
+            xPDOTransport::RELATED_OBJECTS               => false,
         ];
         foreach ($settings as $name => $data) {
             /** @var modSystemSetting $setting */
@@ -315,32 +284,33 @@ class YandexMarket2Package
         $menus = include($this->config['elements'].'menus.php');
         if (!is_array($menus)) {
             $this->modx->log(modX::LOG_LEVEL_ERROR, 'Could not package in Menus');
-
             return;
         }
         $attributes = [
-            xPDOTransport::PRESERVE_KEYS   => true,
-            xPDOTransport::UPDATE_OBJECT   => !empty($this->config['update']['menus']),
-            xPDOTransport::UNIQUE_KEY      => 'text',
-            xPDOTransport::RELATED_OBJECTS => true,
+            'vehicle_class'                              => EncryptedVehicle::class,
+            xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
+            xPDOTransport::PRESERVE_KEYS                 => true,
+            xPDOTransport::UPDATE_OBJECT                 => !empty($this->config['update']['menus']),
+            xPDOTransport::UNIQUE_KEY                    => 'text',
+            xPDOTransport::RELATED_OBJECTS               => true,
         ];
-        if (is_array($menus)) {
-            foreach ($menus as $name => $data) {
-                /** @var modMenu $menu */
-                $menu = $this->modx->newObject('modMenu');
-                $menu->fromArray(array_merge([
-                    'text'      => $name,
-                    'parent'    => 'components',
-                    'namespace' => $this->config['name_lower'],
-                    'icon'      => '',
-                    'menuindex' => 0,
-                    'params'    => '',
-                    'handler'   => '',
-                ], $data), '', true, true);
-                $vehicle = $this->builder->createVehicle($menu, $attributes);
-                $this->builder->putVehicle($vehicle);
-            }
+
+        foreach ($menus as $name => $data) {
+            /** @var modMenu $menu */
+            $menu = $this->modx->newObject('modMenu');
+            $menu->fromArray(array_merge([
+                'text'      => $name,
+                'parent'    => 'components',
+                'namespace' => $this->config['name_lower'],
+                'icon'      => '',
+                'menuindex' => 0,
+                'params'    => '',
+                'handler'   => '',
+            ], $data), '', true, true);
+            $vehicle = $this->builder->createVehicle($menu, $attributes);
+            $this->builder->putVehicle($vehicle);
         }
+
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Packaged in '.count($menus).' Menus');
     }
 
@@ -431,11 +401,13 @@ class YandexMarket2Package
             return;
         }
         $this->category_attributes[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Plugins'] = [
-            xPDOTransport::UNIQUE_KEY                => 'name',
-            xPDOTransport::PRESERVE_KEYS             => false,
-            xPDOTransport::UPDATE_OBJECT             => !empty($this->config['update']['plugins']),
-            xPDOTransport::RELATED_OBJECTS           => true,
-            xPDOTransport::RELATED_OBJECT_ATTRIBUTES => [
+            'vehicle_class'                              => EncryptedVehicle::class,
+            xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
+            xPDOTransport::UNIQUE_KEY                    => 'name',
+            xPDOTransport::PRESERVE_KEYS                 => false,
+            xPDOTransport::UPDATE_OBJECT                 => !empty($this->config['update']['plugins']),
+            xPDOTransport::RELATED_OBJECTS               => true,
+            xPDOTransport::RELATED_OBJECT_ATTRIBUTES     => [
                 'PluginEvents' => [
                     xPDOTransport::PRESERVE_KEYS => true,
                     xPDOTransport::UPDATE_OBJECT => true,
@@ -489,9 +461,11 @@ class YandexMarket2Package
         }
 
         $attributes = [
-            xPDOTransport::PRESERVE_KEYS => true,
-            xPDOTransport::UPDATE_OBJECT => !empty($this->config['update']['events']),
-            xPDOTransport::UNIQUE_KEY    => 'name',
+            'vehicle_class'                              => EncryptedVehicle::class,
+            xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
+            xPDOTransport::PRESERVE_KEYS                 => true,
+            xPDOTransport::UPDATE_OBJECT                 => !empty($this->config['update']['events']),
+            xPDOTransport::UNIQUE_KEY                    => 'name',
         ];
 
         foreach ($eventNames as $eventName) {

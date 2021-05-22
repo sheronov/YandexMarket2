@@ -3,8 +3,9 @@
 class EncryptedVehicle extends xPDOObjectVehicle
 {
     public $class = 'EncryptedVehicle';
-    const version = '2.0.0';
-    const cipher  = 'AES-256-CBC';
+    const VERSION = '2.0.0';
+    const CIPHER  = 'AES-256-CBC';
+    const KEY_LENGTH = 40;
 
     /**
      * @param $transport xPDOTransport
@@ -14,6 +15,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
     public function put(&$transport, &$object, $attributes = [])
     {
         parent::put($transport, $object, $attributes);
+
         if (defined('PKG_ENCODE_KEY')) {
             $this->payload['object_encrypted'] = $this->encode($this->payload['object'], PKG_ENCODE_KEY);
             unset($this->payload['object']);
@@ -29,76 +31,10 @@ class EncryptedVehicle extends xPDOObjectVehicle
             }
 
             $this->payload[xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL] = true;
-            $this->payload[xPDOTransport::NATIVE_KEY] = 1;
+            $this->payload[xPDOTransport::NATIVE_KEY] = $this->payload[xPDOTransport::NATIVE_KEY] ?? 1;
 
             $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle encrypted!');
         }
-    }
-
-    /**
-     * @param $transport xPDOTransport
-     *
-     * @return bool
-     */
-    public function store(&$transport)
-    {
-        $stored = parent::store($transport);
-
-        if (defined('PKG_ENCODE_KEY')) {
-            $path = $transport->path.$transport->signature.'/'.$this->payload['class'].'/'.$this->payload['signature'];
-
-            foreach ($this->payload['resolve'] as $k => $v) {
-                if ($v['type'] == 'file') {
-                    if (!$this->encodeTree($path.'/'.$k)) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return $stored;
-    }
-
-    /**
-     * @param  string  $path
-     *
-     * @return bool
-     */
-    protected function encodeTree($path)
-    {
-        $Directory = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
-        $Iterator = new RecursiveIteratorIterator($Directory, RecursiveIteratorIterator::LEAVES_ONLY);
-
-        foreach ($Iterator as $filename => $object) {
-            $contents = file_get_contents($filename);
-            $contents = $this->encode($contents, PKG_ENCODE_KEY);
-            if (!file_put_contents($filename, $contents)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * @param  string  $path
-     *
-     * @return bool
-     */
-    public static function decodeTree($path)
-    {
-        $Directory = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
-        $Iterator = new RecursiveIteratorIterator($Directory, RecursiveIteratorIterator::LEAVES_ONLY);
-
-        foreach ($Iterator as $filename => $object) {
-            $contents = file_get_contents($filename);
-            $contents = EncryptedVehicle::decode($contents);
-            if (!file_put_contents($filename, $contents)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -109,12 +45,13 @@ class EncryptedVehicle extends xPDOObjectVehicle
      */
     public function install(&$transport, $options)
     {
-        if ($this->decodePayloads($transport, 'install')) {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle decrypted!');
-        } else {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Vehicle not decrypted!');
+        if (!$this->decodePayloads($transport, 'install')) {
+            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Package can not be decrypted!');
             return false;
         }
+
+        $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Package decrypted!');
+
         return parent::install($transport, $options);
     }
 
@@ -126,12 +63,13 @@ class EncryptedVehicle extends xPDOObjectVehicle
      */
     public function uninstall(&$transport, $options)
     {
-        if ($this->decodePayloads($transport, 'uninstall')) {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle decrypted!');
-        } else {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Vehicle not decrypted!');
+        if (!$this->decodePayloads($transport, 'uninstall')) {
+            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Package can not be decrypted!');
             return false;
         }
+
+        $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle decrypted!');
+
         return parent::uninstall($transport, $options);
     }
 
@@ -142,9 +80,9 @@ class EncryptedVehicle extends xPDOObjectVehicle
      */
     protected function encode($data, $key)
     {
-        $ivLen = openssl_cipher_iv_length(EncryptedVehicle::cipher);
+        $ivLen = openssl_cipher_iv_length(EncryptedVehicle::CIPHER);
         $iv = openssl_random_pseudo_bytes($ivLen);
-        $cipher_raw = openssl_encrypt(serialize($data), EncryptedVehicle::cipher, $key, OPENSSL_RAW_DATA, $iv);
+        $cipher_raw = openssl_encrypt(serialize($data), EncryptedVehicle::CIPHER, $key, OPENSSL_RAW_DATA, $iv);
         return base64_encode($iv.$cipher_raw);
     }
 
@@ -153,9 +91,9 @@ class EncryptedVehicle extends xPDOObjectVehicle
      *
      * @return string
      */
-    protected static function decode($string)
+    protected function decode($string, $key)
     {
-        $ivLen = openssl_cipher_iv_length(EncryptedVehicle::cipher);
+        $ivLen = openssl_cipher_iv_length(EncryptedVehicle::CIPHER);
         $encoded = base64_decode($string);
         if (ini_get('mbstring.func_overload')) {
             $strLen = mb_strlen($encoded, '8bit');
@@ -165,7 +103,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
             $iv = substr($encoded, 0, $ivLen);
             $cipher_raw = substr($encoded, $ivLen);
         }
-        return unserialize(openssl_decrypt($cipher_raw, EncryptedVehicle::cipher, PKG_ENCODE_KEY, OPENSSL_RAW_DATA,
+        return unserialize(openssl_decrypt($cipher_raw, EncryptedVehicle::CIPHER, $key, OPENSSL_RAW_DATA,
             $iv), ['allowed_classes' => true]);
     }
 
@@ -177,28 +115,25 @@ class EncryptedVehicle extends xPDOObjectVehicle
      */
     protected function decodePayloads(&$transport, $action = 'install')
     {
-        if (isset($this->payload['object_encrypted']) || isset($this->payload['related_objects_encrypted'])) {
-            if (!defined('PKG_ENCODE_KEY')) {
-                if (!$key = $this->getDecodeKey($transport, $action)) {
-                    $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Decode key not received");
-                    return false;
-                }
-                define('PKG_ENCODE_KEY', $key);
-            }
-
-            if (isset($this->payload['object_encrypted'])) {
-                $this->payload['object'] = $this->decode($this->payload['object_encrypted']);
-                unset($this->payload['object_encrypted']);
-            }
-            if (isset($this->payload['related_objects_encrypted'])) {
-                $this->payload['related_objects'] = $this->decode($this->payload['related_objects_encrypted']);
-                unset($this->payload['related_objects_encrypted']);
-            }
-            if (isset($this->payload['related_object_attr_encrypted'])) {
-                $this->payload['related_object_attributes'] = $this->decode($this->payload['related_object_attr_encrypted']);
-                unset($this->payload['related_object_attr_encrypted']);
-            }
+        if (!$key = $this->getDecodeKey($transport, $action)) {
+            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Decode key is not received");
+            return false;
         }
+
+        if (isset($this->payload['object_encrypted'])) {
+            $this->payload['object'] = $this->decode($this->payload['object_encrypted'], $key);
+            unset($this->payload['object_encrypted']);
+        }
+        if (isset($this->payload['related_objects_encrypted'])) {
+            $this->payload['related_objects'] = $this->decode($this->payload['related_objects_encrypted'], $key);
+            unset($this->payload['related_objects_encrypted']);
+        }
+        if (isset($this->payload['related_object_attr_encrypted'])) {
+            $this->payload['related_object_attributes'] = $this->decode($this->payload['related_object_attr_encrypted'],
+                $key);
+            unset($this->payload['related_object_attr_encrypted']);
+        }
+
         return true;
     }
 
@@ -210,6 +145,9 @@ class EncryptedVehicle extends xPDOObjectVehicle
      */
     protected function getDecodeKey(&$transport, $action)
     {
+        if (defined('YANDEXMARKET2_DECODE_KEY')) {
+            return YANDEXMARKET2_DECODE_KEY;
+        }
         $key = false;
         $endpoint = 'package/decode/'.$action;
 
@@ -227,7 +165,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
                     'version'         => $transport->version,
                     'username'        => $provider->username,
                     'api_key'         => $provider->api_key,
-                    'vehicle_version' => self::version,
+                    'vehicle_version' => self::VERSION,
                 ];
 
                 /*
@@ -252,11 +190,11 @@ class EncryptedVehicle extends xPDOObjectVehicle
                         $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, $result->responseError);
                     } else {
                         $response = $result->process();
-                        if (!empty($response['key'])) {
+                        if (!empty($response['key']) && mb_strlen($response['key']) === self::KEY_LENGTH) {
                             $key = $response['key'];
                         } else {
                             $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR,
-                                'Empty key from '.$provider->get('service_url'));
+                                'Invalid key from '.$provider->get('service_url'));
                         }
                     }
                     $transport->xpdo->setLogLevel($level);
@@ -265,6 +203,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
                 $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Set MODStore as a provider in package details");
             }
         }
+        define('YANDEXMARKET2_DECODE_KEY', $key);
         return $key;
     }
 

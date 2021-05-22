@@ -14,7 +14,7 @@ if ($transport->xpdo) {
                         $fileMeta = $transport->xpdo->fromJSON($values['body'], true);
                         $fileTarget = eval($fileMeta['target']);
                         $fileTargetPath = $fileTarget.$fileMeta['name'];
-                        EncryptedVehicle::decodeTree($fileTargetPath);
+                        // EncryptedVehicle::decodeTree($fileTargetPath);
                         $modx->log(xPDO::LOG_LEVEL_DEBUG, "Contents decoded: $fileTargetPath");
                     }
                 }
