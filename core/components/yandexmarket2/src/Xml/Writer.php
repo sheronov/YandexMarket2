@@ -371,8 +371,9 @@ abstract class Writer
             $contextKey = null;
             foreach ($offers as $offer) {
                 $count++;
-                if ($contextKey !== $offer->get('context_key')) {
-                    $contextKey = $offer->get('context_key');
+                $offerContextKey = $offer->get('context_key') ?? $this->modx->getOption('default_context', null, 'web');
+                if ($contextKey !== $offerContextKey) {
+                    $contextKey = $offerContextKey;
                     $this->switchContext($contextKey);
                 }
                 $this->writeOfferField($offerField, $offer, $pls);
@@ -511,9 +512,9 @@ abstract class Writer
         return $data;
     }
 
-    protected function switchContext(string $contextKey)
+    protected function switchContext(string $contextKey = null)
     {
-        $this->modx->switchContext($contextKey);
+        $this->modx->switchContext($contextKey ?? $this->modx->getOption('default_context', null, 'web'));
         $this->modx->setLogLevel($this->logLevel);
         $this->modx->setLogTarget($this->logTarget);
     }

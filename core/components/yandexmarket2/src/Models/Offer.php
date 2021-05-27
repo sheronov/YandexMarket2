@@ -30,7 +30,7 @@ class Offer extends BaseObject
     /**
      * @return modResource|xPDOObject
      */
-    public function getResource(): modResource
+    public function getResource(): xPDOObject
     {
         return $this->object;
     }
