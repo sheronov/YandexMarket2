@@ -527,6 +527,8 @@ abstract class Writer
      */
     protected function writePicturesField(Field $field, array $pls = [])
     {
+        $fieldValue = $field->value; //запоминаем оригинальные свойства поля
+        $fieldType = $field->type;
         if ($this->currentOffer && $pictures = $this->currentOffer->get($field->value)) {
             foreach (explode('||', $pictures) as $i => $picture) {
                 if (($limit = $field->properties['count'] ?? 0) && $i >= $limit) {
@@ -537,6 +539,8 @@ abstract class Writer
                 $this->writeField($field, $pls);
             }
         }
+        $field->value = $fieldValue; //восстанавливаем оригинальные свойства поля
+        $field->type = $fieldType;
     }
 
     protected function log(string $message, bool $withTime = true, int $level = modX::LOG_LEVEL_INFO)
