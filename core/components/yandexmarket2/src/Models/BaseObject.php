@@ -40,6 +40,11 @@ abstract class BaseObject
      */
     abstract public static function getObjectClass(): string;
 
+    public function getObject(): xPDOObject
+    {
+        return $this->object;
+    }
+
     /**
      * @param  int  $id
      * @param  modX  $modX

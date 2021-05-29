@@ -35,12 +35,15 @@ abstract class ObjectsQuery
     protected $queryPrepared = false;
 
     protected $type;
+    protected $offerParentField = 'parent';
 
     public function __construct(Pricelist $pricelist, modX $modx)
     {
         $this->pricelist = $pricelist;
         $this->modx = $modx;
 
+        $this->offerParentField = $this->modx->getOption(sprintf('yandexmarket2_%s_parent_field',
+            mb_strtolower($this->pricelist->class)), null, 'parent'); //у разных объектов свои категории
         $this->strictSql = $this->modx->getOption('yandexmarket2_strict_sql', null, false);
         $this->reduceQueries = $this->modx->getOption('yandexmarket2_reduce_queries', null, false);
         $this->debugMode = $this->modx->getOption('yandexmarket2_debug_mode', null, false);
@@ -252,7 +255,8 @@ abstract class ObjectsQuery
     {
         if (!empty($code)) {
             $this->hasCodeHandlers = true;
-            if (preg_match_all('/\$(?>_pls\[[\"\'])?([0-9A-z_]+)\.([0-9A-z-_]+)\b/m', $code, $matches, PREG_SET_ORDER)) {
+            if (preg_match_all('/\$(?>_pls\[[\"\'])?([0-9A-z_]+)\.([0-9A-z-_]+)\b/m', $code, $matches,
+                PREG_SET_ORDER)) {
                 foreach ($matches as list(, $class, $key)) {
                     if (!in_array($key, $this->classKeys[mb_strtolower($class)] ?? [], true)) {
                         $this->classKeys[mb_strtolower($class)][] = $key;

@@ -44,6 +44,7 @@ abstract class Writer
     protected $contextKey;
     protected $prepareArrays = false;
     protected $arraysGlue    = ', ';
+    protected $offerParentField = 'parent';
 
     public function __construct(QueryService $pricelistService)
     {
@@ -65,6 +66,8 @@ abstract class Writer
         $this->xml = new XMLWriter();
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
         $this->arraysGlue = $this->modx->getOption('yandexmarket2_arrays_glue', null, ', ');
+        $this->offerParentField = $this->modx->getOption(sprintf('yandexmarket2_%s_parent_field',
+            mb_strtolower($this->pricelist->class)), null, 'parent'); //у разных объектов свои категории
     }
 
     protected function writeHeader()
@@ -371,8 +374,9 @@ abstract class Writer
             $contextKey = null;
             foreach ($offers as $offer) {
                 $count++;
-                if ($contextKey !== $offer->get('context_key')) {
-                    $contextKey = $offer->get('context_key');
+                $offerContextKey = $offer->get('context_key') ?? $this->modx->getOption('default_context', null, 'web');
+                if ($contextKey !== $offerContextKey) {
+                    $contextKey = $offerContextKey;
                     $this->switchContext($contextKey);
                 }
                 $this->writeOfferField($offerField, $offer, $pls);
@@ -449,7 +453,7 @@ abstract class Writer
     {
         $offer->data = [];
         $data = [];
-        $resource = $offer->getResource();
+        $resource = $offer->getObject();
         $offerArray = $offer->toArray();
         $data['offer'] = $offerArray;
         $data['Offer'] = &$data['offer'];
@@ -467,7 +471,7 @@ abstract class Writer
         $data['option'] = [];
         $data['tv'] = [];
         $data['category'] = [
-            'id' => $data['parent'] ?? 0
+            'id' => $data[$this->offerParentField] ?? 0
         ];
         $data['categoryTV'] = [];
         foreach ($offerArray as $k => $val) {
@@ -511,9 +515,9 @@ abstract class Writer
         return $data;
     }
 
-    protected function switchContext(string $contextKey)
+    protected function switchContext(string $contextKey = null)
     {
-        $this->modx->switchContext($contextKey);
+        $this->modx->switchContext($contextKey ?? $this->modx->getOption('default_context', null, 'web'));
         $this->modx->setLogLevel($this->logLevel);
         $this->modx->setLogTarget($this->logTarget);
     }
@@ -526,6 +530,8 @@ abstract class Writer
      */
     protected function writePicturesField(Field $field, array $pls = [])
     {
+        $fieldValue = $field->value; //запоминаем оригинальные свойства поля
+        $fieldType = $field->type;
         if ($this->currentOffer && $pictures = $this->currentOffer->get($field->value)) {
             foreach (explode('||', $pictures) as $i => $picture) {
                 if (($limit = $field->properties['count'] ?? 0) && $i >= $limit) {
@@ -536,6 +542,8 @@ abstract class Writer
                 $this->writeField($field, $pls);
             }
         }
+        $field->value = $fieldValue; //восстанавливаем оригинальные свойства поля
+        $field->type = $fieldType;
     }
 
     protected function log(string $message, bool $withTime = true, int $level = modX::LOG_LEVEL_INFO)

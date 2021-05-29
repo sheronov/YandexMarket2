@@ -15,10 +15,12 @@ class OffersQuery extends ObjectsQuery
     {
         $categoriesQuery = clone $query;
         $categoriesQuery->query['columns'] = '';
-        $categoriesQuery->select("DISTINCT `modResource`.`id`");
+        $categoriesQuery->select(sprintf("DISTINCT `%s`.`id`", $query->getAlias()));
         $categoriesQuery->prepare();
-        $this->query->where(sprintf("`%s`.`parent` IN (%s)", $this->query->getAlias(), $categoriesQuery->toSQL(true)));
-        $this->modx->log(modX::LOG_LEVEL_INFO, 'Добавлено условие parent IN (select id from parentsQuery) для товаров', '',
+        $this->query->where(sprintf("`%s`.`%s` IN (%s)", $this->query->getAlias(), $this->offerParentField,
+            $categoriesQuery->toSQL(true)));
+        $this->modx->log(modX::LOG_LEVEL_INFO,
+            "Добавлено условие {$this->offerParentField} IN (select id from parentsQuery) для товаров", '',
             'YandexMarket2');
         $this->usesOtherQuery = true;
     }
@@ -92,7 +94,7 @@ class OffersQuery extends ObjectsQuery
             case 'parent':
                 if (!isset($this->join['Category'])) {
                     $this->query->leftJoin('modResource', 'Category',
-                        sprintf('`Category`.`id` = `%s`.`parent`', $this->query->getAlias()));
+                        sprintf('`Category`.`id` = `%s`.`%s`', $this->query->getAlias(), $this->offerParentField));
                     $this->join['Category'] = true;
                 }
                 foreach ($keys as $key) {
@@ -104,7 +106,7 @@ class OffersQuery extends ObjectsQuery
             case 'parenttv':
                 if (!isset($this->join['Category'])) {
                     $this->query->leftJoin('modResource', 'Category',
-                        sprintf('`Category`.`id` = `%s`.`parent`', $this->query->getAlias()));
+                        sprintf('`Category`.`id` = `%s`.`%s`', $this->query->getAlias(), $this->offerParentField));
                     $this->join['Category'] = true;
                 }
                 $qTvs = $this->modx->newQuery('modTemplateVar', ['name:IN' => $keys]);

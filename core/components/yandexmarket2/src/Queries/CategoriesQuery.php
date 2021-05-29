@@ -13,7 +13,7 @@ class CategoriesQuery extends ObjectsQuery
         $offersQuery = clone $query;
         $offersQuery->query['columns'] = '';
         $offersQuery->query['groupby'] = '';
-        $offersQuery->select(sprintf('DISTINCT `%s`.`parent`', $offersQuery->getAlias()));
+        $offersQuery->select(sprintf('DISTINCT `%s`.`%s`', $offersQuery->getAlias(), $this->offerParentField));
         $offersQuery->prepare();
         $this->query->where(sprintf('`modResource`.`id` IN (%s)', $offersQuery->toSQL(true)));
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Добавлено условие id IN (offers ids) для категорий', '',
