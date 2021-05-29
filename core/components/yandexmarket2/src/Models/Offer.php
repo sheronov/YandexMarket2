@@ -4,35 +4,29 @@ namespace YandexMarket\Models;
 
 use miniShop2;
 use modResource;
+use msProduct;
 use xPDOObject;
 use YandexMarket\Service;
 
 /**
  * @package YandexMarket\Models
- * @property \msProduct|modResource $object
+ * @property msProduct|modResource|xPDOObject $object
  */
 class Offer extends BaseObject
 {
     /** @var Pricelist */
     protected $pricelist;
 
+    // под оффером может быть не только modResource, а любой XPDO object
     public static function getObjectClass(): string
     {
-        return modResource::class;
+        return xPDOObject::class;
     }
 
     public function setPricelist(Pricelist $pricelist): Offer
     {
         $this->pricelist = $pricelist;
         return $this;
-    }
-
-    /**
-     * @return modResource|xPDOObject
-     */
-    public function getResource(): xPDOObject
-    {
-        return $this->object;
     }
 
     public function get(string $field)

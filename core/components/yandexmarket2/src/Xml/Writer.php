@@ -44,6 +44,7 @@ abstract class Writer
     protected $contextKey;
     protected $prepareArrays = false;
     protected $arraysGlue    = ', ';
+    protected $offerParentField = 'parent';
 
     public function __construct(QueryService $pricelistService)
     {
@@ -65,6 +66,8 @@ abstract class Writer
         $this->xml = new XMLWriter();
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
         $this->arraysGlue = $this->modx->getOption('yandexmarket2_arrays_glue', null, ', ');
+        $this->offerParentField = $this->modx->getOption(sprintf('yandexmarket2_%s_parent_field',
+            mb_strtolower($this->pricelist->class)), null, 'parent'); //у разных объектов свои категории
     }
 
     protected function writeHeader()
@@ -450,7 +453,7 @@ abstract class Writer
     {
         $offer->data = [];
         $data = [];
-        $resource = $offer->getResource();
+        $resource = $offer->getObject();
         $offerArray = $offer->toArray();
         $data['offer'] = $offerArray;
         $data['Offer'] = &$data['offer'];
@@ -468,7 +471,7 @@ abstract class Writer
         $data['option'] = [];
         $data['tv'] = [];
         $data['category'] = [
-            'id' => $data['parent'] ?? 0
+            'id' => $data[$this->offerParentField] ?? 0
         ];
         $data['categoryTV'] = [];
         foreach ($offerArray as $k => $val) {
