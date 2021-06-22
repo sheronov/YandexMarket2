@@ -35,23 +35,29 @@ class Field extends BaseObject
     const TYPE_CDATA_VALUE = 12; //значение из поля товара обернуть в CDATA
     const TYPE_PICTURE     = 13; //изображения предложения
 
-    const TYPE_EMPTY = 20; //пустой, только для атрибутов
+    const TYPE_CATEGORIES_TRANSPARENT = 14; //сам элемент не попадает в выгрузку, только сами категории
+    const TYPE_OFFERS_TRANSPARENT     = 15; //сам элемент не попадает в выгрузку, только сами предложнеия
+    const TYPE_RAW_XML                = 19; //сырой XML
+    const TYPE_EMPTY                  = 20; //пустой, только для атрибутов
 
     const TYPE_DEFAULT = self::TYPE_VALUE; //поле по умолчанию
     const TYPES_DATA   = [
-        Field::TYPE_VALUE       => ['group' => ['offer']],
-        Field::TYPE_CDATA_VALUE => ['group' => ['offer']],
-        Field::TYPE_TEXT        => ['group' => ['offer', 'shop']],
-        Field::TYPE_PARENT      => ['group' => ['offer', 'shop'], 'parent' => true],
-        Field::TYPE_EMPTY       => ['group' => ['offer', 'shop']],
-        Field::TYPE_PICTURE     => ['group' => ['offer']],
-        Field::TYPE_CURRENCIES  => ['group' => ['shop'], 'unique' => true],
-        Field::TYPE_CATEGORIES  => ['group' => ['shop'], 'unique' => true],
-        Field::TYPE_OFFERS      => ['group' => ['shop'], 'unique' => true],
-        Field::TYPE_ROOT        => ['hidden' => true, 'parent' => true, 'single' => true],
-        Field::TYPE_OFFER       => ['hidden' => true, 'parent' => true, 'single' => true],
-        Field::TYPE_CATEGORY    => ['group' => ['categories'], 'hidden' => true, 'single' => true],
-        Field::TYPE_SHOP        => ['hidden' => true, 'parent' => true, 'single' => true],
+        Field::TYPE_VALUE                  => ['group' => ['offer']],
+        Field::TYPE_CDATA_VALUE            => ['group' => ['offer']],
+        Field::TYPE_TEXT                   => ['group' => ['offer', 'shop']],
+        Field::TYPE_PARENT                 => ['group' => ['offer', 'shop'], 'parent' => true],
+        Field::TYPE_EMPTY                  => ['group' => ['offer', 'shop']],
+        Field::TYPE_PICTURE                => ['group' => ['offer']],
+        Field::TYPE_CURRENCIES             => ['group' => ['shop'], 'unique' => true],
+        Field::TYPE_CATEGORIES             => ['group' => ['shop'], 'unique' => true],
+        Field::TYPE_OFFERS                 => ['group' => ['shop'], 'unique' => true],
+        Field::TYPE_ROOT                   => ['hidden' => true, 'parent' => true, 'single' => true],
+        Field::TYPE_OFFER                  => ['hidden' => true, 'parent' => true, 'single' => true],
+        Field::TYPE_CATEGORY               => ['group' => ['categories'], 'hidden' => true, 'single' => true],
+        Field::TYPE_SHOP                   => ['hidden' => true, 'parent' => true, 'single' => true],
+        Field::TYPE_RAW_XML                => ['group' => ['offer', 'shop']],
+        Field::TYPE_CATEGORIES_TRANSPARENT => ['group' => ['shop'], 'unique' => true],
+        Field::TYPE_OFFERS_TRANSPARENT     => ['group' => ['shop'], 'unique' => true],
     ];
 
     /** @var null|Field */

@@ -18,11 +18,12 @@ export default {
         isSimpleString: () => ({type}) => parseInt(type) === 0, //простое текстовое поле без подстановки значений
         isEmptyType: () => ({type}) => parseInt(type) === 20, //пустой элемент только для атрибутов
         isRoot: () => ({type}) => parseInt(type) === 1, // рут элемент
-        isCategories: () => ({type}) => parseInt(type) === 4,
+        isCategories: () => ({type}) => [4, 14].indexOf(parseInt(type)) !== -1,
         isCurrencies: () => ({type}) => parseInt(type) === 3,
-        isOffers: () => ({type}) => parseInt(type) === 5,
+        isOffers: () => ({type}) => [5, 15].indexOf(parseInt(type)) !== -1,
         isShop: () => ({type}) => parseInt(type) === 2,
         isPicture: () => ({type}) => parseInt(type) === 13,
+        isRawXml: () => ({type}) => parseInt(type) === 19,
         availableTypes: (state, getters) => (group, pricelist) => {
             return getters.selectableTypes.filter(type => {
                 let typeGroup = type.group || [];

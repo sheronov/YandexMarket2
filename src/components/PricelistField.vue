@@ -54,7 +54,7 @@
               placeholder="Выберите тип"
               :menu-props="{offsetY: true}"
               :attach="true"
-              :disabled="!!(field.type && !availableType)"
+              :_disabled="!!(field.type && !availableType)"
               hide-details
               solo
               dense

@@ -57,6 +57,12 @@
           </template>
         </v-text-field>
       </template>
+      <template v-else-if="isRawXml(field)">
+        <div class="text-caption">
+          Результат не оборачивается. Убедитесь, что формируете валидный XML.
+          Это стандартный Fenom-обработчик, где доступны соответствующие поля.
+        </div>
+      </template>
       <template v-else>
         <v-combobox
             :value="value"
@@ -176,7 +182,8 @@ export default {
       'isCategories',
       'isOffers',
       'isShop',
-      'isPicture'
+      'isPicture',
+      'isRawXml'
     ]),
     classKeys() {
       let group = null;
@@ -204,7 +211,7 @@ export default {
       return 'Поле';
     },
     openedCode() {
-      return this.field.handler || this.code;
+      return this.field.handler || this.code || this.isRawXml(this.field);
     },
   },
   methods: {

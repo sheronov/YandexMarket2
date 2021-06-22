@@ -42,8 +42,8 @@ abstract class Writer
     protected $logTarget;
     protected $logLevel;
     protected $contextKey;
-    protected $prepareArrays = false;
-    protected $arraysGlue    = ', ';
+    protected $prepareArrays    = false;
+    protected $arraysGlue       = ', ';
     protected $offerParentField = 'parent';
 
     public function __construct(QueryService $pricelistService)
@@ -133,10 +133,12 @@ abstract class Writer
                 $this->writeValuableField($field, $pls);
                 break;
             case Field::TYPE_CATEGORIES:
+            case Field::TYPE_CATEGORIES_TRANSPARENT:
                 $categoriesCount = $this->writeCategoriesField($field, $pls);
                 $this->log(sprintf('Записано категорий: %d', $categoriesCount));
                 break;
             case Field::TYPE_OFFERS:
+            case Field::TYPE_OFFERS_TRANSPARENT:
                 $offersCount = $this->writeOffersField($field, $pls);
                 $this->log(sprintf('Записано товаров: %d', $offersCount));
                 break;
@@ -152,6 +154,9 @@ abstract class Writer
                     $this->writeAttributes($attributes, $pls);
                     $this->xml->endElement();
                 }
+                break;
+            case Field::TYPE_RAW_XML:
+                $this->writeRawXmlField($field, $pls);
                 break;
             default:
                 $this->errorLog("Неизвестный тип \"{$field->type}\" для поля \"{$field->name}\" (ID: {$field->id})");
@@ -203,6 +208,18 @@ abstract class Writer
         }
 
         $this->xml->endElement();
+    }
+
+    protected function writeRawXmlField(Field $field, array $pls = [])
+    {
+        $value = $this->prepareValue($this->resolveColumn($field->value, $pls), $field->handler, $pls);
+        if($value === '' || $value === null) {
+            if($this->preview) {
+                $this->writeComment("Пустой сырой XML, пропущен элемент {$field->name}");
+            }
+            return;
+        }
+        $this->xml->writeRaw($value);
     }
 
     /**
@@ -334,8 +351,10 @@ abstract class Writer
     protected function writeCategoriesField(Field $field, array $pls = []): int
     {
         $count = 0;
-        $this->xml->startElement($field->name);
-        $this->writeAttributes($field->getAttributes(), $pls);
+        if ($field->type !== Field::TYPE_CATEGORIES_TRANSPARENT) {
+            $this->xml->startElement($field->name);
+            $this->writeAttributes($field->getAttributes(), $pls);
+        }
 
         if (($children = $field->getChildren()) && $categoryField = reset($children)) {
             $categories = $this->pricelistService->categoriesGenerator();
@@ -348,7 +367,9 @@ abstract class Writer
         }
 
         $this->currentCategory = null;
-        $this->xml->endElement();
+        if ($field->type !== Field::TYPE_CATEGORIES_TRANSPARENT) {
+            $this->xml->endElement();
+        }
 
         return $count;
     }
@@ -363,8 +384,10 @@ abstract class Writer
     protected function writeOffersField(Field $field, array $pls = []): int
     {
         $count = 0;
-        $this->xml->startElement($field->name);
-        $this->writeAttributes($field->getAttributes(), $pls);
+        if ($field->type !== Field::TYPE_OFFERS_TRANSPARENT) {
+            $this->xml->startElement($field->name);
+            $this->writeAttributes($field->getAttributes(), $pls);
+        }
 
         if (($children = $field->getChildren()) && $offerField = reset($children)) {
             $offersAlias = $this->pricelistService->getOffersAlias();
@@ -390,7 +413,9 @@ abstract class Writer
         }
 
         $this->currentOffer = null;
-        $this->xml->endElement();
+        if ($field->type !== Field::TYPE_OFFERS_TRANSPARENT) {
+            $this->xml->endElement();
+        }
         return $count;
     }
 
