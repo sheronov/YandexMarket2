@@ -261,7 +261,7 @@ abstract class Writer
     {
         $value = $input;
         if ($this->prepareArrays && mb_strpos($value, '||') !== false) {
-            // TODO: когда-нибудь в PricelistService сделать учёт тех полей, что по типу попадают и джойнятся там же
+            // TODO: когда-нибудь в PricelistService сделать учёт тех полей, что по типу попадают и джойнятся там же (чтобы если в опции одно значение - то тоже было массивом)
             $value = explode('||', $value);
         }
         if (!empty($handler) && $this->pdoTools) {
