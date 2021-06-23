@@ -2,6 +2,7 @@ Changelog for YandexMarket2.
 
 1.2.0-beta
 ==============
+- добавлен провайдер Google RSS 2.0 для Google Merchant Center и Facebook
 - добавлены 3 типа для поля (сырой XML и прозрачные обёртки для предложений и категорий)
 
 1.1.1-beta (29.05.2021)

@@ -88,6 +88,9 @@ class Service
     public function getMarketplaces(): array
     {
         return array_map(function (array $marketplace) {
+            if(!empty($marketplace['lexicon'])) {
+                $this->modx->lexicon->load($marketplace['lexicon']);
+            }
             $type = $marketplace['key'];
             $marketplace['value'] = $type;
             $marketplace['text'] = $this->getLexicon('ym2_marketplace_'.$type) ?: $type;

@@ -25,12 +25,11 @@ class ymPricelistCreateProcessor extends modObjectCreateProcessor
     {
         if (empty($this->getProperty('name', ''))) {
             $this->modx->error->addField('name', $this->modx->lexicon('ym2_pricelist_name_err_ns'));
+        } elseif (empty($this->getProperty('type', ''))) {
+            $this->modx->error->addField('type', $this->modx->lexicon('ym2_pricelist_type_err_ns'));
         }
         if (!$this->getProperty('file')) {
             $this->setProperty('file', 'pricelist-'.date('Y-m-d-H-i-s').'.xml');
-        }
-        if (!$this->getProperty('type')) {
-            $this->setProperty('type', 'yandex.market');
         }
         $this->object->set('created_on', date('Y-m-d H:i:s'));
         $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);

@@ -30,6 +30,14 @@ abstract class Marketplace
     abstract public static function getKey(): string;
 
     /**
+     * Неймспейс(тема) лексикона (обычно название файла из папки /lexicon/lang без .inc.php)
+     */
+    public static function getLexiconNs(): string
+    {
+        return 'yandexmarket2:'.str_replace('.', '', static::getKey());
+    }
+
+    /**
      * Обязательная структура, которая будет добавлена при создании прайс-листа.
      * Должна содержать поле с типом \YandexMarket\Models\Field::TYPE_SHOP
      *
@@ -67,6 +75,7 @@ abstract class Marketplace
                 $marketplaces[$class::getKey()] = [
                     'class'        => $class,
                     'key'          => $class::getKey(),
+                    'lexicon'      => $class::getLexiconNs(),
                     'shop_fields'  => $class::getShopFields(),
                     'offer_fields' => $class::getOfferFields()
                 ];
