@@ -81,7 +81,7 @@
       </v-flex>
       <v-spacer/>
     </v-row>
-    <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
+    <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers" v-if="offerField">
       <pricelist-offer-field
           :item="offerField"
           :fields="pricelist.fields"
@@ -92,6 +92,9 @@
           v-on="$listeners"
       />
     </v-expansion-panels>
+    <v-alert v-else type="warning">
+       Не найден элемент с типом offer(6). Возможно, был удалён элемент offers. Пересоздайте прайс-лист.
+    </v-alert>
   </div>
 </template>
 

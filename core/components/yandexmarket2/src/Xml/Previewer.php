@@ -69,7 +69,12 @@ class Previewer extends Writer
     public function previewShop(): string
     {
         if ($shopField = $this->pricelistService->getFieldByType(Field::TYPE_SHOP)) {
-            $this->writeField($shopField, [], [Field::TYPE_CATEGORIES, Field::TYPE_OFFERS,]);
+            $this->writeField($shopField, [], [
+                Field::TYPE_CATEGORIES,
+                Field::TYPE_OFFERS,
+                Field::TYPE_OFFERS_TRANSPARENT,
+                Field::TYPE_CATEGORIES_TRANSPARENT
+            ]);
         } else {
             $this->writeComment(' Не найден элемент shop ');
         }
