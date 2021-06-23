@@ -165,6 +165,9 @@ class Pricelist extends BaseObject
         }, array_values($this->getConditions()));
 
         if ($withValues) {
+            $source = $this->getMarketplace();
+            $this->modx->lexicon->load($source::getLexiconNs());
+
             $data['fields'] = array_map(static function (Field $field) {
                 return $field->toArray();
             }, array_values($this->getFields()));
