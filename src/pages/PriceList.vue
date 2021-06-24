@@ -1,10 +1,18 @@
 <template>
   <div class="yandexmarket-pricelist">
     <v-tabs v-if="id" class="yandexmarket-pricelist-tabs pr-15" background-color="transparent" :height="40">
-      <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>Настройки магазина</v-tab>
-      <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>Настройки категорий</v-tab>
-      <v-tab :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>Настройки предложений</v-tab>
-      <v-tab :to="{name: 'pricelist.generate', params: {id: id}}" :ripple="false" exact>Выгрузка и параметры</v-tab>
+      <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>
+        Настройки магазина
+      </v-tab>
+      <v-tab v-if="hasCategories" :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>
+        Настройки категорий
+      </v-tab>
+      <v-tab v-if="hasOffers" :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>
+        Настройки предложений
+      </v-tab>
+      <v-tab :to="{name: 'pricelist.generate', params: {id: id}}" :ripple="false" exact>
+        Выгрузка и параметры
+      </v-tab>
     </v-tabs>
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
@@ -97,6 +105,12 @@ export default {
   computed: {
     showPreview() {
       return ['pricelist', 'pricelist.categories', 'pricelist.offers'].indexOf(this.$route.name) !== -1;
+    },
+    hasCategories() {
+      return this.pricelist && this.pricelist.fields.find(field => [4,14].indexOf(field.type) !== -1);
+    },
+    hasOffers() {
+      return this.pricelist && this.pricelist.fields.find(field => [5,15].indexOf(field.type) !== -1);
     }
   },
   methods: {

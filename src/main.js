@@ -4,6 +4,8 @@ import vuetify from './plugins/vuetify';
 import axios from "axios";
 import router from "./router";
 import store from './store';
+import * as Sentry from "@sentry/vue";
+import { Integrations } from "@sentry/tracing";
 
 const appId = 'yandexmarket-app';
 
@@ -34,6 +36,7 @@ window.onload = function () {
     let ym2Config = window.ym2Config || (process.env.NODE_ENV !== 'production' ? {
         modAuth: process.env.VUE_APP_MOD_AUTH || '',
         apiUrl: process.env.VUE_APP_API_URL || '',
+        sentry: process.env.VUE_APP_SENTRY || '',
         xmlLoaded: true,
         lang: {}
     } : {});
@@ -42,6 +45,15 @@ window.onload = function () {
     axios.defaults.headers.common['modAuth'] = ym2Config.modAuth;
     if (process.env.NODE_ENV !== 'production' && process.env.VUE_APP_COOKIE) {
         axios.defaults.headers.common['modCookie'] = process.env.VUE_APP_COOKIE;
+    }
+
+    if(ym2Config.sentry) {
+        Sentry.init({
+            Vue,
+            dsn: ym2Config.sentry,
+            integrations: [new Integrations.BrowserTracing()],
+            tracesSampleRate: 1.0,
+        });
     }
 
     Vue.prototype.$xmlLoaded = ym2Config.xmlLoaded;
