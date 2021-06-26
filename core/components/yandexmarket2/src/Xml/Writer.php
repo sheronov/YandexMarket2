@@ -6,6 +6,8 @@ use Exception;
 use modX;
 use msProduct;
 use pdoTools;
+use RecursiveArrayIterator;
+use RecursiveIteratorIterator;
 use XMLWriter;
 use YandexMarket\Handlers\XmlJevix;
 use YandexMarket\Models\Attribute;
@@ -39,6 +41,8 @@ abstract class Writer
     protected $start   = 0;
     protected $preview = false;
 
+    protected $simpleStore = [];
+
     protected $logTarget;
     protected $logLevel;
     protected $contextKey;
@@ -61,7 +65,7 @@ abstract class Writer
         $this->logTarget = $this->modx->getLogTarget();
         $this->logLevel = $this->modx->getLogLevel();
         if (!$this->initializePdoTools()) {
-            $this->log('Не найден pdoTools. Fenom-обработчики будут пропущены', false, modX::LOG_LEVEL_WARN);
+            $this->log('Не найден pdoTools. Кода будет обработан парсером MODX', false, modX::LOG_LEVEL_WARN);
         }
         $this->xml = new XMLWriter();
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
@@ -213,8 +217,8 @@ abstract class Writer
     protected function writeRawXmlField(Field $field, array $pls = [])
     {
         $value = $this->prepareValue($this->resolveColumn($field->value, $pls), $field->handler, $pls);
-        if($value === '' || $value === null) {
-            if($this->preview) {
+        if ($value === '' || $value === null) {
+            if ($this->preview) {
                 $this->writeComment("Пустой сырой XML, пропущен элемент {$field->name}");
             }
             return;
@@ -281,30 +285,63 @@ abstract class Writer
             // TODO: когда-нибудь в PricelistService сделать учёт тех полей, что по типу попадают и джойнятся там же (чтобы если в опции одно значение - то тоже было массивом)
             $value = explode('||', $value);
         }
-        if (!empty($handler) && $this->pdoTools) {
-            if (mb_stripos(trim($handler), '@INLINE') !== 0) {
-                $handler = '@INLINE '.trim($handler);
-            }
-            foreach ($pls as $key => $data) {
-                if (is_object($data)) {
-                    if (method_exists($data, 'toArray')) {
-                        $pls[$key] = $data->toArray();
-                    } else {
-                        unset($pls[$key]);
-                    }
-                }
-            }
-            $value = $this->pdoTools->getChunk($handler, array_merge(
-                Service::getSitePaths($this->modx), //{site_url} и т.д.
-                $pls,
-                [
-                    'input'     => $value,
-                    'pricelist' => $this->pricelist->toArray()
-                ]
-            ), true);
+        if (!empty($handler)) {
+            $pls['input'] = $value;
+            $pls['pricelist'] = $this->pricelist->toArray();
+            $value = $this->prepareCodeHandler($handler, $pls);
         }
 
         return is_array($value) ? implode($this->arraysGlue, $value) : ($value ?? '');
+    }
+
+    protected function prepareCodeHandler(string $code, array $pls = [])
+    {
+        foreach ($pls as $key => $data) {
+            if (is_object($data)) {
+                if (method_exists($data, 'toArray')) {
+                    $pls[$key] = $data->toArray();
+                } else {
+                    unset($pls[$key]);
+                }
+            }
+        }
+
+        $pls = array_merge(Service::getSitePaths($this->modx), $pls);
+
+        if (isset($this->pdoTools)) {
+            if (mb_stripos(trim($code), '@INLINE') !== 0) {
+                $code = '@INLINE '.trim($code);
+            }
+            return $this->pdoTools->getChunk($code, $pls, true);
+        }
+
+        $cacheKey = md5($code);
+        if (!$element = $this->simpleStore[$cacheKey] ?? null) {
+            /** @var \modChunk $element */
+            $element = $this->modx->newObject('modChunk', ['name' => $cacheKey]);
+            $element->setContent(str_replace(['{{', '}}'], ['[[', ']]'], $code));
+            $this->simpleStore[$cacheKey] = $element;
+        }
+        $element->_cacheable = false;
+        $element->_processed = false;
+        $element->_content = '';
+
+        return $element->process($this->flattenArray($pls), str_replace(['{{', '}}'], ['[[', ']]'], $code));
+    }
+
+    protected function flattenArray(array $array): array
+    {
+        $result = [];
+        $recursiveIterator = new RecursiveIteratorIterator(new RecursiveArrayIterator($array));
+        foreach ($recursiveIterator as $leafValue) {
+            $keys = [];
+            foreach (range(0, $recursiveIterator->getDepth()) as $depth) {
+                $keys[] = $recursiveIterator->getSubIterator($depth)->key();
+            }
+            $result[implode('.', $keys)] = $leafValue;
+        }
+
+        return $result;
     }
 
     protected function initializePdoTools(): bool

@@ -167,6 +167,30 @@ abstract class Marketplace
         ];
     }
 
+    public function getChildrenFieldsForType(int $type)
+    {
+        switch ($type) {
+            case Field::TYPE_ROOT:
+                return $this::getRootFields();
+            case Field::TYPE_SHOP:
+                return $this::getShopFields();
+            case Field::TYPE_OFFER:
+                return $this::getOfferFields();
+            case Field::TYPE_OFFERS:
+            case Field::TYPE_OFFERS_TRANSPARENT:
+            case Field::TYPE_CATEGORIES:
+            case Field::TYPE_CATEGORIES_TRANSPARENT:
+                $shopFields = $this::getShopFields();
+                foreach ($shopFields as $shopField) {
+                    if ($type === ($shopField['type'] ?? Field::TYPE_DEFAULT) && !empty($shopField['fields'])) {
+                        return $shopField['fields'];
+                    }
+                }
+                break;
+        }
+        return null;
+    }
+
     /**
      * @param  string  $key
      * @param  null  $default
@@ -178,4 +202,5 @@ abstract class Marketplace
     {
         return $this->modx->getOption($prefix.$key, null, $default);
     }
+
 }

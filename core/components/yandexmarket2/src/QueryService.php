@@ -75,12 +75,12 @@ class QueryService
         return $this->modx->getCount($countQuery->getClass(), $countQuery);
     }
 
-    public function isOffersPluginPrepared()
+    public function isOffersPluginPrepared(): bool
     {
         return $this->offersQuery->hasPlugins();
     }
 
-    public function isCategoriesPluginPrepared()
+    public function isCategoriesPluginPrepared(): bool
     {
         return $this->categoriesQuery->hasPlugins();
     }

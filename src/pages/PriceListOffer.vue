@@ -92,8 +92,8 @@
           v-on="$listeners"
       />
     </v-expansion-panels>
-    <v-alert v-else type="warning">
-       Не найден элемент с типом offer(6). Возможно, был удалён элемент offers. Пересоздайте прайс-лист.
+    <v-alert v-else type="warning" dense border="left">
+       Не найден элемент с типом offer(6). Возможно, был удалён элемент offers. Добавьте элемент предложений или пересоздайте прайс-лист.
     </v-alert>
   </div>
 </template>

@@ -11,7 +11,6 @@
         @tree:reload="treeReload"
     />
 
-    <!--    <code>ids: {{ selected.join(',') }}</code>-->
     <template v-if="categoryField">
       <h4 class="mb-1 mt-2">Настройки элемента категории в XML</h4>
       <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
@@ -26,6 +25,9 @@
         />
       </v-expansion-panels>
     </template>
+    <v-alert v-else type="info" color="grey" dense border="left">
+      Не найден элемент с типом category(7). Возможно, был удалён элемент categories. Будут учитываться только условия.
+    </v-alert>
   </div>
 </template>
 

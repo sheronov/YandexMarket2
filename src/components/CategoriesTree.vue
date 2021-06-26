@@ -110,7 +110,7 @@ export default {
 
       this.loadCategories(category)
           .then((children) => {
-            if (category.hasChildren) {
+            if (category.hasChildren && this.$refs.categoriesTree) {
               this.$refs.categoriesTree.updateOpen(category[this.itemKey], true);
             }
             this.selectCategory(!category.selected, category, true);
@@ -136,7 +136,7 @@ export default {
               if (child.hasChildren) {
                 this.awaitChildren[child[this.itemKey]] = true;
               }
-              if (child.expanded) {
+              if (child.expanded && this.$refs.categoriesTree) {
                 setTimeout(() => {
                   this.$refs.categoriesTree.updateOpen(child[this.itemKey], true);
                   // we have to wait before the tree created children nodes
