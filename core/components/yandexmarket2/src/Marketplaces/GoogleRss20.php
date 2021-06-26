@@ -93,6 +93,7 @@ class GoogleRss20 extends Marketplace
             ],
             'g:description'               => [
                 'type'     => Field::TYPE_DEFAULT,
+                'required' => true
             ],
             'g:link'                      => [
                 'type'     => Field::TYPE_DEFAULT,
@@ -100,27 +101,45 @@ class GoogleRss20 extends Marketplace
             ],
             'g:image_link'                => [
                 'type'     => Field::TYPE_DEFAULT,
-            ],
-            'g:price'                     => [
-                'type'     => Field::TYPE_DEFAULT,
-                'required' => true
-            ],
-            'g:condition'                 => [
-                'type'     => Field::TYPE_TEXT,
                 'required' => true
             ],
             'g:availability'              => [
                 'type'     => Field::TYPE_TEXT,
                 'required' => true
             ],
+            'g:availability_date'         => [
+                'type'     => Field::TYPE_TEXT,
+                'optional' => true
+            ],
+            'g:price'                     => [
+                'type'     => Field::TYPE_DEFAULT,
+                'required' => true
+            ],
             'g:brand'                     => [
-                'type' => Field::TYPE_DEFAULT,
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true
             ],
             'g:gtin'                      => [
                 'type'     => Field::TYPE_DEFAULT,
                 'optional' => true,
             ],
+            'g:mpn'                       => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true,
+            ],
+            'g:identifier_exists'         => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true
+            ],
+            'g:additional_image_link'     => [
+                'type'     => Field::TYPE_PICTURE,
+                'optional' => true
+            ],
             'g:google_product_category'   => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true,
+            ],
+            'g:product_type'              => [
                 'type'     => Field::TYPE_DEFAULT,
                 'optional' => true,
             ],
@@ -132,24 +151,12 @@ class GoogleRss20 extends Marketplace
                 'type'     => Field::TYPE_DEFAULT,
                 'optional' => true,
             ],
-            'g:item_group_id'             => [
-                'type'     => Field::TYPE_DEFAULT,
-                'optional' => true,
+            'g:condition'                 => [
+                'type'     => Field::TYPE_TEXT,
+                'optional' => true
             ],
-            'g:mpn'                       => [
-                'type'     => Field::TYPE_DEFAULT,
-                'optional' => true,
-            ],
-            'g:product_type'              => [
-                'type'     => Field::TYPE_DEFAULT,
-                'optional' => true,
-            ],
-            'g:shipping'                  => [
-                'type'     => Field::TYPE_PARENT,
-                'optional' => true,
-            ],
-            'g:additional_image_link'     => [
-                'type'     => Field::TYPE_PICTURE,
+            'g:adult'                     => [
+                'type'     => Field::TYPE_TEXT,
                 'optional' => true
             ],
             'g:gender'                    => [
@@ -164,7 +171,19 @@ class GoogleRss20 extends Marketplace
                 'type'     => Field::TYPE_DEFAULT,
                 'optional' => true,
             ],
+            'g:material'                  => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true,
+            ],
+            'g:pattern'                   => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true,
+            ],
             'g:size'                      => [
+                'type'     => Field::TYPE_DEFAULT,
+                'optional' => true,
+            ],
+            'g:item_group_id'             => [
                 'type'     => Field::TYPE_DEFAULT,
                 'optional' => true,
             ],
@@ -194,10 +213,10 @@ class GoogleRss20 extends Marketplace
                 'g:title'        => $this->getOption('item_title', 'pagetitle'),
                 'g:description'  => $this->getOption('item_description', 'description'),
                 'g:link'         => $this->getOption('item_link', 'Offer.url'), // Offer собирающий класс
-                'g:image_link'   => $this->getOption('item_image_link', Service::hasMiniShop2() ? 'Data.image' : ''),
+                'g:image_link'   => $this->getOption('item_image_link', 'Offer.image'),
                 'g:price'        => $this->getOption('item_price', 'Offer.price'), // Offer собирающий класс
-                'g:condition'    => $this->getOption('item_condition', 'new'),
                 'g:availability' => $this->getOption('item_availability', 'in stock'),
+                'g:brand'        => $this->getOption('item_brand', Service::hasMiniShop2() ? 'Vendor.name' : ''),
             ]
         ];
     }
