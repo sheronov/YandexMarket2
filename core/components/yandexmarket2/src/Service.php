@@ -88,7 +88,7 @@ class Service
     public function getMarketplaces(): array
     {
         return array_map(function (array $marketplace) {
-            if(!empty($marketplace['lexicon'])) {
+            if (!empty($marketplace['lexicon'])) {
                 $this->modx->lexicon->load($marketplace['lexicon']);
             }
             $type = $marketplace['key'];
@@ -314,7 +314,8 @@ class Service
     {
         return [
             ['value' => $columnPrefix.'url', 'text' => 'Полная ссылка на товар'],
-            ['value' => $columnPrefix.'price', 'text' => 'Цена с учётом плагинов miniShop2']
+            ['value' => $columnPrefix.'price', 'text' => 'Цена с учётом плагинов miniShop2'],
+            ['value' => $columnPrefix.'image', 'text' => 'Изображение товара с полной ссылкой (из поля image)']
         ];
     }
 
