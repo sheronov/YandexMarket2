@@ -4,7 +4,7 @@
       <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>
         Настройки магазина
       </v-tab>
-      <v-tab v-if="hasCategories" :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>
+      <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>
         Настройки категорий
       </v-tab>
       <v-tab v-if="hasOffers" :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>

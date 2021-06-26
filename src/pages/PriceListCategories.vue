@@ -25,8 +25,8 @@
         />
       </v-expansion-panels>
     </template>
-    <v-alert v-else type="warning">
-      Не найден элемент с типом category(7). Возможно, был удалён элемент categories. Пересоздайте прайс-лист.
+    <v-alert v-else type="info" color="grey" dense border="left">
+      Не найден элемент с типом category(7). Возможно, был удалён элемент categories. Будут учитываться только условия.
     </v-alert>
   </div>
 </template>

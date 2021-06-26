@@ -27,21 +27,20 @@ class Previewer extends Writer
      */
     public function previewCategories(): string
     {
+        if (!$offersCount = $this->pricelistService->getOffersCount()) {
+            $this->writeComment(' Не найдено подходящих предложений ');
+            return $this->getPreviewXml();
+        }
+        $this->writeComment(' Подходящих предложений: '.$offersCount.' ');
+
+        $categoriesCount = $this->pricelistService->getCategoriesCount();
+        $this->writeComment(' Подходящих категорий: '.$categoriesCount.' ');
+
+        if ($this->pricelistService->isCategoriesPluginPrepared()) {
+            $this->writeComment(' Возможно используются условия для категорий из плагинов ');
+        }
+
         if ($categoriesField = $this->pricelistService->getFieldByType(Field::TYPE_CATEGORIES)) {
-            $categoriesCount = $this->pricelistService->getCategoriesCount();
-            $this->writeComment(' Подходящих категорий: '.$categoriesCount.' ');
-
-            if ($this->pricelistService->isCategoriesPluginPrepared()) {
-                $this->writeComment(' Возможно используются условия для категорий из плагинов ');
-            }
-
-            if (!$offersCount = $this->pricelistService->getOffersCount()) {
-                $this->writeComment(' Не найдено подходящих предложений ');
-                return $this->getPreviewXml();
-            }
-
-            $this->writeComment(' Подходящих предложений: '.$offersCount.' ');
-
             $this->xml->startElement($categoriesField->name);
             $this->writeAttributes($categoriesField->getAttributes());
 
