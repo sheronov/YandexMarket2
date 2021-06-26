@@ -38,7 +38,7 @@ class PricelistFiller
         return $this->createFields($rootFields);
     }
 
-    protected function createFields(array $fields, Field $parent = null): array
+    public function createFields(array $fields, Field $parent = null): array
     {
         $fields = array_filter($fields, function (array $field, string $name) use ($parent) {
             return ($field['required'] ?? false) //обязательно к добавлению

@@ -144,10 +144,15 @@ export default {
       } else {
         fields.splice(fields.findIndex(item => item.id ? item.id === field.id : item.parent === field.parent), 1, field);
       }
-      this.pricelistUpdated({
-        fields,
-        need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)
-      }, false);
+
+      if(field.need_reload) {
+        this.loadPricelist();
+      }  else {
+        this.pricelistUpdated({
+          fields,
+          need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)
+        }, false);
+      }
     },
     fieldDeleted(field) {
       let fields = this.pricelist.fields.slice();
