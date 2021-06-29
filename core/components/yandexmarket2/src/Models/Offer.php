@@ -111,7 +111,7 @@ class Offer extends BaseObject
         if ($image = $this->object->get('image')) {
             if (mb_strpos($image, '//') === false) {
                 $image = rtrim($this->modx->getOption('yandexmarket2_site_url', null,
-                        $this->modx->getOption('site_url')), '/').'/'.$image;
+                        $this->modx->getOption('site_url')), '/').'/'.ltrim($image,'/');
             }
         } else {
             $image = '';
