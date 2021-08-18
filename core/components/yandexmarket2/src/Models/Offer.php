@@ -17,6 +17,7 @@ class Offer extends BaseObject
     /** @var Pricelist */
     protected $pricelist;
 
+
     // под оффером может быть не только modResource, а любой XPDO object
     public static function getObjectClass(): string
     {
@@ -85,6 +86,11 @@ class Offer extends BaseObject
                 case 'ms2gallery':
                 case 'msresourcefile':
                     $field = 'ms2gallery.'.$key;
+                    break;
+                case 'msop2':
+                case 'modification':
+                case 'msopmodification':
+                    $field = 'modification.'.$key;
                     break;
                 case 'setting':
                     return $this->modx->getOption($field); //можно даже в полях указывать Setting.some_setting

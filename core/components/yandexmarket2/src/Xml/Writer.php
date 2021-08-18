@@ -510,6 +510,7 @@ abstract class Writer
         return $data;
     }
 
+    // TODO: Тут приджойненные объекты, типо модификаций автоматически как массив не попадают
     // возможно весь метод можно перенести в сам Offer, но надо подумать
     protected function prepareOfferData(Offer $offer): array
     {
@@ -530,6 +531,9 @@ abstract class Writer
             $data['Vendor'] = &$data['vendor'];
             $data['msVendor'] = &$data['vendor'];
         }
+        if ($this->modx->getOption('yandexmarket2_msop2_integration')) {
+            $data['modification'] = [];
+        }
         $data['option'] = [];
         $data['tv'] = [];
         $data['category'] = [
@@ -545,7 +549,13 @@ abstract class Writer
                 $data['category'][mb_substr($k, mb_strlen('category.'))] = $val;
             } elseif (mb_strpos($k, 'categorytv.') === 0) {
                 $data['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
+            } elseif (mb_strpos($k, 'modification.') === 0) {
+                $data['modification'][mb_substr($k, mb_strlen('modification.'))] = $val;
+
             }
+         }
+        if (isset($data['modification'])) {
+            $data['Modification'] = &$data['modification'];
         }
         $data['Parent'] = &$data['category'];
         $data['Category'] = &$data['category'];

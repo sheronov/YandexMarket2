@@ -373,6 +373,15 @@ abstract class ObjectsQuery
                     }
                 }
                 break;
+            case 'msop2':
+            case 'modification':
+            case 'msopmodification':
+                // TODO: вообще к этому моменту приджойнено, но вполне может быть неактивна настрока
+                if(empty($this->join['Modification'])) {
+                    $this->modx->log(modX::LOG_LEVEL_ERROR,
+                        'Для модификаций msOptionsPrice2 активируйте настройку yandexmarket2_msop2_integration');
+                }
+                break;
             case 'offer':
             case 'resource':
             case 'modresource':
@@ -425,6 +434,11 @@ abstract class ObjectsQuery
                         case 'msproductfile':
                         case 'msgallery':
                             $column = sprintf('msGallery-%s.%s', $key, $key === 'image' ? 'url' : $key);
+                            break;
+                        case 'msop2':
+                        case 'modification':
+                        case 'msopmodification':
+                            $column = sprintf('Modification.%s', $key);
                             break;
                         default:
                             $column = $condition->column;

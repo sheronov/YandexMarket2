@@ -54,6 +54,16 @@ class OffersQuery extends ObjectsQuery
             $this->addColumnsToGroupBy($vendorColumns);
             $this->join['Vendor'] = true;
         }
+
+        if ($this->modx->getOption('yandexmarket2_msop2_integration') && $this->modx->addPackage('msoptionsprice',
+                $this->modx->getOption('core_path', null, MODX_CORE_PATH).'components/msoptionsprice/model/')) {
+            $this->query->leftJoin('msopModification', 'Modification',
+                sprintf('`Modification`.`rid` = `%s`.`id` and `Modification`.`active` = 1', $this->query->getAlias()));
+            $modificationColumns = $this->modx->getSelectColumns('msopModification', 'Modification', 'modification.');
+            $this->query->select($modificationColumns);
+            $this->addColumnsToGroupBy($modificationColumns); //TODO: для нестрогого ID нужно прям в запрос добавить красиво
+            $this->join['Modification'] = true;
+        }
     }
 
     protected function afterQuery()
