@@ -550,10 +550,10 @@ abstract class Writer
             } elseif (mb_strpos($k, 'categorytv.') === 0) {
                 $data['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
             } elseif (mb_strpos($k, 'modification.') === 0) {
-                $data['modification'][mb_substr($k, mb_strlen('modification.'))] = $val;
-
+                $key = mb_substr($k, mb_strlen('modification.'));
+                $data['modification'][$key] = $key === 'options' ? $this->modx->fromJSON($val) : $val;
             }
-         }
+        }
         if (isset($data['modification'])) {
             $data['Modification'] = &$data['modification'];
         }

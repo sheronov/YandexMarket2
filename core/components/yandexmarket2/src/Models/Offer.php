@@ -17,7 +17,6 @@ class Offer extends BaseObject
     /** @var Pricelist */
     protected $pricelist;
 
-
     // под оффером может быть не только modResource, а любой XPDO object
     public static function getObjectClass(): string
     {
@@ -90,6 +89,12 @@ class Offer extends BaseObject
                 case 'msop2':
                 case 'modification':
                 case 'msopmodification':
+                    if (mb_stripos($key, 'options.') !== false) {
+                        $option = explode('.', $key, 2)[1];
+                        $json = $this->object->_fields['modification.options'] ?? parent::get('modification.options') ?? '[]';
+                        $options = $this->modx->fromJSON($json, true);
+                        return $options[$option] ?? null;
+                    }
                     $field = 'modification.'.$key;
                     break;
                 case 'setting':
@@ -117,7 +122,7 @@ class Offer extends BaseObject
         if ($image = $this->object->get('image')) {
             if (mb_strpos($image, '//') === false) {
                 $image = rtrim($this->modx->getOption('yandexmarket2_site_url', null,
-                        $this->modx->getOption('site_url')), '/').'/'.ltrim($image,'/');
+                        $this->modx->getOption('site_url')), '/').'/'.ltrim($image, '/');
             }
         } else {
             $image = '';

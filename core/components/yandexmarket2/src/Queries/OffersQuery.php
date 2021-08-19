@@ -63,6 +63,11 @@ class OffersQuery extends ObjectsQuery
             $this->query->select($modificationColumns);
             $this->addColumnsToGroupBy($modificationColumns); //TODO: для нестрогого ID нужно прям в запрос добавить красиво
             $this->join['Modification'] = true;
+
+            $optionAlias = 'ModificationOption';
+            $this->query->leftJoin('msopModificationOption', $optionAlias, sprintf('`%s`.`mid` = `Modification`.`id`', $optionAlias));
+            $this->query->select([sprintf("CONCAT('{',GROUP_CONCAT(DISTINCT(CONCAT('\"',`%s`.`key`,'\":\"',`%s`.`value`,'\"'))),'}') as `modification.options`", $optionAlias, $optionAlias)]);
+            $this->join[$optionAlias] = true;
         }
     }
 
