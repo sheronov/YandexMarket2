@@ -474,6 +474,17 @@ abstract class Writer
         if ($this->pricelistService->offersHaveCodeHandler()) {
             $pls = array_merge($pls, $this->prepareOfferData($offer));
         }
+
+        $this->modx->invokeEvent('ym2OnBeforeWritingOffer', [
+            'data'      => $pls,
+            'offer'     => &$offer,
+            'pricelist' => &$this->pricelist,
+        ]);
+
+        if (!empty($offer->data)) {
+            $pls = array_merge($pls, $offer->data);
+        }
+
         $this->writeField($field, $pls);
     }
 
@@ -572,16 +583,6 @@ abstract class Writer
             if (!isset($data[$path])) {
                 $data[$key] = $value;
             }
-        }
-
-        $this->modx->invokeEvent('ym2OnBeforeWritingOffer', [
-            'data'      => &$data,
-            'offer'     => &$offer,
-            'pricelist' => &$this->pricelist,
-        ]);
-
-        if (!empty($offer->data)) {
-            $data = array_merge($data, $offer->data);
         }
 
         return $data;
