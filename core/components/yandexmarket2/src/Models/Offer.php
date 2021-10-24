@@ -86,6 +86,17 @@ class Offer extends BaseObject
                 case 'msresourcefile':
                     $field = 'ms2gallery.'.$key;
                     break;
+                case 'msop2':
+                case 'modification':
+                case 'msopmodification':
+                    if (mb_stripos($key, 'options.') !== false) {
+                        $option = explode('.', $key, 2)[1];
+                        $json = $this->object->_fields['modification.options'] ?? parent::get('modification.options') ?? '[]';
+                        $options = $this->modx->fromJSON($json, true);
+                        return $options[$option] ?? null;
+                    }
+                    $field = 'modification.'.$key;
+                    break;
                 case 'setting':
                     return $this->modx->getOption($field); //можно даже в полях указывать Setting.some_setting
                 case 'pricelist':
@@ -103,7 +114,14 @@ class Offer extends BaseObject
      */
     public function getUrl(): string
     {
-        return $this->modx->makeUrl($this->object->get('id'), $this->object->get('context_key'), '', 'full');
+        $args = [];
+        if ($this->pricelist && in_array('msop2', $this->pricelist->getModifiers(), true)) {
+            if ($mid = $this->get('modification.id')) {
+                $args[$this->modx->getOption('yandexmarket2_modification_param', null, 'mid')] = $mid;
+            }
+        }
+
+        return $this->modx->makeUrl($this->object->get('id'), $this->object->get('context_key'), $args, 'full');
     }
 
     public function getImage(): string
@@ -111,7 +129,7 @@ class Offer extends BaseObject
         if ($image = $this->object->get('image')) {
             if (mb_strpos($image, '//') === false) {
                 $image = rtrim($this->modx->getOption('yandexmarket2_site_url', null,
-                        $this->modx->getOption('site_url')), '/').'/'.$image;
+                        $this->modx->getOption('site_url')), '/').'/'.ltrim($image, '/');
             }
         } else {
             $image = '';
@@ -129,8 +147,19 @@ class Offer extends BaseObject
         $ctx = $this->modx->context->key; // change ctx for plugins work
         $this->modx->context->key = $this->object->get('context_key');
 
+        $hasModificationPrice = false;
+        if ($this->pricelist && in_array('msop2', $this->pricelist->getModifiers(), true)) {
+            $mid = $this->get('modification.id');
+            $type = $this->get('modification.type');
+            $cost = $this->get('modification.price');
+            if ($mid && $type) {
+                $hasModificationPrice = true;
+                $price = $this->getModificationPrice($type, $cost, $price);
+            }
+        }
+
         /** @var miniShop2 $miniShop2 */
-        if ($miniShop2 = $this->modx->getService('miniShop2')) {
+        if (!$hasModificationPrice && $miniShop2 = $this->modx->getService('miniShop2')) {
             $params = [
                 'product' => $this->object,
                 'data'    => $this->object->toArray(),
@@ -147,6 +176,40 @@ class Offer extends BaseObject
 
         $this->modx->context->key = $ctx;
         return $price;
+    }
+
+    protected function getModificationPrice(int $type = 0, float $cost = 0, float $price = 0)
+    {
+        if (preg_match('/%$/', $cost)) {
+            $cost = str_replace('%', '', $cost);
+            if (empty($cost)) {
+                $cost = 1;
+            }
+            $cost = $price / 100 * $cost;
+        }
+
+        switch ($type) {
+            case 1:
+                break;
+            case 2:
+                $cost = $price + $cost;
+                break;
+            case 3:
+                $cost = $price - $cost;
+                break;
+            default:
+                break;
+        }
+
+        if ($cost < 0) {
+            $cost = 0;
+        }
+
+        if (!$cost && !$this->modx->getOption('msoptionsprice_allow_zero_cost', null, false)) {
+            $cost = $price;
+        }
+
+        return $cost;
     }
 
 }

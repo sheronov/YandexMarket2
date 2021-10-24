@@ -65,7 +65,7 @@ abstract class BaseObject
      */
     public function __get($name)
     {
-        if ($value = $this->object->$name) {
+        if ($value = $this->object->{$name}) {
             if (in_array($name, self::ARRAY_FIELDS, true)) {
                 $value = json_decode($value, true);
             } elseif (in_array($name, self::DATETIME_FIELDS, true)) {
@@ -82,12 +82,12 @@ abstract class BaseObject
         } elseif ($value instanceof DateTimeImmutable && in_array($name, self::DATETIME_FIELDS, true)) {
             $value = $value->format(DATE_ATOM);
         }
-        $this->object->$name = $value;
+        $this->object->{$name} = $value;
     }
 
     public function __isset($name): bool
     {
-        return isset($this->object->$name);
+        return isset($this->object->{$name});
     }
 
     public function get(string $field)

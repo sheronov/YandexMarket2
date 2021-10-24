@@ -71,7 +71,7 @@ abstract class Writer
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
         $this->arraysGlue = $this->modx->getOption('yandexmarket2_arrays_glue', null, ', ');
         $this->offerParentField = $this->modx->getOption(sprintf('yandexmarket2_%s_parent_field',
-            mb_strtolower($this->pricelist->class)), null, 'parent'); //у разных объектов свои категории
+            mb_strtolower($this->pricelist->getClass())), null, 'parent'); //у разных объектов свои категории
     }
 
     protected function writeHeader()
@@ -474,6 +474,17 @@ abstract class Writer
         if ($this->pricelistService->offersHaveCodeHandler()) {
             $pls = array_merge($pls, $this->prepareOfferData($offer));
         }
+
+        $this->modx->invokeEvent('ym2OnBeforeWritingOffer', [
+            'data'      => $pls,
+            'offer'     => &$offer,
+            'pricelist' => &$this->pricelist,
+        ]);
+
+        if (!empty($offer->data)) {
+            $pls = array_merge($pls, $offer->data);
+        }
+
         $this->writeField($field, $pls);
     }
 
@@ -510,6 +521,7 @@ abstract class Writer
         return $data;
     }
 
+    // TODO: Тут приджойненные объекты, типо модификаций автоматически как массив не попадают
     // возможно весь метод можно перенести в сам Offer, но надо подумать
     protected function prepareOfferData(Offer $offer): array
     {
@@ -530,6 +542,9 @@ abstract class Writer
             $data['Vendor'] = &$data['vendor'];
             $data['msVendor'] = &$data['vendor'];
         }
+        if ($this->modx->getOption('yandexmarket2_msop2_integration')) {
+            $data['modification'] = [];
+        }
         $data['option'] = [];
         $data['tv'] = [];
         $data['category'] = [
@@ -545,7 +560,13 @@ abstract class Writer
                 $data['category'][mb_substr($k, mb_strlen('category.'))] = $val;
             } elseif (mb_strpos($k, 'categorytv.') === 0) {
                 $data['categoryTV'][mb_substr($k, mb_strlen('categorytv.'))] = $val;
+            } elseif (mb_strpos($k, 'modification.') === 0) {
+                $key = mb_substr($k, mb_strlen('modification.'));
+                $data['modification'][$key] = $key === 'options' ? $this->modx->fromJSON($val) : $val;
             }
+        }
+        if (isset($data['modification'])) {
+            $data['Modification'] = &$data['modification'];
         }
         $data['Parent'] = &$data['category'];
         $data['Category'] = &$data['category'];
@@ -562,16 +583,6 @@ abstract class Writer
             if (!isset($data[$path])) {
                 $data[$key] = $value;
             }
-        }
-
-        $this->modx->invokeEvent('ym2OnBeforeWritingOffer', [
-            'data'      => &$data,
-            'offer'     => &$offer,
-            'pricelist' => &$this->pricelist,
-        ]);
-
-        if (!empty($offer->data)) {
-            $data = array_merge($data, $offer->data);
         }
 
         return $data;

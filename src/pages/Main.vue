@@ -23,4 +23,8 @@ export default {
 .yandexmarket-view {
   position: relative;
 }
+.yandexmarket-view ::-webkit-scrollbar, .yandexmarket-view ::-webkit-scrollbar-thumb {
+  background-color: #ffffff;
+  border-radius: 0;
+}
 </style>

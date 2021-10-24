@@ -68,7 +68,7 @@
             :value="value"
             @input="changedValue"
             :filter="valueSearch"
-            :items="classKeys"
+            :items="classKeys.filter(ck => !ck.skipped)"
             :attach="true"
             label="Выберите поле объекта"
             placeholder='или введите в формате "Class.key" и нажмите Enter'

@@ -43,4 +43,5 @@ $_lang = array_merge($_lang ?? [], [
 
     'ym2_marketplace_yandex.market' => 'Яндекс Маркет',
     'ym2_marketplace_google.rss20' => 'Google RSS 2.0 (Merchant center, FB)',
+    'ym2_msoptionsprice_options' => 'Массив опций со значениями'
 ]);

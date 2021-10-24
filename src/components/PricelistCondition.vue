@@ -6,7 +6,7 @@
             :value="column"
             @input="changedColumn"
             :filter="valueSearch"
-            :items="classKeys"
+            :items="classKeys.filter(ck => !ck.skipped)"
             :attach="true"
             :label="columnLabel"
             placeholder='Или введите в формате "Class.key"'
