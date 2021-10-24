@@ -1,5 +1,5 @@
 <template>
-  <v-card class="ym2-main-wrapper" :loading="loading">
+  <v-card class="ym2-main-wrapper">
     <v-card-title>
       <template v-if="total">У вас {{ decl(total, ['прайс-лист', 'прайс-листа', 'прайс-листов']) }}</template>
       <template v-else>Добавьте свой первый прайс-лист</template>
@@ -14,7 +14,7 @@
             Добавить прайс-лист
           </v-btn>
         </template>
-        <v-card :loading="loading">
+        <v-card>
           <v-card-title>
             <span class="headline">Добавление прайс-листа</span>
           </v-card-title>
@@ -57,13 +57,19 @@
       </v-dialog>
     </v-card-title>
     <v-data-table
-        v-if="total"
+        class="pricelists-table"
         :items="lists"
+        :header-props="{
+          sortByText: 'Сортировать по'
+        }"
         :headers="headers"
-        :items-per-page="pagination.limit"
+        :options.sync="options"
+        :server-items-length="total"
+        :loading="loading"
+        :no-data-text="'Пока ещё нет прайс-листов'"
         :footer-props="{
           itemsPerPageText: 'Показывать по',
-          itemsPerPageOptions:[pagination.limit],
+          itemsPerPageOptions:[20, 50, 100],
           showCurrentPage: true,
           showFirstLastPage: true
         }"
@@ -120,9 +126,6 @@
         </v-btn>
       </template>
     </v-data-table>
-    <v-card-text v-else>
-      Пока ещё нет прайс-листов
-    </v-card-text>
   </v-card>
 </template>
 
@@ -149,26 +152,37 @@ export default {
       loading: false,
       lists: [],
       headers: [
-        {text: 'ID', value: 'id', sortable: false},
-        {text: 'Название', value: 'name', sortable: false},
-        {text: 'Тип прайс-листа', value: 'type', sortable: false},
-        {text: 'Файл', value: 'file', sortable: false},
-        {text: 'Генерация', value: 'generate_mode', sortable: false},
-        {text: 'Сформирован', value: 'generated_on', sortable: false},
-        {text: 'Активен', value: 'active', sortable: false},
+        {text: 'ID', value: 'id', sortable: true},
+        {text: 'Название', value: 'name', sortable: true},
+        {text: 'Тип прайс-листа', value: 'type', sortable: true},
+        {text: 'Файл', value: 'file', sortable: true},
+        {text: 'Генерация', value: 'generate_mode', sortable: true},
+        {text: 'Сформирован', value: 'generated_on', sortable: true},
+        {text: 'Активен', value: 'active', sortable: true},
         {text: 'Действия', value: 'actions', sortable: false, align: 'end'}
       ],
       errors: {},
       total: 0,
-      pagination: {
-        start: 0,
-        limit: 20
-      },
+      options: {
+        page: 1,
+        itemsPerPage: 20,
+        sortBy: [],
+        sortDesc: []
+      }
     }
   },
   computed: {
     ...mapState('marketplace', ['marketplaces']),
     ...mapGetters('marketplace', ['marketplaceText'])
+  },
+  watch: {
+    options: {
+      handler() {
+        this.loadLists()
+      },
+      deep: true,
+      immediate: true
+    }
   },
   methods: {
     decl(number, titles, withNum = true) {
@@ -176,7 +190,13 @@ export default {
     },
     loadLists() {
       this.loading = true;
-      api.post('pricelists/getlist', this.pagination)
+      const params = {
+        start: (this.options.page - 1) * this.options.itemsPerPage,
+        limit: this.options.itemsPerPage,
+        sort: this.options.sortBy[0] || 'id',
+        dir: Object.prototype.hasOwnProperty.call(this.options.sortDesc, 0) ? (this.options.sortDesc[0] ? 'desc' : 'asc') : 'desc'
+      }
+      api.post('pricelists/getlist', params)
           .then(({data}) => {
             this.lists = data.results;
             this.total = data.total;
@@ -222,8 +242,15 @@ export default {
     }
   },
   mounted() {
-    this.loadLists();
     this.pricelist = {...this.defaultItem};
   },
 }
 </script>
+
+<!--suppress CssUnusedSymbol -->
+<style>
+.pricelists-table th i.v-icon {
+  left: 6px;
+  display: inline-block !important;
+}
+</style>
