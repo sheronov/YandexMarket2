@@ -55,6 +55,11 @@ class Service
         return file_exists(MODX_CORE_PATH.'components/ms2gallery/model/ms2gallery/ms2gallery.class.php');
     }
 
+    public static function hasMsOp2(): bool
+    {
+        return file_exists(MODX_CORE_PATH.'components/msoptionsprice/model/msoptionsprice/msoptionsprice.class.php');
+    }
+
     protected function getLexicon(string $key, string $fallbackKey = null): string
     {
         if (($key !== $lexicon = $this->modx->lexicon($key))) {
@@ -127,18 +132,12 @@ class Service
     {
         $groups = [];
 
-        $list = [];
         if ($resourceFields = $this->getModResourceFields()) {
             $groups[] = [
                 'header' => 'Поля ресурса',
                 'groups' => ['offers', 'categories'],
                 'fields' => $resourceFields,
             ];
-            $list = array_merge($list,
-                $withHeaders ? [['header' => 'Поля ресурса']] : [],
-                $resourceFields,
-                $withDividers ? [['divider' => true]] : []
-            );
         }
 
         $groups[] = [
@@ -146,11 +145,6 @@ class Service
             'groups' => ['offers'],
             'fields' => $this->getOfferFields(),
         ];
-        $list = array_merge($list,
-            $withHeaders ? [['header' => 'Вспомогательные поля компонента']] : [],
-            $this->getOfferFields(),
-            $withDividers ? [['divider' => true]] : []
-        );
 
         if (self::hasMs2Gallery()) {
             $groups[] = [
@@ -158,11 +152,6 @@ class Service
                 'groups' => ['offers', 'categories'],
                 'fields' => [['value' => 'ms2Gallery.image', 'text' => 'Изображения ресурса ms2Gallery']]
             ];
-            $list = array_merge($list,
-                $withDividers ? [['divider' => true]] : [],
-                [['value' => 'ms2Gallery.image', 'text' => 'Изображения ресурса ms2Gallery']],
-                $withDividers ? [['divider' => true]] : []
-            );
         }
 
         if (self::hasMiniShop2()) {
@@ -177,13 +166,6 @@ class Service
                     'groups' => ['offers'],
                     'fields' => [['value' => 'msGallery.image', 'text' => 'Изображения товара miniShop2']],
                 ];
-                $list = array_merge($list,
-                    $withHeaders ? [['header' => 'Поля товара miniShop2']] : [],
-                    $productFields,
-                    $withDividers ? [['divider' => true]] : [],
-                    [['value' => 'msGallery.image', 'text' => 'Изображения товара miniShop2']],
-                    $withDividers ? [['divider' => true]] : []
-                );
             }
 
             if ($optionFields = $this->getMsOptionFields()) {
@@ -192,12 +174,6 @@ class Service
                     'groups' => ['offers'],
                     'fields' => $optionFields,
                 ];
-
-                $list = array_merge($list,
-                    $withHeaders ? [['header' => 'Опции miniShop2']] : [],
-                    $optionFields,
-                    $withDividers ? [['divider' => true]] : []
-                );
             }
 
             if ($vendorFields = $this->getMsVendorFields()) {
@@ -206,11 +182,6 @@ class Service
                     'groups' => ['offers'],
                     'fields' => $vendorFields,
                 ];
-                $list = array_merge($list,
-                    $withHeaders ? [['header' => 'Производитель miniShop2']] : [],
-                    $vendorFields,
-                    $withDividers ? [['divider' => true]] : []
-                );
             }
         }
 
@@ -220,11 +191,6 @@ class Service
                 'groups' => ['offers', 'categories'],
                 'fields' => $tvFields,
             ];
-            $list = array_merge($list,
-                $withHeaders ? [['header' => 'Дополнительные поля (TV)']] : [],
-                $tvFields,
-                $withDividers ? [['divider' => true]] : []
-            );
         }
 
         $groups[] = [
@@ -242,19 +208,12 @@ class Service
             'fields' => [['value' => 'CategoryTV.name', 'text' => 'Формат для ТВ-полей категории']]
         ];
 
-        /** Поля родителя вместе с дополнительными */
-        $list = array_merge($list,
-            $withHeaders ? [['header' => 'Поля родительской категории (стандартные)']] : [],
-            [['value' => 'Category.pagetitle', 'text' => 'Заголовок родительской категории']],
-            [['value' => 'Category.name', 'text' => 'Формат под любое другое поле родителя']],
-            $withDividers ? [['divider' => true]] : [],
-            $withHeaders ? [['header' => 'Дополнительные поля категории (TV)']] : [],
-            [['value' => 'CategoryTV.name', 'text' => 'Формат для ТВ-полей категории']],
-            $withDividers ? [['divider' => true]] : []
-        );
-
-        if ($withDividers) {
-            array_pop($list); //remove last divider
+        if (self::hasMsOp2() && $modificationFields = $this->getMsOp2ModificationFields()) {
+            $groups[] = [
+                'header' => 'Поля модификации msOptionsPrice2',
+                'groups' => ['offers'],
+                'fields' => $modificationFields,
+            ];
         }
 
         return $groups;
@@ -318,6 +277,26 @@ class Service
             ['value' => $columnPrefix.'price', 'text' => 'Цена с учётом плагинов ms2 и модификаций msOp2'],
             ['value' => $columnPrefix.'image', 'text' => 'Изображение товара с полной ссылкой (из поля image)']
         ];
+    }
+
+    protected function getMsOp2ModificationFields(
+        string $columnPrefix = 'Modification.',
+        array $skip = ['rid', 'sync_id', 'sync_service', 'rank']
+    ): array {
+        $path = $this->modx->getOption('core_path', null, MODX_CORE_PATH).'components/msoptionsprice/model/';
+        if (!$this->modx->addPackage('msoptionsprice', $path)) {
+            return [];
+        }
+        $fields = $this->modx->getFields('msopModification');
+        $this->modx->lexicon->load('msoptionsprice:manager');
+
+        return array_map(function (string $key) use ($columnPrefix, $skip) {
+            return [
+                'value'   => $columnPrefix.$key,
+                'text'    => $this->getLexicon('msoptionsprice_'.$key) ?: $key,
+                'skipped' => in_array($key, $skip, true)
+            ];
+        }, array_keys($fields));
     }
 
     protected function getMsProductFields(
