@@ -59,8 +59,7 @@ class OffersQuery extends ObjectsQuery
             $msop2Path = $this->modx->getOption('core_path', null, MODX_CORE_PATH).'components/msoptionsprice/model/';
             if ($this->modx->addPackage('msoptionsprice', $msop2Path)) {
                 $this->query->leftJoin('msopModification', 'Modification',
-                    sprintf('`Modification`.`rid` = `%s`.`id` and `Modification`.`active` = 1',
-                        $this->query->getAlias()));
+                    sprintf('`Modification`.`rid` = `%s`.`id`', $this->query->getAlias()));
                 $modificationColumns = $this->modx->getSelectColumns('msopModification', 'Modification',
                     'modification.');
                 $this->query->select($modificationColumns);
