@@ -71,7 +71,7 @@ abstract class Writer
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
         $this->arraysGlue = $this->modx->getOption('yandexmarket2_arrays_glue', null, ', ');
         $this->offerParentField = $this->modx->getOption(sprintf('yandexmarket2_%s_parent_field',
-            mb_strtolower($this->pricelist->class)), null, 'parent'); //у разных объектов свои категории
+            mb_strtolower($this->pricelist->getClass())), null, 'parent'); //у разных объектов свои категории
     }
 
     protected function writeHeader()

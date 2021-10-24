@@ -27,7 +27,7 @@ class OffersQuery extends ObjectsQuery
 
     protected function newQuery(string $class = 'modResource'): xPDOQuery
     {
-        return parent::newQuery($this->pricelist->class);
+        return parent::newQuery($this->pricelist->getClass());
     }
 
     protected function selectQuery()
@@ -40,7 +40,7 @@ class OffersQuery extends ObjectsQuery
         if (Service::hasMiniShop2()) {
             $this->query->join('msProductData', 'Data',
                 //к продуктам данные всё равно джойним, даже если участвуют просто ресурсы
-                mb_strtolower($this->pricelist->class) === 'msproduct' ? xPDOQuery::SQL_JOIN_CROSS : xPDOQuery::SQL_JOIN_LEFT,
+                mb_strtolower($this->pricelist->getClass()) === 'msproduct' ? xPDOQuery::SQL_JOIN_CROSS : xPDOQuery::SQL_JOIN_LEFT,
                 sprintf('`Data`.`id` = `%s`.`id`', $this->query->getAlias()));
             $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', 'data.', ['id'], true);
             $this->query->select($dataColumns);
@@ -55,19 +55,29 @@ class OffersQuery extends ObjectsQuery
             $this->join['Vendor'] = true;
         }
 
-        if ($this->modx->getOption('yandexmarket2_msop2_integration') && $this->modx->addPackage('msoptionsprice',
-                $this->modx->getOption('core_path', null, MODX_CORE_PATH).'components/msoptionsprice/model/')) {
-            $this->query->leftJoin('msopModification', 'Modification',
-                sprintf('`Modification`.`rid` = `%s`.`id` and `Modification`.`active` = 1', $this->query->getAlias()));
-            $modificationColumns = $this->modx->getSelectColumns('msopModification', 'Modification', 'modification.');
-            $this->query->select($modificationColumns);
-            $this->addColumnsToGroupBy($modificationColumns); //TODO: для нестрогого ID нужно прям в запрос добавить красиво
-            $this->join['Modification'] = true;
+        if (in_array('msop2', $this->pricelist->getModifiers(), true)) {
+            $msop2Path = $this->modx->getOption('core_path', null, MODX_CORE_PATH).'components/msoptionsprice/model/';
+            if ($this->modx->addPackage('msoptionsprice', $msop2Path)) {
+                $this->query->leftJoin('msopModification', 'Modification',
+                    sprintf('`Modification`.`rid` = `%s`.`id` and `Modification`.`active` = 1',
+                        $this->query->getAlias()));
+                $modificationColumns = $this->modx->getSelectColumns('msopModification', 'Modification',
+                    'modification.');
+                $this->query->select($modificationColumns);
+                $this->addColumnsToGroupBy($modificationColumns);
 
-            $optionAlias = 'ModificationOption';
-            $this->query->leftJoin('msopModificationOption', $optionAlias, sprintf('`%s`.`mid` = `Modification`.`id`', $optionAlias));
-            $this->query->select([sprintf("CONCAT('{',GROUP_CONCAT(DISTINCT(CONCAT('\"',`%s`.`key`,'\":\"',`%s`.`value`,'\"'))),'}') as `modification.options`", $optionAlias, $optionAlias)]);
-            $this->join[$optionAlias] = true;
+                $this->join['Modification'] = true;
+
+                $optionAlias = 'ModificationOption';
+                $this->query->leftJoin('msopModificationOption', $optionAlias,
+                    sprintf('`%s`.`mid` = `Modification`.`id`', $optionAlias));
+                $this->query->select([
+                    sprintf("CONCAT('{',GROUP_CONCAT(DISTINCT(CONCAT('\"',`%s`.`key`,'\":\"',`%s`.`value`,'\"'))),'}') as `modification.options`",
+                        $optionAlias, $optionAlias)
+                ]);
+
+                $this->join[$optionAlias] = true;
+            }
         }
     }
 

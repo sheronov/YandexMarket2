@@ -16,7 +16,7 @@ abstract class ObjectsQuery
     /** @var xPDOQuery $query */
     protected $query;
     protected $classKeys       = [];
-    protected $join            = [];
+    protected $join            = []; // TODO: как значение сделать не true - а класс
     protected $groupBy         = [];
     protected $limit           = 0;
     protected $offset          = 0;
@@ -43,7 +43,7 @@ abstract class ObjectsQuery
         $this->modx = $modx;
 
         $this->offerParentField = $this->modx->getOption(sprintf('yandexmarket2_%s_parent_field',
-            mb_strtolower($this->pricelist->class)), null, 'parent'); //у разных объектов свои категории
+            mb_strtolower($this->pricelist->getClass())), null, 'parent'); //у разных объектов свои категории
         $this->strictSql = $this->modx->getOption('yandexmarket2_strict_sql', null, false);
         $this->reduceQueries = $this->modx->getOption('yandexmarket2_reduce_queries', null, false);
         $this->debugMode = $this->modx->getOption('yandexmarket2_debug_mode', null, false);
@@ -179,6 +179,16 @@ abstract class ObjectsQuery
             }
             foreach ($pk as $primaryKey) {
                 $this->query->groupby(sprintf('`%s`.`%s`', $this->query->getAlias(), $primaryKey));
+            }
+
+            if (isset($this->join['Modification']) && in_array('msop2', $this->pricelist->getModifiers(), true)) {
+                $pkMsOp2 = $this->modx->getPK('msopModification');
+                if (!is_array($pkMsOp2)) {
+                    $pkMsOp2 = [$pkMsOp2];
+                }
+                foreach ($pkMsOp2 as $primaryKey) {
+                    $this->query->groupby(sprintf('`%s`.`%s`', 'Modification', $primaryKey));
+                }
             }
         }
     }

@@ -56,6 +56,27 @@ class Pricelist extends BaseObject
     }
 
     /**
+     * Геттер для класса объектов в прайс-листе.
+     * Так как class может в себе содержать модификаторы через двоеточие
+     */
+    public function getClass(): string
+    {
+        return explode(':', $this->class ?: '')[0];
+    }
+
+    /*
+     * Возвращает список модификаций
+     */
+    public function getModifiers(): array
+    {
+        $classModifiers = explode(':', $this->class ?: '');
+        array_shift($classModifiers);
+        return array_map(static function ($modifier) {
+            return mb_strtolower($modifier);
+        }, $classModifiers);
+    }
+
+    /**
      * Объект маркетплейса, если есть
      *
      * @return null|Marketplace
