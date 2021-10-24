@@ -310,11 +310,12 @@ class Service
         }, array_keys($fields));
     }
 
+    // TODO: в лексиконы перевести тексты
     protected function getOfferFields(string $columnPrefix = 'Offer.'): array
     {
         return [
             ['value' => $columnPrefix.'url', 'text' => 'Полная ссылка на товар'],
-            ['value' => $columnPrefix.'price', 'text' => 'Цена с учётом плагинов miniShop2'],
+            ['value' => $columnPrefix.'price', 'text' => 'Цена с учётом плагинов ms2 и модификаций msOp2'],
             ['value' => $columnPrefix.'image', 'text' => 'Изображение товара с полной ссылкой (из поля image)']
         ];
     }
