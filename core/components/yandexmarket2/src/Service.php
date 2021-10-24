@@ -290,13 +290,19 @@ class Service
         $fields = $this->modx->getFields('msopModification');
         $this->modx->lexicon->load('msoptionsprice:manager');
 
-        return array_map(function (string $key) use ($columnPrefix, $skip) {
+        return array_merge(array_map(function (string $key) use ($columnPrefix, $skip) {
             return [
                 'value'   => $columnPrefix.$key,
                 'text'    => $this->getLexicon('msoptionsprice_'.$key) ?: $key,
                 'skipped' => in_array($key, $skip, true)
             ];
-        }, array_keys($fields));
+        }, array_keys($fields)), [
+            [
+                'value'   => $columnPrefix.'options',
+                'text'    => $this->getLexicon('ym2_msoptionsprice_options') ?: 'options',
+                'skipped' => in_array('options', $skip, true)
+            ]
+        ]);
     }
 
     protected function getMsProductFields(
