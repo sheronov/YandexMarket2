@@ -2,7 +2,6 @@
 
 use YandexMarket\Models\Field;
 
-/** @noinspection PhpIncludeInspection */
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymFieldUpdateProcessor extends modObjectUpdateProcessor
@@ -35,7 +34,10 @@ class ymFieldUpdateProcessor extends modObjectUpdateProcessor
 
     public function cleanup()
     {
-        return $this->success('', (new Field($this->modx, $this->object))->toArray());
+        $field = new Field($this->modx, $this->object);
+        $source = $field->getPricelist()->getMarketplace();
+        $this->modx->lexicon->load($source::getLexiconNs());
+        return $this->success('', $field->toArray());
     }
 }
 

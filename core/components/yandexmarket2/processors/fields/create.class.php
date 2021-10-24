@@ -4,7 +4,6 @@ use YandexMarket\Handlers\PricelistFiller;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
 
-/** @noinspection PhpIncludeInspection */
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymFieldCreateProcessor extends modObjectCreateProcessor
@@ -58,9 +57,10 @@ class ymFieldCreateProcessor extends modObjectCreateProcessor
 
     public function cleanup()
     {
-        return $this->success('',
-            array_merge((new Field($this->modx, $this->object))->toArray(),
-                $this->needReload ? ['need_reload' => true] : []));
+        $field = new Field($this->modx, $this->object);
+        $source = $field->getPricelist()->getMarketplace();
+        $this->modx->lexicon->load($source::getLexiconNs());
+        return $this->success('', array_merge($field->toArray(), $this->needReload ? ['need_reload' => true] : []));
     }
 }
 

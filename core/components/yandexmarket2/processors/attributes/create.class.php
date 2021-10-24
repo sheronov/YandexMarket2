@@ -2,7 +2,6 @@
 
 use YandexMarket\Models\Attribute;
 
-/** @noinspection PhpIncludeInspection */
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymAttributeCreateProcessor extends modObjectCreateProcessor
@@ -28,7 +27,10 @@ class ymAttributeCreateProcessor extends modObjectCreateProcessor
 
     public function cleanup()
     {
-        return $this->success('', (new Attribute($this->modx, $this->object))->toArray());
+        $attribute = new Attribute($this->modx, $this->object);
+        $source = $attribute->getField()->getPricelist()->getMarketplace();
+        $this->modx->lexicon->load($source::getLexiconNs());
+        return $this->success('', $attribute->toArray());
     }
 }
 
