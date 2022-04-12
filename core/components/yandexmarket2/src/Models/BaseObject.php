@@ -3,6 +3,7 @@
 namespace YandexMarket\Models;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use Exception;
 use InvalidArgumentException;
 use modX;
@@ -60,7 +61,7 @@ abstract class BaseObject
     /**
      * @param $name
      *
-     * @return array|DateTimeImmutable|mixed|xPDOObject|null
+     * @return array|DateTimeInterface|mixed|xPDOObject|null
      * @throws Exception
      */
     public function __get($name)
@@ -79,7 +80,7 @@ abstract class BaseObject
     {
         if ($value && in_array($name, self::ARRAY_FIELDS, true)) {
             $value = json_encode($value);
-        } elseif ($value instanceof DateTimeImmutable && in_array($name, self::DATETIME_FIELDS, true)) {
+        } elseif ($value instanceof DateTimeInterface && in_array($name, self::DATETIME_FIELDS, true)) {
             $value = $value->format(DATE_ATOM);
         }
         $this->object->{$name} = $value;
