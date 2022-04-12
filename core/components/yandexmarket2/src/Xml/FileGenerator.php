@@ -2,7 +2,6 @@
 
 namespace YandexMarket\Xml;
 
-use DateTimeImmutable;
 use Exception;
 use RuntimeException;
 use YandexMarket\Models\Field;
@@ -34,7 +33,7 @@ class FileGenerator extends Writer
         ]);
 
         $this->pricelist->need_generate = false;
-        $this->pricelist->generated_on = new DateTimeImmutable();
+        $this->pricelist->generated_on = date('Y-m-d H:i:s');
         $this->pricelist->save(); //lock для долгого экспорта
 
         $this->writeField($field);

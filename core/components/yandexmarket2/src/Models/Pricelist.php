@@ -2,7 +2,6 @@
 
 namespace YandexMarket\Models;
 
-use DateTimeImmutable;
 use modX;
 use PDO;
 use xPDOObject;
@@ -18,9 +17,9 @@ use ymPricelist;
  * @property string $type
  * @property string $class
  * @property bool $active
- * @property DateTimeImmutable $created_on
- * @property null|DateTimeImmutable $edited_on
- * @property null|DateTimeImmutable $generated_on
+ * @property string $created_on
+ * @property null|string $edited_on
+ * @property null|string $generated_on
  * @property null|int $generate_mode
  * @property null|int $generate_interval
  * @property bool $need_generate

@@ -2,7 +2,6 @@
 
 namespace YandexMarket\Models;
 
-use DateTimeImmutable;
 use ymField;
 
 /**
@@ -15,7 +14,7 @@ use ymField;
  * @property null|string $handler
  * @property null|array $properties
  * @property int $rank
- * @property DateTimeImmutable|string $created_on
+ * @property string $created_on
  * @property bool $active
  */
 class Field extends BaseObject

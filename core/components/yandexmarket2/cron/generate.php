@@ -44,7 +44,7 @@ foreach ($modx->getIterator('ymPricelist', $q) as $ymPricelist) {
         $pricelist->need_generate = true;
     } elseif ($minutes = $pricelist->generate_interval) {
         $lastDate = (new DateTimeImmutable())->sub(DateInterval::createFromDateString($minutes.' minutes'));
-        if ($pricelist->generated_on && $lastDate > $pricelist->generated_on) {
+        if ($lastDate > DateTime::createFromFormat('Y-m-d H:i:s', $pricelist->generated_on)) {
             $pricelist->need_generate = true;
         }
     }
@@ -61,4 +61,3 @@ foreach ($modx->getIterator('ymPricelist', $q) as $ymPricelist) {
         echo "Error with pricelist id = {$pricelist->id}: {$e->getMessage()}\n";
     }
 }
-
