@@ -15,7 +15,7 @@ use ymField;
  * @property null|string $handler
  * @property null|array $properties
  * @property int $rank
- * @property DateTimeImmutable $created_on
+ * @property DateTimeImmutable|string $created_on
  * @property bool $active
  */
 class Field extends BaseObject

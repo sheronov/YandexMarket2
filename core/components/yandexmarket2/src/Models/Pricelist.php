@@ -249,7 +249,7 @@ class Pricelist extends BaseObject
         $field->name = $name;
         $field->type = $type;
         $field->pricelist_id = $this->id;
-        $field->created_on = new DateTimeImmutable();
+        $field->created_on = date('Y-m-d H:i:s');
         $field->active = $active;
 
         return $field;
