@@ -387,9 +387,10 @@ abstract class ObjectsQuery
             case 'modification':
             case 'msopmodification':
                 // TODO: вообще к этому моменту приджойнено, но вполне может быть неактивна настрока
-                if(empty($this->join['Modification'])) {
+                if (empty($this->join['Modification'])) {
                     $this->modx->log(modX::LOG_LEVEL_ERROR,
-                        'Для модификаций msOptionsPrice2 активируйте настройку yandexmarket2_msop2_integration');
+                        'Для модификаций msOptionsPrice2 в прайс-листе в настройке предложений добавьте к классу ресурса ":msop2", пример "msProduct:msop2"',
+                        '', 'YandexMarket2');
                 }
                 break;
             case 'offer':
@@ -405,10 +406,15 @@ abstract class ObjectsQuery
                 //стандартные классы, не нужно ничего присоединять здесь
                 break;
             default:
-                // приджойнить выбранные столбцы других классов (с моделями что-то придумать нужно)
-                $this->modx->log(modX::LOG_LEVEL_ERROR,
-                    'Неизвестный класс '.$class.'. Загрузите модель в своём плагине на событие ym2OnBeforeOffersQuery или обратитесь в поддержку.',
-                    '', 'YandexMarket2');
+                // приджойните столбцы других классов в плагинах, а модели загрузите на событие ym2OnBeforeQuery
+                if (!array_filter($this->query->query['from']['joins'], static function ($v) use ($class) {
+                    return mb_strtolower($v['alias']) === mb_strtolower($class);
+                })) {
+                    // учитываем уже приджойненные классы из плагинов
+                    $this->modx->log(modX::LOG_LEVEL_ERROR,
+                        'Неизвестный класс '.$class.'. Загрузите модель в своём плагине на событие ym2OnBeforeOffersQuery или обратитесь в поддержку.',
+                        '', 'YandexMarket2');
+                }
                 break;
         }
     }
