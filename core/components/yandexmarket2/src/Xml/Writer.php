@@ -534,6 +534,7 @@ abstract class Writer
         $data['resource'] = $resource->toArray();
         $data['Resource'] = &$data['resource'];
         $data['modResource'] = &$data['resource'];
+        $data['modification'] = []; // for msOptionsPrice2 integration
         if ($resource instanceof msProduct) {
             $data['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
             $data['vendor'] = $resource->loadVendor() ? $resource->loadVendor()->toArray() : null;
@@ -541,9 +542,6 @@ abstract class Writer
             $data['msProductData'] = &$data['data'];
             $data['Vendor'] = &$data['vendor'];
             $data['msVendor'] = &$data['vendor'];
-        }
-        if ($this->modx->getOption('yandexmarket2_msop2_integration')) {
-            $data['modification'] = [];
         }
         $data['option'] = [];
         $data['tv'] = [];
@@ -565,8 +563,10 @@ abstract class Writer
                 $data['modification'][$key] = $key === 'options' ? $this->modx->fromJSON($val) : $val;
             }
         }
-        if (isset($data['modification'])) {
+        if (!empty($data['modification'])) {
             $data['Modification'] = &$data['modification'];
+        } else {
+            unset($data['modification']);
         }
         $data['Parent'] = &$data['category'];
         $data['Category'] = &$data['category'];
