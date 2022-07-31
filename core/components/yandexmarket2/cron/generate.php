@@ -44,7 +44,10 @@ foreach ($modx->getIterator('ymPricelist', $q) as $ymPricelist) {
         $pricelist->need_generate = true;
     } elseif ($minutes = $pricelist->generate_interval) {
         $lastDate = (new DateTimeImmutable())->sub(DateInterval::createFromDateString($minutes.' minutes'));
-        if ($lastDate > DateTime::createFromFormat('Y-m-d H:i:s', $pricelist->generated_on)) {
+        $generatedDate = $pricelist->generated_on instanceof DateTimeImmutable
+            ? $pricelist->generated_on
+            : DateTime::createFromFormat('Y-m-d H:i:s', $pricelist->generated_on);
+        if ($lastDate > $generatedDate) {
             $pricelist->need_generate = true;
         }
     }
