@@ -10,11 +10,17 @@ use YandexMarket\QueryService;
 class FileGenerator extends Writer
 {
 
+    protected $tmpSuffix = '.tmp';
+    protected $pricelistPath;
+
     public function __construct(QueryService $pricelistService)
     {
         parent::__construct($pricelistService);
 
-        $this->openFile();
+        $this->pricelistPath = $this->getPricelistPath();
+        if (!$this->xml->openUri($this->pricelistPath.$this->tmpSuffix)) {
+            throw new RuntimeException("Could not open file {$this->pricelistPath} for writing");
+        }
         $this->writeHeader();
     }
 
@@ -28,34 +34,20 @@ class FileGenerator extends Writer
             throw new RuntimeException('Could not find the ROOT element (type='.Field::TYPE_ROOT.')');
         }
 
-        $this->modx->invokeEvent('ym2OnBeforePricelistGenerate',[
-           'pricelist' => &$this->pricelist
+        $this->modx->invokeEvent('ym2OnBeforePricelistGenerate', [
+            'pricelist' => &$this->pricelist
         ]);
 
         $this->pricelist->need_generate = false;
         $this->pricelist->generated_on = date('Y-m-d H:i:s');
         $this->pricelist->save(); //lock для долгого экспорта
 
-        $this->writeField($field);
+        $this->writeField($field); // это будет писать вглубь всё
 
-        $this->xml->endDocument();
-        $this->xml->flush();
-
-        $this->log('Файл успешно сформирован');
-
-        $saved =  $this->pricelist->save();
-
-        $this->modx->invokeEvent('ym2OnAfterPricelistGenerate',[
-            'pricelist' => &$this->pricelist
-        ]);
-
-        return $saved;
+        return $this->closeFile();
     }
 
-    /**
-     * @return void
-     */
-    protected function openFile()
+    protected function getPricelistPath(): string
     {
         $filesPath = $this->pricelist->getFilePath(false);
         if (!is_dir($filesPath) && !mkdir($filesPath, 0755, true) && !is_dir($filesPath)) {
@@ -64,13 +56,34 @@ class FileGenerator extends Writer
 
         $pricelistFilePath = $this->pricelist->getFilePath(true);
         if (file_exists($pricelistFilePath)) {
-            $this->log('Файл '.$pricelistFilePath.' уже существует и будет перезаписан');
+            $this->log(sprintf('Файл %s уже существует и будет перезаписан', basename($pricelistFilePath)));
         } else {
             $this->log('Запущен процесс записи в файл '.$pricelistFilePath);
         }
-        if (!$this->xml->openUri($pricelistFilePath)) {
-            throw new RuntimeException('Can not create file '.$pricelistFilePath);
+
+        return $pricelistFilePath;
+    }
+
+    protected function closeFile(): bool
+    {
+        $this->xml->endDocument();
+        $this->xml->flush();
+
+        if (rename($this->pricelistPath.$this->tmpSuffix, $this->pricelistPath)) {
+            $this->log(sprintf('Файл %s успешно записан', basename($this->pricelistPath)));
+        } else {
+            $this->errorLog(sprintf('Could not rename file %s to %s', $this->pricelistPath.$this->tmpSuffix,
+                $this->pricelistPath));
+            // if it's the Windows os - the file must be writable!
         }
+
+        $saved = $this->pricelist->save();
+
+        $this->modx->invokeEvent('ym2OnAfterPricelistGenerate', [
+            'pricelist' => &$this->pricelist
+        ]);
+
+        return $saved;
     }
 
 }
