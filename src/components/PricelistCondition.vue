@@ -239,7 +239,7 @@ export default {
     },
     loadValues() {
       api.post('lists/values', {column: this.condition.column})
-          .then(({data}) => this.values = data.results);
+          .then(({data}) => this.values = (data.results || []).filter(v => v !== null && v !== ''));
     }
   },
   mounted() {
