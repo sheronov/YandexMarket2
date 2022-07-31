@@ -214,7 +214,10 @@ class GoogleRss20 extends Marketplace
                 'g:description'  => $this->getOption('item_description', 'description'),
                 'g:link'         => $this->getOption('item_link', 'Offer.url'), // Offer собирающий класс
                 'g:image_link'   => $this->getOption('item_image_link', 'Offer.image'),
-                'g:price'        => $this->getOption('item_price', 'Offer.price'), // Offer собирающий класс
+                'g:price'        => [
+                    'value' => $this->getOption('item_price', 'Offer.price'), // Offer собирающий класс
+                    'handler' => '{$input} RUB'
+                ],
                 'g:availability' => $this->getOption('item_availability', 'in stock'),
                 'g:brand'        => $this->getOption('item_brand', Service::hasMiniShop2() ? 'Vendor.name' : ''),
             ]
