@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpIncludeInspection */
-
 use YandexMarket\Handlers\PricelistFiller;
 use YandexMarket\Models\Pricelist;
 use YandexMarket\Service;
