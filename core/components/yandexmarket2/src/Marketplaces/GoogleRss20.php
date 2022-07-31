@@ -205,7 +205,7 @@ class GoogleRss20 extends Marketplace
         return [
             Field::TYPE_SHOP  => [
                 'title'       => $this->getOption('channel_title', $this->modx->getOption('site_name')),
-                'link'        => $this->getOption('channel_url', $this->modx->getOption('site_url')),
+                'link'        => $this->getOption('channel_url', $this->modx->getOption('yandexmarket2_site_url', null, $this->modx->getOption('site_url'), true)),
                 'description' => $this->getOption('channel_description', ''),
             ],
             Field::TYPE_OFFER => [

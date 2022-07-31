@@ -610,7 +610,11 @@ abstract class Writer
                 if (($limit = $field->properties['count'] ?? 0) && $i >= $limit) {
                     break;
                 }
-                $field->value = Service::preparePath($this->modx, '{images_url}/'.$picture, true);
+                if (mb_strpos($picture,'//') === false) {
+                    $field->value = Service::preparePath($this->modx, '{images_url}/'.$picture, true);
+                } else {
+                    $field->value = $picture;
+                }
                 $field->type = Field::TYPE_TEXT; //делаем его уже обработанным
                 $this->writeField($field, $pls);
             }

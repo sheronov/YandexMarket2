@@ -121,15 +121,17 @@ class Offer extends BaseObject
             }
         }
 
-        return $this->modx->makeUrl($this->object->get('id'), $this->object->get('context_key'), $args, 'full');
+        return $this->modx->getOption('yandexmarket2_site_url', null, '')
+            ? Service::preparePath($this->modx, '{site_url}/'.$this->modx->makeUrl($this->object->get('id'),
+                    $this->object->get('context_key', $args, -1)), true)
+            : $this->modx->makeUrl($this->object->get('id'), $this->object->get('context_key'), $args, 'full');
     }
 
     public function getImage(): string
     {
         if ($image = $this->object->get('image')) {
             if (mb_strpos($image, '//') === false) {
-                $image = rtrim($this->modx->getOption('yandexmarket2_site_url', null,
-                        $this->modx->getOption('site_url')), '/').'/'.ltrim($image, '/');
+                $image = Service::preparePath($this->modx, '{images_url}/'.$image, true);
             }
         } else {
             $image = '';

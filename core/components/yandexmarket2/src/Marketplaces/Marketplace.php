@@ -117,7 +117,7 @@ abstract class Marketplace
         $values = [
             Field::TYPE_SHOP       => [
                 'name'                  => $this->getOption('shop_name', $this->modx->getOption('site_name')),
-                'url'                   => $this->getOption('shop_url', $this->modx->getOption('site_url')),
+                'url'                   => $this->getOption('shop_url', $this->modx->getOption('yandexmarket2_site_url', null, $this->modx->getOption('site_url'), true)),
                 'platform'              => $this->getOption('shop_platform', 'MODX Revolution'),
                 'version'               => $this->getOption('shop_version', $this->modx->getOption('settings_version')),
                 'currencies'            => [

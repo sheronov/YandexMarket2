@@ -207,7 +207,7 @@ class Pricelist extends BaseObject
     public function getFilePath(bool $withFile = false): string
     {
         $path = Service::preparePath($this->modx, $this->modx->getOption('yandexmarket2_files_path', null,
-            '{assets_path}yandexmarket/'));
+            '{assets_path}yandexmarket/', true));
         if ($withFile) {
             $path .= $this->file;
         }
@@ -218,7 +218,7 @@ class Pricelist extends BaseObject
     public function getFileUrl(bool $withFile = false): string
     {
         $url = Service::preparePath($this->modx, $this->modx->getOption('yandexmarket2_files_url', null,
-            '{site_url}/{assets_url}/yandexmarket/'));
+            '{site_url}/{assets_url}/yandexmarket/', true));
         if ($withFile) {
             $url .= $this->file;
         }

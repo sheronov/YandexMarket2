@@ -382,14 +382,15 @@ class Service
 
     public static function getSitePaths(xPDO $xpdo): array
     {
+        $siteUrl = $xpdo->getOption('yandexmarket2_site_url', null,
+            $xpdo->getOption('site_url', null, MODX_SITE_URL), true);
         return [
-            'site_url'    => $xpdo->getOption('site_url', null, MODX_SITE_URL),
+            'site_url'    => $siteUrl,
+            'images_url'  => $xpdo->getOption('yandexmarket2_images_url', null, $siteUrl, true),
             'core_path'   => $xpdo->getOption('core_path', null, MODX_CORE_PATH),
             'base_path'   => $xpdo->getOption('base_path', null, MODX_BASE_PATH),
             'assets_path' => $xpdo->getOption('assets_path', null, MODX_ASSETS_PATH),
             'assets_url'  => $xpdo->getOption('assets_url', null, MODX_ASSETS_URL),
-            'images_url'  => $xpdo->getOption('yandexmarket2_images_url', null,
-                $xpdo->getOption('site_url', null, MODX_SITE_URL)),
         ];
     }
 
