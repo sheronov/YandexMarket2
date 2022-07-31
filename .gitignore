@@ -3,6 +3,9 @@ config.core.php
 node_modules
 vue/node_modules
 core/components/yandexmarket2/vendor
+core/components/yandexmarket2/phpunit.xml
+core/components/yandexmarket2/tests/properties.inc.php
+core/components/yandexmarket2/tests/logs
 dist
 
 # local env files

@@ -159,7 +159,7 @@ class Field extends BaseObject
     {
         if (!isset($this->children)) {
             $this->children = [];
-            $q = $this->modx->newQuery('ymField', ['parent' => $this->id])->sortby('rank');
+            $q = $this->modx->newQuery('ymField', ['parent' => $this->id])->sortby('`rank`');
             foreach ($this->modx->getIterator('ymField', $q) as $ymField) {
                 $this->children[] = new Field($this->modx, $ymField);
             }

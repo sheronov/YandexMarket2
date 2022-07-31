@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<phpunit
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    processIsolation="false"
+    stopOnFailure="false"
+    verbose="true"
+    bootstrap="tests/MODxTestHarness.php"
+>
+    <php>
+        <ini name="memory_limit" value="-1"/>
+        <ini name="display_errors" value="true"/>
+    </php>
+    <testsuites>
+        <testsuite name="YandexMarket2 tests">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

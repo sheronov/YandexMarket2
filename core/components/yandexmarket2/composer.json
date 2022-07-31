@@ -10,19 +10,28 @@
     "agelxnash/jevix": "dev-master"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-master"
+    "roave/security-advisories": "dev-latest",
+    "phpunit/phpunit": "^6.5",
+    "ext-fileinfo": "*",
+    "ext-intl": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*"
   },
   "autoload": {
     "classmap": [
       "model/yandexmarket2/"
     ],
     "psr-4": {
-      "YandexMarket\\": "src/"
+      "YandexMarket\\": "src/",
+      "YandexMarket\\Tests\\": "tests/"
     }
   },
   "config": {
     "platform": {
       "php": "7.0.0"
     }
+  },
+  "scripts": {
+    "test": "phpunit"
   }
 }

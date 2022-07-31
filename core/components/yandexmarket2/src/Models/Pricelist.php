@@ -109,7 +109,7 @@ class Pricelist extends BaseObject
         if (!isset($this->fields)) {
             $this->fields = [];
 
-            $q = $this->modx->newQuery('ymField', ['pricelist_id' => $this->id])->sortby('rank');
+            $q = $this->modx->newQuery('ymField', ['pricelist_id' => $this->id])->sortby('`rank`');
             foreach ($this->modx->getIterator('ymField', $q) as $ymField) {
                 $field = new Field($this->modx, $ymField);
                 $this->fields[$field->id] = $field;
@@ -138,15 +138,17 @@ class Pricelist extends BaseObject
     protected function getFieldsAttributes(): array
     {
         if (!isset($this->fieldsAttributes)) {
-            $fieldIds = array_keys($this->fields);
+            $fieldIds = isset($this->fields) ? array_keys($this->fields) : [];
             $this->fieldsAttributes = [];
 
-            $q = $this->modx->newQuery(ymFieldAttribute::class);
-            $q->where(['field_id:IN' => $fieldIds]);
+            if (!empty($fieldIds)) {
+                $q = $this->modx->newQuery(ymFieldAttribute::class);
+                $q->where(['field_id:IN' => $fieldIds]);
 
-            $this->fieldsAttributes = array_map(function (ymFieldAttribute $attribute) {
-                return new Attribute($this->modx, $attribute);
-            }, $this->modx->getCollection(ymFieldAttribute::class, $q) ?? []);
+                $this->fieldsAttributes = array_map(function (ymFieldAttribute $attribute) {
+                    return new Attribute($this->modx, $attribute);
+                }, $this->modx->getCollection(ymFieldAttribute::class, $q) ?? []);
+            }
         }
 
         return $this->fieldsAttributes;
@@ -205,7 +207,7 @@ class Pricelist extends BaseObject
     public function getFilePath(bool $withFile = false): string
     {
         $path = Service::preparePath($this->modx, $this->modx->getOption('yandexmarket2_files_path', null,
-            '{assets_path}yandexmarket/'));
+            '{assets_path}yandexmarket/', true));
         if ($withFile) {
             $path .= $this->file;
         }
@@ -216,7 +218,7 @@ class Pricelist extends BaseObject
     public function getFileUrl(bool $withFile = false): string
     {
         $url = Service::preparePath($this->modx, $this->modx->getOption('yandexmarket2_files_url', null,
-            '{site_url}/{assets_url}/yandexmarket/'));
+            '{site_url}/{assets_url}/yandexmarket/', true));
         if ($withFile) {
             $url .= $this->file;
         }

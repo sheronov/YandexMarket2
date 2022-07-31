@@ -2,7 +2,6 @@
 
 use YandexMarket\Models\Pricelist;
 
-/** @noinspection PhpIncludeInspection */
 require_once(dirname(__FILE__, 3).'/vendor/autoload.php');
 
 class ymPricelistGetProcessor extends modObjectGetProcessor

@@ -205,7 +205,7 @@ class GoogleRss20 extends Marketplace
         return [
             Field::TYPE_SHOP  => [
                 'title'       => $this->getOption('channel_title', $this->modx->getOption('site_name')),
-                'link'        => $this->getOption('channel_url', $this->modx->getOption('site_url')),
+                'link'        => $this->getOption('channel_url', $this->modx->getOption('yandexmarket2_site_url', null, $this->modx->getOption('site_url'), true)),
                 'description' => $this->getOption('channel_description', ''),
             ],
             Field::TYPE_OFFER => [
@@ -214,8 +214,11 @@ class GoogleRss20 extends Marketplace
                 'g:description'  => $this->getOption('item_description', 'description'),
                 'g:link'         => $this->getOption('item_link', 'Offer.url'), // Offer собирающий класс
                 'g:image_link'   => $this->getOption('item_image_link', 'Offer.image'),
-                'g:price'        => $this->getOption('item_price', 'Offer.price'), // Offer собирающий класс
-                'g:availability' => $this->getOption('item_availability', 'in stock'),
+                'g:price'        => [
+                    'value' => $this->getOption('item_price', 'Offer.price'), // Offer собирающий класс
+                    'handler' => '{$input} RUB'
+                ],
+                'g:availability' => $this->getOption('item_availability', 'in_stock'),
                 'g:brand'        => $this->getOption('item_brand', Service::hasMiniShop2() ? 'Vendor.name' : ''),
             ]
         ];
