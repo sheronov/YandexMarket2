@@ -4,21 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "072cc6410624490169336d2d361daefc",
+    "content-hash": "66a5b0b0dfe5a5e1aede0aabcdc1cd07",
     "packages": [
         {
             "name": "agelxnash/jevix",
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/AgelxNash/Jevix.git",
-                "reference": "c37170e3d60f357ee1087adde89df7fd938fdb8b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/AgelxNash/Jevix/zipball/c37170e3d60f357ee1087adde89df7fd938fdb8b",
-                "reference": "c37170e3d60f357ee1087adde89df7fd938fdb8b",
-                "shasum": ""
+                "url": "https://github.com/sheronov/Jevix.git",
+                "reference": "3a583dd20f0e48246729439a489006f587820325"
             },
             "require": {
                 "ext-mbstring": "*"
@@ -33,7 +27,6 @@
                     "Jevix": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -57,11 +50,7 @@
                 }
             ],
             "description": "Library for html filtering",
-            "support": {
-                "issues": "https://github.com/AgelxNash/Jevix/issues",
-                "source": "https://github.com/AgelxNash/Jevix/tree/1.2.4"
-            },
-            "time": "2019-03-29T12:26:55+00:00"
+            "time": "2022-08-27T17:42:12+00:00"
         },
         {
             "name": "haydenpierce/class-finder",
@@ -2310,7 +2299,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.0",
+        "php": "^7.0|^8.0",
         "ext-xmlwriter": "*",
         "ext-xmlreader": "*"
     },
@@ -2323,5 +2312,5 @@
     "platform-overrides": {
         "php": "7.0.0"
     },
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }

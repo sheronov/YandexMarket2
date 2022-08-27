@@ -3,7 +3,7 @@
   "description": "YandexMarket2 component for MODX Revolution",
   "minimum-stability": "dev",
   "require": {
-    "php": "^7.0",
+    "php": "^7.0|^8.0",
     "ext-xmlwriter": "*",
     "ext-xmlreader": "*",
     "haydenpierce/class-finder": "0.4.2",
@@ -17,6 +17,12 @@
     "ext-json": "*",
     "ext-mbstring": "*"
   },
+  "repositories": [
+    {
+      "url": "https://github.com/sheronov/Jevix.git",
+      "type": "git"
+    }
+  ],
   "autoload": {
     "classmap": [
       "model/yandexmarket2/"
