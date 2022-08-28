@@ -8,7 +8,7 @@ use Exception;
 use InvalidArgumentException;
 use MODX\Revolution\modX;
 use xPDO\xPDO;
-use xPDOObject;
+use xPDO\Om\xPDOObject;
 
 abstract class BaseObject
 {

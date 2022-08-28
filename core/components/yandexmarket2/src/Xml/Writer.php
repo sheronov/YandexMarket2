@@ -8,7 +8,6 @@ use MODX\Revolution\modX;
 use MODX\Revolution\Services\ContainerException;
 use MODX\Revolution\Services\NotFoundException;
 use ModxPro\PdoTools\CoreTools;
-use msProduct;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use XMLWriter;
@@ -61,7 +60,7 @@ abstract class Writer
         $this->modx = $pricelistService->getModx();
         $this->pricelist = $pricelistService->getPricelist();
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
-            $this->log('Включён режим отладки. Лог будет более подробный', false, modX::LOG_LEVEL_WARN);
+            $this->log('Включён режим отладки. Лог будет более подробный', false, xPDO::LOG_LEVEL_WARN);
         }
 
         $this->initializeJevix();
@@ -69,7 +68,7 @@ abstract class Writer
         $this->logTarget = $this->modx->getLogTarget();
         $this->logLevel = $this->modx->getLogLevel();
         if (!$this->initializePdoTools()) {
-            $this->log('Не найден pdoTools. Кода будет обработан парсером MODX', false, modX::LOG_LEVEL_WARN);
+            $this->log('Не найден pdoTools. Кода будет обработан парсером MODX', false, xPDO::LOG_LEVEL_WARN);
         }
         $this->xml = new XMLWriter();
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
@@ -276,7 +275,7 @@ abstract class Writer
         } elseif (isset($pls[$column])) {
             $value = $pls[$column];
         } else {
-            $this->log(sprintf('Could not resolve column "%s"', $column), false, modX::LOG_LEVEL_WARN);
+            $this->log(sprintf('Could not resolve column "%s"', $column), false, xPDO::LOG_LEVEL_WARN);
         }
 
         return $value;
@@ -543,7 +542,7 @@ abstract class Writer
         $data['Resource'] = &$data['resource'];
         $data['modResource'] = &$data['resource'];
         $data['modification'] = []; // for msOptionsPrice2 integration
-        if ($resource instanceof msProduct) {
+        if ($resource instanceof \msProduct) {
             $data['data'] = $resource->loadData() ? $resource->loadData()->toArray() : null;
             $data['vendor'] = $resource->loadVendor() ? $resource->loadVendor()->toArray() : null;
             $data['Data'] = &$data['data'];
@@ -631,7 +630,7 @@ abstract class Writer
         $field->type = $fieldType;
     }
 
-    protected function log(string $message, bool $withTime = true, int $level = modX::LOG_LEVEL_INFO)
+    protected function log(string $message, bool $withTime = true, int $level = xPDO::LOG_LEVEL_INFO)
     {
         if ($withTime) {
             $message = sprintf("%2.4f s: %s", (microtime(true) - $this->start), $message);
@@ -641,7 +640,7 @@ abstract class Writer
 
     protected function errorLog(string $message)
     {
-        $this->log($message, false, modX::LOG_LEVEL_ERROR);
+        $this->log($message, false, xPDO::LOG_LEVEL_ERROR);
     }
 
 }

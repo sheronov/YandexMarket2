@@ -17,7 +17,7 @@ class Update extends UpdateProcessor
     //public $permission = 'save';
 
     /**
-     * We doing special check of permission
+     * We're doing special check of permission
      * because of our objects is not an instances of modAccessibleObject
      *
      * @return bool|string

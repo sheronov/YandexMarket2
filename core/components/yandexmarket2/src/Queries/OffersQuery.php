@@ -7,6 +7,7 @@ use MODX\Revolution\modTemplateVarResource;
 use MODX\Revolution\modX;
 use MODX\Revolution\modResource;
 use xPDO\om\xPDOQuery;
+use xPDO\xPDO;
 use YandexMarket\Models\Field;
 use YandexMarket\Service;
 
@@ -21,7 +22,7 @@ class OffersQuery extends ObjectsQuery
         $categoriesQuery->prepare();
         $this->query->where(sprintf("`%s`.`%s` IN (%s)", $this->query->getAlias(), $this->offerParentField,
             $categoriesQuery->toSQL(true)));
-        $this->modx->log(modX::LOG_LEVEL_INFO,
+        $this->modx->log(xPDO::LOG_LEVEL_INFO,
             "Добавлено условие {$this->offerParentField} IN (select id from parentsQuery) для товаров", '',
             'YandexMarket2');
         $this->usesOtherQuery = true;

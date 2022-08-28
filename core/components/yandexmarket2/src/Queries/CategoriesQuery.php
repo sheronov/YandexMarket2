@@ -4,6 +4,7 @@ namespace YandexMarket\Queries;
 
 use MODX\Revolution\modX;
 use xPDO\om\xPDOQuery;
+use xPDO\xPDO;
 use YandexMarket\Model\YmCategory;
 use YandexMarket\Models\Field;
 
@@ -17,7 +18,7 @@ class CategoriesQuery extends ObjectsQuery
         $offersQuery->select(sprintf('DISTINCT `%s`.`%s`', $offersQuery->getAlias(), $this->offerParentField));
         $offersQuery->prepare();
         $this->query->where(sprintf('`modResource`.`id` IN (%s)', $offersQuery->toSQL(true)));
-        $this->modx->log(modX::LOG_LEVEL_INFO, 'Добавлено условие id IN (offers ids) для категорий', '',
+        $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Добавлено условие id IN (offers ids) для категорий', '',
             'YandexMarket2');
         $this->usesOtherQuery = true;
     }

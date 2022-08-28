@@ -10,7 +10,7 @@ use YandexMarket\Models\Pricelist;
 
 class Create extends CreateProcessor
 {
-    public $objectType     = 'YmField';
+    public $objectType     = 'ym2_field';
     public $classKey       = YmField::class;
     public $languageTopics = ['yandexmarket2'];
 

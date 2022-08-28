@@ -17,16 +17,15 @@ class Create extends CreateProcessor
      */
     public function beforeSet(): bool
     {
-        $pricelistId = (int)($this->getProperty('pricelist_id', 0)) ?: null;
-        $resourceId = (int)($this->getProperty('resource_id', 0));
+        $options = [
+            'resource_id'  => (int)$this->getProperty('resource_id'),
+            'pricelist_id' => (int)$this->getProperty('pricelist_id')
+        ];
 
-        if (!$resourceId) {
-            $this->modx->error->addField('resource_id', $this->modx->lexicon('ym2_category_err_nf'));
-        } elseif ($this->modx->getCount($this->classKey, [
-            'resource_id'  => $resourceId,
-            'pricelist_id' => $pricelistId
-        ])) {
-            $this->modx->error->addField('resource_id', $this->modx->lexicon('ym2_category_err_ae'));
+        if (empty($options['resource_id']) || empty($options['pricelist_id'])) {
+            $this->modx->error->addField('resource_id', $this->modx->lexicon($this->objectType .'_err_ns'));
+        } elseif ($this->modx->getCount($this->classKey, $options)) {
+            $this->modx->error->addField('resource_id', $this->modx->lexicon($this->objectType .'_err_ae'));
         }
 
         return parent::beforeSet();

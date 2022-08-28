@@ -18,11 +18,4 @@ class GetList extends GetListProcessor
     {
         return (new Pricelist($this->modx, $object))->toArray();
     }
-
-    public function afterIteration(array $list): array
-    {
-        // add here some usable information
-        return parent::afterIteration($list);
-    }
-
 }

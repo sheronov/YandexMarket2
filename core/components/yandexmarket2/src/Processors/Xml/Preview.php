@@ -18,7 +18,7 @@ class Preview extends Processor
         if ((!$id = $this->getProperty('id')) || !$pricelist = Pricelist::getById($id, $this->modx)) {
             return $this->modx->lexicon('ym2_pricelist_err_nf', ['id' => $id]);
         }
-        /** @var Pricelist $pricelist */
+
         $this->xmlPreviewer = new Previewer(new QueryService($pricelist, $this->modx));
 
         return true;
