@@ -10,16 +10,16 @@ import { Integrations } from "@sentry/tracing";
 const appId = 'yandexmarket-app';
 
 const appResize = () => {
-    let windowHeight = window.innerHeight;
-    let header = document.getElementById('modx-header');
-    if (header) {
-        windowHeight -= header.offsetHeight;
-    }
+    // let windowHeight = window.innerHeight;
+    // let header = document.getElementById('modx-header');
+    // if (header) {
+    //     windowHeight -= header.offsetHeight;
+    // }
 
-    const app = document.getElementById(appId);
-    if (app) {
-        app.style.cssText = `height:${windowHeight}px;overflow-y: auto; overflow-x: hidden;`;
-    }
+    // const app = document.getElementById(appId);
+    // if (app) {
+    //     app.style.cssText = `height:${windowHeight}px;overflow-y: auto; overflow-x: hidden;`;
+    // }
 }
 
 window.onload = function () {

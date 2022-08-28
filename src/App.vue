@@ -21,6 +21,18 @@ export default {
 <style scoped>
 #yandexmarket-app {
   padding: 0 15px;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 1;
+  overflow: hidden auto;
+}
+
+@media screen and (max-width: 960px) {
+  #yandexmarket-app {
+    padding: 0 10px;
+    position: relative;
+  }
 }
 
 #yandexmarket-app >>> .v-application--wrap {
@@ -29,7 +41,7 @@ export default {
 
 #yandexmarket-app >>> .v-icon.icon {
   /*noinspection CssNoGenericFontName*/
-  font-family: FontAwesome;
+  font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands", FontAwesome;
   font-size: 16px;
   line-height: 1.5;
 }
