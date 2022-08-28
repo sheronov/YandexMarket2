@@ -6,7 +6,8 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
 use InvalidArgumentException;
-use modX;
+use MODX\Revolution\modX;
+use xPDO\xPDO;
 use xPDOObject;
 
 abstract class BaseObject
@@ -118,7 +119,7 @@ abstract class BaseObject
                         $data[$key] = $value;
                         // $data[$key] = new DateTimeImmutable($value);
                     } catch (Exception $exception) {
-                        $this->modx->log(modX::LOG_LEVEL_ERROR, "[YandexMarket] wrong datetime {$key} = {$value}");
+                        $this->modx->log(xPDO::LOG_LEVEL_ERROR, "[YandexMarket] wrong datetime {$key} = {$value}");
                         $data[$key] = $value;
                     }
                 }

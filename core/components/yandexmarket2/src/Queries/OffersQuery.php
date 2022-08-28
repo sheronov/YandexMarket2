@@ -2,9 +2,11 @@
 
 namespace YandexMarket\Queries;
 
-use modTemplateVar;
-use modX;
-use xPDOQuery;
+use MODX\Revolution\modTemplateVar;
+use MODX\Revolution\modTemplateVarResource;
+use MODX\Revolution\modX;
+use MODX\Revolution\modResource;
+use xPDO\om\xPDOQuery;
 use YandexMarket\Models\Field;
 use YandexMarket\Service;
 
@@ -25,7 +27,7 @@ class OffersQuery extends ObjectsQuery
         $this->usesOtherQuery = true;
     }
 
-    protected function newQuery(string $class = 'modResource'): xPDOQuery
+    protected function newQuery(string $class = modResource::class): xPDOQuery
     {
         return parent::newQuery($this->pricelist->getClass());
     }
@@ -118,7 +120,7 @@ class OffersQuery extends ObjectsQuery
             case 'category':
             case 'parent':
                 if (!isset($this->join['Category'])) {
-                    $this->query->leftJoin('modResource', 'Category',
+                    $this->query->leftJoin(modResource::class, 'Category',
                         sprintf('`Category`.`id` = `%s`.`%s`', $this->query->getAlias(), $this->offerParentField));
                     $this->join['Category'] = true;
                 }
@@ -130,16 +132,16 @@ class OffersQuery extends ObjectsQuery
             case 'categorytv':
             case 'parenttv':
                 if (!isset($this->join['Category'])) {
-                    $this->query->leftJoin('modResource', 'Category',
+                    $this->query->leftJoin(modResource::class, 'Category',
                         sprintf('`Category`.`id` = `%s`.`%s`', $this->query->getAlias(), $this->offerParentField));
                     $this->join['Category'] = true;
                 }
-                $qTvs = $this->modx->newQuery('modTemplateVar', ['name:IN' => $keys]);
+                $qTvs = $this->modx->newQuery(modTemplateVar::class, ['name:IN' => $keys]);
                 foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
                     /** @var modTemplateVar $tv */
                     $alias = sprintf('CategoryTV-%s', $tv->name);
                     if (!isset($this->join[$alias])) {
-                        $this->query->leftJoin('modTemplateVarResource', $alias,
+                        $this->query->leftJoin(modTemplateVarResource::class, $alias,
                             sprintf('`%s`.`contentid` = `Category`.`id` AND `%s`.`tmplvarid` = %d',
                                 $alias, $alias, $tv->id));
                         $this->query->select(sprintf('`%s`.`value` as `categorytv.%s`', $alias, $tv->name));

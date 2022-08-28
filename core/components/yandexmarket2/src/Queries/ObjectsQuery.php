@@ -2,10 +2,11 @@
 
 namespace YandexMarket\Queries;
 
-use modTemplateVar;
-use modX;
+use MODX\Revolution\modResource;
 use msOption;
-use xPDOQuery;
+use MODX\Revolution\modTemplateVar;
+use MODX\Revolution\modX;
+use xPDO\om\xPDOQuery;
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Condition;
 use YandexMarket\Models\Field;
@@ -134,7 +135,7 @@ abstract class ObjectsQuery
         $this->addColumnsToGroupBy($columns);
     }
 
-    protected function newQuery(string $class = 'modResource'): xPDOQuery
+    protected function newQuery(string $class = modResource::class): xPDOQuery
     {
         $this->modx->invokeEvent('ym2OnBeforeQuery', [
             'pricelist' => &$this->pricelist,
@@ -294,7 +295,7 @@ abstract class ObjectsQuery
             case 'tv':
             case 'modtemplatevar':
             case 'modtemplatevarresource':
-                $qTvs = $this->modx->newQuery('modTemplateVar');
+                $qTvs = $this->modx->newQuery(modTemplateVar::class);
                 $qTvs->where(['name:IN' => $keys]);
                 foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
                     /** @var modTemplateVar $tv */

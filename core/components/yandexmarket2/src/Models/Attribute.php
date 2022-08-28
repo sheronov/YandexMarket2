@@ -2,7 +2,8 @@
 
 namespace YandexMarket\Models;
 
-use ymFieldAttribute;
+use YandexMarket\Model\YmField;
+use YandexMarket\Model\YmFieldAttribute;
 
 /**
  * @property int $id
@@ -24,7 +25,7 @@ class Attribute extends BaseObject
 
     public static function getObjectClass(): string
     {
-        return ymFieldAttribute::class;
+        return YmFieldAttribute::class;
     }
 
     public function setField(Field $field): Attribute

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="YandexMarket\Model" baseClass="xPDO\Om\xPDOObject" platform="mysql" defaultEngine="InnoDB" version="3.0">
+    <object class="YmPricelist" table="yandexmarket_pricelists" extends="xPDO\Om\xPDOSimpleObject">
+        <field key="name" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="file" dbtype="varchar" precision="191" phptype="string" null="false"/>
+        <field key="type" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="class" dbtype="varchar" precision="255" phptype="string" null="false" default="modResource"/>
+        <!-- в зависимости от типа будут формировать поля по умолчанию -->
+
+        <field key="created_on" dbtype="datetime" phptype="datetime" null="false"/>
+        <field key="edited_on" dbtype="datetime" phptype="datetime" null="true"/>
+
+        <field key="generated_on" dbtype="datetime" phptype="datetime" null="true"/>
+        <field key="generate_mode" dbtype="tinyint" phptype="integer" null="true"/>
+        <field key="generate_interval" dbtype="int" phptype="integer" null="true"/>
+        <field key="need_generate" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0"/>
+
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
+        <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="1"/>
+
+        <index alias="file" name="file" primary="false" unique="true" type="BTREE">
+            <column key="file" length="" collation="A" null="false"/>
+        </index>
+
+        <composite alias="Categories" class="YandexMarket\Model\YmCategory" local="id" foreign="pricelist_id" cardinality="many"
+                   owner="local"/>
+        <composite alias="Fields" class="YandexMarket\Model\YmField" local="id" foreign="pricelist_id" cardinality="many" owner="local"/>
+        <composite alias="Conditions" class="YandexMarket\Model\YmCondition" local="id" foreign="pricelist_id" cardinality="many"
+                   owner="local"/>
+    </object>
+
+    <object class="YmCondition" table="yandexmarket_conditions" extends="xPDO\Om\xPDOSimpleObject">
+        <field key="pricelist_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
+        <field key="column" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="operator" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="value" dbtype="text" phptype="string" null="true"/>
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
+        <field key="group" dbtype="varchar" precision="255" phptype="string" default="offer"/>
+
+        <aggregate alias="Pricelist" class="YandexMarket\Model\YmPricelist" local="pricelist_id" foreign="id" cardinality="one"
+                   owner="foreign"/>
+    </object>
+
+    <object class="YmCategory" table="yandexmarket_categories" extends="xPDO\Om\xPDOSimpleObject">
+        <field key="resource_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
+        <field key="pricelist_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
+        <field key="name" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
+
+        <aggregate alias="Resource" class="MODX\Revolution\modResource" local="resource_id" foreign="id" cardinality="one"
+                   owner="foreign"/>
+        <aggregate alias="Pricelist" class="YandexMarket\Model\YmPricelist" local="pricelist_id" foreign="id" cardinality="one"
+                   owner="foreign"/>
+
+        <index alias="resource_pricelist" name="resource_pricelist" primary="false" unique="true" type="BTREE">
+            <column key="resource_id" length="" collation="A" null="false"/>
+            <column key="pricelist_id" length="" collation="A" null="false"/>
+        </index>
+    </object>
+
+    <object class="YmField" table="yandexmarket_fields" extends="xPDO\Om\xPDOSimpleObject">
+        <field key="name" dbtype="varchar" precision="255" phptype="string" null="false"/>
+        <field key="parent" dbtype="int" phptype="integer" null="true"/>
+        <field key="type" dbtype="int" phptype="integer" null="false"/>
+        <field key="pricelist_id" dbtype="int" null="false" attributes="unsigned" phptype="integer"/>
+
+        <field key="value" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="handler" dbtype="text" phptype="string" null="true"/>
+        <!--  в handler возможно попадёт какой-либо Fenom обработчик значения, вместо значения из колонки -->
+
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
+        <!-- в properties будет лимит или какие-то прочие настройки по разными типам -->
+        <field key="rank" dbtype="int" phptype="integer" null="false" default="0"/>
+        <field key="created_on" dbtype="datetime" phptype="datetime" null="false"/>
+        <field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="1"/>
+
+        <aggregate alias="Pricelist" class="YandexMarket\Model\YmPricelist" local="pricelist_id" foreign="id" cardinality="one"
+                   owner="foreign"/>
+        <composite alias="Attributes" class="YandexMarket\Model\YmFieldAttribute" local="id" foreign="field_id" cardinality="many"
+                   owner="local"/>
+        <composite alias="Children" class="YandexMarket\Model\YmField" local="id" foreign="parent" cardinality="many" owner="local"/>
+        <aggregate alias="Parent" class="YandexMarket\Model\YmField" local="parent" foreign="id" cardinality="one" owner="foreign"/>
+    </object>
+
+    <object class="YmFieldAttribute" table="yandexmarket_field_attributes" extends="xPDO\Om\xPDOSimpleObject">
+        <field key="name" dbtype="varchar" phptype="string" precision="191" null="false"/>
+        <field key="field_id" dbtype="int" phptype="integer" null="false"/>
+        <field key="type" dbtype="int" phptype="integer" null="false" default="0"/>
+        <field key="value" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="handler" dbtype="text" phptype="string" null="true"/>
+        <field key="properties" dbtype="text" phptype="json" null="true"/>
+
+        <aggregate alias="Field" class="YandexMarket\Model\YmField" local="field_id" foreign="id" cardinality="one" owner="foreign"/>
+
+        <index alias="name_field_id" name="name_field_id" primary="false" unique="true" type="BTREE">
+            <column key="name" length="" collation="A" null="false"/>
+            <column key="field_id" length="" collation="A" null="false"/>
+        </index>
+    </object>
+</model>

@@ -3,9 +3,9 @@
 namespace YandexMarket\Models;
 
 use miniShop2;
-use modResource;
 use msProduct;
-use xPDOObject;
+use \MODX\Revolution\modResource;
+use \xPDO\Om\xPDOObject;
 use YandexMarket\Service;
 
 /**

@@ -4,7 +4,7 @@ namespace YandexMarket\Marketplaces;
 
 use Exception;
 use HaydenPierce\ClassFinder\ClassFinder;
-use modX;
+use MODX\Revolution\modX;
 use YandexMarket\Models\Field;
 use YandexMarket\Service;
 

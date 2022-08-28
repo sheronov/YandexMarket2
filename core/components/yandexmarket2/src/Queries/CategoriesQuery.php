@@ -2,8 +2,9 @@
 
 namespace YandexMarket\Queries;
 
-use modX;
-use xPDOQuery;
+use MODX\Revolution\modX;
+use xPDO\om\xPDOQuery;
+use YandexMarket\Model\YmCategory;
 use YandexMarket\Models\Field;
 
 class CategoriesQuery extends ObjectsQuery
@@ -24,9 +25,9 @@ class CategoriesQuery extends ObjectsQuery
     protected function selectQuery()
     {
         parent::selectQuery();
-        if ($this->modx->getCount('ymCategory', ['pricelist_id' => $this->pricelist->id])) {
-            $this->query->innerJoin('ymCategory', 'Category', 'Category.resource_id = modResource.id');
-            $this->query->select($this->modx->getSelectColumns('ymCategory', 'Category', 'category_'));
+        if ($this->modx->getCount(YmCategory::class, ['pricelist_id' => $this->pricelist->id])) {
+            $this->query->innerJoin(YmCategory::class, 'Category', 'Category.resource_id = modResource.id');
+            $this->query->select($this->modx->getSelectColumns(YmCategory::class, 'Category', 'category_'));
             $this->query->where(['Category.pricelist_id' => $this->pricelist->id]);
         }
     }

@@ -3,12 +3,16 @@
 namespace YandexMarket\Xml;
 
 use Exception;
-use modX;
+use MODX\Revolution\modChunk;
+use MODX\Revolution\modX;
+use MODX\Revolution\Services\ContainerException;
+use MODX\Revolution\Services\NotFoundException;
+use ModxPro\PdoTools\CoreTools;
 use msProduct;
-use pdoTools;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use XMLWriter;
+use xPDO\xPDO;
 use YandexMarket\Handlers\XmlJevix;
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Category;
@@ -33,7 +37,7 @@ abstract class Writer
     protected $currentOffer;
     /** @var Category */
     protected $currentCategory;
-    /** @var null|pdoTools */
+    /** @var null|CoreTools */
     protected $pdoTools;
     /** @var modX */
     protected $modx;
@@ -317,8 +321,8 @@ abstract class Writer
 
         $cacheKey = md5($code);
         if (!$element = $this->simpleStore[$cacheKey] ?? null) {
-            /** @var \modChunk $element */
-            $element = $this->modx->newObject('modChunk', ['name' => $cacheKey]);
+            /** @var modChunk $element */
+            $element = $this->modx->newObject(modChunk::class, ['name' => $cacheKey]);
             $element->setContent(str_replace(['{{', '}}'], ['[[', ']]'], $code));
             $this->simpleStore[$cacheKey] = $element;
         }
@@ -346,11 +350,15 @@ abstract class Writer
 
     protected function initializePdoTools(): bool
     {
-        $pdoTools = $this->modx->getService('pdoTools');
-        if ($pdoTools && $pdoTools instanceof pdoTools) {
-            $this->pdoTools = $pdoTools;
+        try {
+            $this->pdoTools = $this->modx->services->get('pdotools');
             return true;
+        } catch (NotFoundException $exception) {
+            $this->log('pdoTools does not existed on the system', true, xPDO::LOG_LEVEL_DEBUG);
+        } catch (ContainerException $exception) {
+            $this->errorLog('Can not initialize pdoTools!');
         }
+
         return false;
     }
 

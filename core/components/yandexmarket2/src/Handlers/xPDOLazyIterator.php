@@ -7,9 +7,9 @@ use msProduct;
 use PDO;
 use PDOStatement;
 use ReflectionClass;
-use xPDO;
-use xPDOObject;
-use xPDOQuery;
+use xPDO\xPDO;
+use xPDO\om\xPDOObject;
+use xPDO\om\xPDOQuery;
 use YandexMarket\Service;
 
 class xPDOLazyIterator implements Iterator

@@ -1,5 +1,7 @@
 <?php
 
+use MODX\Revolution\modExtraManagerController;
+
 /**
  * The home manager controller for YandexMarket2.
  */

@@ -2,13 +2,16 @@
 
 namespace YandexMarket\Models;
 
-use modX;
+use MODX\Revolution\modX;
 use PDO;
-use xPDOObject;
+use xPDO\om\xPDOObject;
 use YandexMarket\Marketplaces\Marketplace;
+use YandexMarket\Model\YmCategory;
+use YandexMarket\Model\YmCondition;
+use YandexMarket\Model\YmField;
+use YandexMarket\Model\YmFieldAttribute;
+use YandexMarket\Model\YmPricelist;
 use YandexMarket\Service;
-use ymFieldAttribute;
-use ymPricelist;
 
 /**
  * @property int $id
@@ -24,7 +27,7 @@ use ymPricelist;
  * @property null|int $generate_interval
  * @property bool $need_generate
  * @property null|array $properties
- * @property ymPricelist $object
+ * @property YmPricelist $object
  */
 class Pricelist extends BaseObject
 {
@@ -51,7 +54,7 @@ class Pricelist extends BaseObject
     /** @inheritDoc */
     public static function getObjectClass(): string
     {
-        return ymPricelist::class;
+        return YmPricelist::class;
     }
 
     /**
@@ -109,8 +112,8 @@ class Pricelist extends BaseObject
         if (!isset($this->fields)) {
             $this->fields = [];
 
-            $q = $this->modx->newQuery('ymField', ['pricelist_id' => $this->id])->sortby('`rank`');
-            foreach ($this->modx->getIterator('ymField', $q) as $ymField) {
+            $q = $this->modx->newQuery(YmField::class, ['pricelist_id' => $this->id])->sortby('`rank`');
+            foreach ($this->modx->getIterator(YmField::class, $q) as $ymField) {
                 $field = new Field($this->modx, $ymField);
                 $this->fields[$field->id] = $field;
             }
@@ -142,12 +145,12 @@ class Pricelist extends BaseObject
             $this->fieldsAttributes = [];
 
             if (!empty($fieldIds)) {
-                $q = $this->modx->newQuery(ymFieldAttribute::class);
+                $q = $this->modx->newQuery(YmFieldAttribute::class);
                 $q->where(['field_id:IN' => $fieldIds]);
 
-                $this->fieldsAttributes = array_map(function (ymFieldAttribute $attribute) {
+                $this->fieldsAttributes = array_map(function (YmFieldAttribute $attribute) {
                     return new Attribute($this->modx, $attribute);
-                }, $this->modx->getCollection(ymFieldAttribute::class, $q) ?? []);
+                }, $this->modx->getCollection(YmFieldAttribute::class, $q) ?? []);
             }
         }
 
@@ -164,8 +167,8 @@ class Pricelist extends BaseObject
     {
         if (!isset($this->conditions)) {
             $this->conditions = [];
-            $q = $this->modx->newQuery('ymCondition', ['pricelist_id' => $this->id])->sortby('id');
-            foreach ($this->modx->getIterator('ymCondition', $q) as $ymCondition) {
+            $q = $this->modx->newQuery(YmCondition::class, ['pricelist_id' => $this->id])->sortby('id');
+            foreach ($this->modx->getIterator(YmCondition::class, $q) as $ymCondition) {
                 $condition = new Condition($this->modx, $ymCondition);
                 $this->conditions[$condition->id] = $condition;
             }
@@ -229,8 +232,8 @@ class Pricelist extends BaseObject
     public function selectedCategoriesId(): array
     {
         $ids = [];
-        $q = $this->modx->newQuery('ymCategory', ['pricelist_id' => $this->id]);
-        $q->select("DISTINCT `ymCategory`.`resource_id`");
+        $q = $this->modx->newQuery(YmCategory::class, ['pricelist_id' => $this->id]);
+        $q->select("DISTINCT `resource_id`");
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;

@@ -19,17 +19,13 @@ require_once MODX_CONNECTORS_PATH.'index.php';
 /** @var modX $modx */
 $modx->lexicon->load('yandexmarket2:default');
 
-// handle request
-$corePath = $modx->getOption('yandexmarket2_core_path', null,
-    $modx->getOption('core_path').'components/yandexmarket2/');
-$modx->addPackage('yandexmarket2', $corePath.'model/');
 $modx->getRequest();
 
-/** @var modConnectorRequest $request */
+/** @var MODX\Revolution\modConnectorRequest $request */
 $request = $modx->request;
 
-$_POST['register'] = 'yandexmarket2'; //for logging (do not forget provide topic param)
+$_POST['register'] = 'yandexmarket2'; //for logging (uses in XmlPreview) (do not forget provide topic param)
 $request->handleRequest([
-    'processors_path' => $corePath.'processors/',
-    'location'        => '',
+    'action'   => str_replace('/', '\\', 'YandexMarket/Processors/'.$_REQUEST['action']),
+    'location' => ''
 ]);

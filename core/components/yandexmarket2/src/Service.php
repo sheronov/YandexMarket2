@@ -3,11 +3,18 @@
 namespace YandexMarket;
 
 use Exception;
-use modTemplateVar;
-use modX;
+use MODX\Revolution\modResource;
+use MODX\Revolution\modTemplateVar;
+use MODX\Revolution\modTemplateVarResource;
+use MODX\Revolution\modX;
+use MODX\Revolution\Registry\modDbRegister;
+use MODX\Revolution\Registry\modRegistry;
+use MODX\Revolution\Rest\modRest;
+use MODX\Revolution\Transport\modTransportPackage;
+use MODX\Revolution\Transport\modTransportProvider;
 use msOption;
 use PDO;
-use xPDO;
+use xPDO\xPDO;
 use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Models\Field;
 
@@ -27,7 +34,7 @@ class Service
             'modelPath' => $corePath.'model/',
         ]);
 
-        $this->modx->addPackage('yandexmarket2', $corePath.'model/');
+        // $this->modx->addPackage('yandexmarket2', $corePath.'Model/');
         $this->modx->lexicon->load('yandexmarket2:default');
         $this->checkStat();
     }
@@ -367,7 +374,7 @@ class Service
         $this->modx->lexicon->load('tv_input_types');
         $this->modx->lexicon->load('tv_widget');
 
-        foreach ($this->modx->getIterator('modTemplateVar') as $tv) {
+        foreach ($this->modx->getIterator(modTemplateVar::class) as $tv) {
             /** @var modTemplateVar $tv */
             $fields[] = [
                 'value'   => $columnPrefix.$tv->get('name'),
@@ -411,11 +418,11 @@ class Service
     protected function checkStat()
     {
         $key = 'yandexmarket2';
-        /** @var \modRegistry $registry */
-        if (!$registry = $this->modx->getService('registry', 'registry.modRegistry')) {
+        /** @var modRegistry $registry */
+        if (!$registry = $this->modx->getService('registry', modRegistry::class)) {
             return;
         }
-        if (!$register = $registry->getRegister('user', 'registry.modDbRegister')) {
+        if (!$register = $registry->getRegister('user', modDbRegister::class)) {
             return;
         }
         $register->connect();
@@ -423,10 +430,10 @@ class Service
         if ($register->read(['poll_limit' => 1, 'remove_read' => false])) {
             return;
         }
-        $c = $this->modx->newQuery('transport.modTransportProvider', ['service_url:LIKE' => '%modstore%']);
+        $c = $this->modx->newQuery(modTransportProvider::class, ['service_url:LIKE' => '%modstore%']);
         $c->select('username,api_key');
-        /** @var \modRest $rest */
-        $rest = $this->modx->getService('modRest', 'rest.modRest', '', [
+        /** @var modRest $rest */
+        $rest = $this->modx->getService('modRest', modRest::class, '', [
             'baseUrl'        => 'https://modstore.pro/extras',
             'suppressSuffix' => true,
             'timeout'        => 1,
@@ -435,9 +442,9 @@ class Service
 
         if ($rest) {
             $level = $this->modx->getLogLevel();
-            $this->modx->setLogLevel(modX::LOG_LEVEL_FATAL);
+            $this->modx->setLogLevel(xPDO::LOG_LEVEL_FATAL);
 
-            $tpQuery = $this->modx->newQuery('transport.modTransportPackage');
+            $tpQuery = $this->modx->newQuery(modTransportPackage::class);
             $tpQuery->where(['signature:LIKE' => 'yandexmarket2%']);
             $tpQuery->select('signature');
             $version = $this->modx->getValue($tpQuery->prepare()) ?: '1.0.0-beta';
@@ -461,7 +468,7 @@ class Service
                 'revolution_version' => $modxVersion['code_name'].'-'.$modxVersion['full_version'],
                 'supports'           => $modxVersion['code_name'].'-'.$modxVersion['full_version'],
                 'http_host'          => $this->modx->getOption('http_host'),
-                'php_version'        => XPDO_PHP_VERSION,
+                'php_version'        => defined('XPDO_PHP_VERSION') ? XPDO_PHP_VERSION : PHP_VERSION,
                 'language'           => $this->modx->getOption('manager_language'),
             ]);
             $this->modx->setLogLevel($level);
@@ -492,10 +499,10 @@ class Service
             case 'tv':
             case 'modtemplatevar':
             case 'modtemplatevarresource':
-                $qtv = $this->modx->newQuery('modTemplateVar');
+                $qtv = $this->modx->newQuery(modTemplateVar::class);
                 $qtv->where(['name' => $key]);
-                if ($tv = $this->modx->getObject('modTemplateVar', $qtv)) {
-                    $q = $this->modx->newQuery('modTemplateVarResource');
+                if ($tv = $this->modx->getObject(modTemplateVar::class, $qtv)) {
+                    $q = $this->modx->newQuery(modTemplateVarResource::class);
                     $q->where(['tmplvarid' => $tv->get('id')]);
                     $q->select('value');
                 }
@@ -510,7 +517,7 @@ class Service
             case 'offer':
             case 'resource':
             case 'modresource':
-                $q = $this->modx->newQuery('modResource');
+                $q = $this->modx->newQuery(modResource::class);
                 $q->select($key);
                 break;
             case 'data':

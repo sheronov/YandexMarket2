@@ -4,10 +4,11 @@ namespace YandexMarket;
 
 use Exception;
 use Generator;
-use modResource;
-use modX;
+use MODX\Revolution\modResource;
+use MODX\Revolution\modX;
 use PDO;
-use xPDOQuery;
+use xPDO\om\xPDOQuery;
+use xPDO\xPDO;
 use YandexMarket\Handlers\xPDOLazyIterator;
 use YandexMarket\Models\Category;
 use YandexMarket\Models\Field;
@@ -16,7 +17,7 @@ use YandexMarket\Models\Pricelist;
 use YandexMarket\Queries\CategoriesQuery;
 use YandexMarket\Queries\OffersQuery;
 use YandexMarket\Xml\FileGenerator;
-use ymCategory;
+use YandexMarket\Model\YmCategory;
 
 /**
  * Вспомогательный класс для подготовки запросов и генераторов предложений и категорий
@@ -134,8 +135,9 @@ class QueryService
     public function handleResourceChanges(modResource $resource)
     {
         $q = $this->getOffersQuery();
-        $q->where([$q->getAlias().'.id' => $resource->id]);
-        if (!$this->modx->getCount($q->getClass(), $this->pricelist->id)) {
+        $currentQuery = clone $q;
+        $currentQuery->where([$q->getAlias().'.id' => $resource->id]);
+        if (!$this->modx->getCount($currentQuery->getClass(), $currentQuery)) {
             //предложения нет в прайс-листе, пропускаем
             return;
         }
@@ -146,7 +148,7 @@ class QueryService
                 $generator->makeFile();
             } catch (Exception $e) {
                 // не удалось сгенерировать файл
-                $this->modx->log(modX::LOG_LEVEL_ERROR, $e->getMessage(), '', 'YandexMarket2');
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', 'YandexMarket2');
                 $this->pricelist->touch();
             }
         } else {
@@ -180,13 +182,13 @@ class QueryService
 
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $query->prepare();
-            $this->modx->log(modX::LOG_LEVEL_INFO, 'Categories SQL: '.$query->toSQL(true));
+            $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Categories SQL: '.$query->toSQL(true));
         }
 
         $resources = $this->modx->getIterator($query->getClass(), $query);
         /** @var modResource $resource */
         foreach ($resources as $resource) {
-            $ymCategory = new ymCategory($this->modx);
+            $ymCategory = new YmCategory($this->modx);
             $ymCategory->set('id', $resource->get('category_id') ?: $resource->id);
             $ymCategory->set('name', $resource->get('category_name') ?: $resource->pagetitle);
             $ymCategory->set('properties', $resource->get('category_properties') ?: []);
@@ -246,7 +248,7 @@ class QueryService
 
             if (!empty($neededToAdd)) {
                 $query->where(['OR:'.$query->getAlias().'.id:IN' => array_unique($neededToAdd)]);
-                $this->modx->log(modX::LOG_LEVEL_INFO,
+                $this->modx->log(xPDO::LOG_LEVEL_INFO,
                     sprintf('К запросу категорий добавлены недостающие категории: %s',
                         implode(',', $neededToAdd)), '', 'YandexMarket2');
             }
@@ -264,7 +266,7 @@ class QueryService
 
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $query->prepare();
-            $this->modx->log(modX::LOG_LEVEL_INFO, 'Offers SQL: '.$query->toSQL(true));
+            $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Offers SQL: '.$query->toSQL(true));
         }
 
         if ($this->reduceQueries) {

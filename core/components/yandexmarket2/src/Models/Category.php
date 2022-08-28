@@ -2,8 +2,9 @@
 
 namespace YandexMarket\Models;
 
-use modResource;
-use ymCategory;
+use MODX\Revolution\modResource;
+use YandexMarket\Model\YmCategory;
+use YandexMarket\Model\YmPricelist;
 
 /**
  * @property int $id
@@ -21,7 +22,7 @@ class Category extends BaseObject
 
     public static function getObjectClass(): string
     {
-        return ymCategory::class;
+        return YmCategory::class;
     }
 
     public function get(string $field)

@@ -24,9 +24,6 @@
     }
   ],
   "autoload": {
-    "classmap": [
-      "model/yandexmarket2/"
-    ],
     "psr-4": {
       "YandexMarket\\": "src/",
       "YandexMarket\\Tests\\": "tests/"
