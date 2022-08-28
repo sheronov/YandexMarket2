@@ -1,7 +1,8 @@
 <?php
-/** @var xPDOTransport $transport */
+/** @var xPDO\Transport\xPDOTransport $transport */
 /** @var array $options */
-/** @var modX $modx */
+/** @var  MODX\Revolution\modX $modx */
+
 if ($transport->xpdo) {
     $modx =& $transport->xpdo;
 

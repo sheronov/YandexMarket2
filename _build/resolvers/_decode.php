@@ -1,5 +1,7 @@
 <?php
+/** @var xPDO\Transport\xPDOTransport $transport */
 /** @var array $options */
+/** @var  MODX\Revolution\modX $modx */
 
 /** @var xPDOTransport $transport */
 if ($transport->xpdo) {
@@ -8,13 +10,13 @@ if ($transport->xpdo) {
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_INSTALL:
         case xPDOTransport::ACTION_UPGRADE:
-            if ($options['vehicle_class'] === 'EncryptedVehicle') {
+            if ($options['vehicle_class'] === '\EncryptedVehicle') {
                 foreach ($options['resolve'] as $idx => $values) {
                     if ($values['type'] === 'file') {
                         $fileMeta = $transport->xpdo->fromJSON($values['body'], true);
                         $fileTarget = eval($fileMeta['target']);
                         $fileTargetPath = $fileTarget.$fileMeta['name'];
-                        // EncryptedVehicle::decodeTree($fileTargetPath);
+                        // \EncryptedVehicle::decodeTree($fileTargetPath);
                         $modx->log(xPDO::LOG_LEVEL_DEBUG, "Contents decoded: $fileTargetPath");
                     }
                 }

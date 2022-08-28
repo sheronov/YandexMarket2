@@ -1,5 +1,10 @@
 <?php
 
+use \MODX\Revolution\Rest\modRest;
+use \MODX\Revolution\Transport\modTransportPackage;
+use \MODX\Revolution\Transport\modTransportProvider;
+use \xPDO\xPDO;
+
 class EncryptedVehicle extends xPDOObjectVehicle
 {
     public $class = 'EncryptedVehicle';
@@ -46,11 +51,11 @@ class EncryptedVehicle extends xPDOObjectVehicle
     public function install(&$transport, $options)
     {
         if (!$this->decodePayloads($transport, 'install')) {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Package can not be decrypted!');
+            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Vehicle can not be decrypted!');
             return false;
         }
 
-        $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Package decrypted!');
+        $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle decrypted!');
 
         return parent::install($transport, $options);
     }
@@ -64,7 +69,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
     public function uninstall(&$transport, $options)
     {
         if (!$this->decodePayloads($transport, 'uninstall')) {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Package can not be decrypted!');
+            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Vehicle can not be decrypted!');
             return false;
         }
 
@@ -80,9 +85,9 @@ class EncryptedVehicle extends xPDOObjectVehicle
      */
     protected function encode($data, $key)
     {
-        $ivLen = openssl_cipher_iv_length(EncryptedVehicle::CIPHER);
+        $ivLen = openssl_cipher_iv_length(self::CIPHER);
         $iv = openssl_random_pseudo_bytes($ivLen);
-        $cipher_raw = openssl_encrypt(serialize($data), EncryptedVehicle::CIPHER, $key, OPENSSL_RAW_DATA, $iv);
+        $cipher_raw = openssl_encrypt(serialize($data), self::CIPHER, $key, OPENSSL_RAW_DATA, $iv);
         return base64_encode($iv.$cipher_raw);
     }
 
@@ -93,7 +98,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
      */
     protected function decode($string, $key)
     {
-        $ivLen = openssl_cipher_iv_length(EncryptedVehicle::CIPHER);
+        $ivLen = openssl_cipher_iv_length(self::CIPHER);
         $encoded = base64_decode($string);
         if (ini_get('mbstring.func_overload')) {
             $strLen = mb_strlen($encoded, '8bit');
@@ -103,7 +108,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
             $iv = substr($encoded, 0, $ivLen);
             $cipher_raw = substr($encoded, $ivLen);
         }
-        return unserialize(openssl_decrypt($cipher_raw, EncryptedVehicle::CIPHER, $key, OPENSSL_RAW_DATA,
+        return unserialize(openssl_decrypt($cipher_raw, self::CIPHER, $key, OPENSSL_RAW_DATA,
             $iv), ['allowed_classes' => true]);
     }
 
@@ -152,7 +157,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
         $endpoint = 'package/decode/'.$action;
 
         /** @var modTransportPackage $package */
-        $package = $transport->xpdo->getObject('transport.modTransportPackage', [
+        $package = $transport->xpdo->getObject(modTransportPackage::class, [
             'signature' => $transport->signature,
         ]);
 
@@ -174,7 +179,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
                 $options = $this->getBaseArgs($provider);
 
                 /** @var modRest $rest */
-                $rest = $transport->xpdo->getService('modRest', 'rest.modRest', '', [
+                $rest = $transport->xpdo->getService('modRest', modRest::class, '', [
                     'baseUrl'        => rtrim($provider->get('service_url'), '/'),
                     'suppressSuffix' => true,
                     'timeout'        => 10,

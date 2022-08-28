@@ -1,7 +1,11 @@
 <?php
-/** @var xPDOTransport $transport */
+/** @var xPDO\Transport\xPDOTransport $transport */
 /** @var array $options */
-/** @var modX $modx */
+/** @var  MODX\Revolution\modX $modx */
+
+use MODX\Revolution\Transport\modTransportPackage;
+use MODX\Revolution\Transport\modTransportProvider;
+
 if (!$transport->xpdo || !($transport instanceof xPDOTransport)) {
     return false;
 }
@@ -23,9 +27,8 @@ $downloadPackage = function ($src, $dst) {
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_TIMEOUT, 180);
-        $safeMode = @ini_get('safe_mode');
         $openBasedir = @ini_get('open_basedir');
-        if (empty($safeMode) && empty($openBasedir)) {
+        if (empty($openBasedir)) {
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         }
 
@@ -42,12 +45,12 @@ $downloadPackage = function ($src, $dst) {
 $installPackage = function ($packageName, $options = []) use ($modx, $downloadPackage) {
     /** @var modTransportProvider $provider */
     if (!empty($options['service_url'])) {
-        $provider = $modx->getObject('transport.modTransportProvider', [
+        $provider = $modx->getObject(modTransportProvider::class, [
             'service_url:LIKE' => '%' . $options['service_url'] . '%',
         ]);
     }
     if (empty($provider)) {
-        $provider = $modx->getObject('transport.modTransportProvider', 1);
+        $provider = $modx->getObject(modTransportProvider::class, 1);
     }
     $modx->getVersionData();
     $productVersion = $modx->version['code_name'] . '-' . $modx->version['full_version'];
@@ -62,7 +65,7 @@ $installPackage = function ($packageName, $options = []) use ($modx, $downloadPa
         foreach ($foundPackages as $foundPackage) {
             /** @var modTransportPackage $foundPackage */
             /** @noinspection PhpUndefinedFieldInspection */
-            if ($foundPackage->name == $packageName) {
+            if ($foundPackage->name === $packageName) {
                 $sig = explode('-', $foundPackage->signature);
                 $versionSignature = explode('.', $sig[1]);
                 /** @noinspection PhpUndefinedFieldInspection */
@@ -77,7 +80,7 @@ $installPackage = function ($packageName, $options = []) use ($modx, $downloadPa
 
                 // Add in the package as an object so it can be upgraded
                 /** @var modTransportPackage $package */
-                $package = $modx->newObject('transport.modTransportPackage');
+                $package = $modx->newObject(modTransportPackage::class);
                 $package->set('signature', $foundPackage->signature);
                 /** @noinspection PhpUndefinedFieldInspection */
                 $package->fromArray([
@@ -114,7 +117,6 @@ $installPackage = function ($packageName, $options = []) use ($modx, $downloadPa
                     'success' => 0,
                     'message' => "Could not save package <b>{$packageName}</b>",
                 ];
-                break;
             }
         }
     } else {
@@ -135,18 +137,18 @@ switch ($options[xPDOTransport::PACKAGE_ACTION]) {
             if (!is_array($data)) {
                 $data = ['version' => $data];
             }
-            $installed = $modx->getIterator('transport.modTransportPackage', ['package_name' => $name]);
+            $installed = $modx->getIterator(modTransportPackage::class, ['package_name' => $name]);
             /** @var modTransportPackage $package */
             foreach ($installed as $package) {
                 if ($package->compareVersion($data['version'], '<=')) {
                     continue(2);
                 }
             }
-            $modx->log(modX::LOG_LEVEL_INFO, "Trying to install <b>{$name}</b>. Please wait...");
+            $modx->log(xPDO::LOG_LEVEL_INFO, "Trying to install <b>{$name}</b>. Please wait...");
             $response = $installPackage($name, $data);
             $level = $response['success']
-                ? modX::LOG_LEVEL_INFO
-                : modX::LOG_LEVEL_ERROR;
+                ? xPDO::LOG_LEVEL_INFO
+                : xPDO::LOG_LEVEL_ERROR;
             $modx->log($level, $response['message']);
         }
         $success = true;

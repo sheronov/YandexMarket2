@@ -1,7 +1,8 @@
 <?php
-/** @var xPDOTransport $transport */
-
+/** @var xPDO\Transport\xPDOTransport $transport */
 /** @var array $options */
+/** @var  MODX\Revolution\modX $modx */
+
 if ($transport->xpdo) {
     /** @var modX $modx */
     $modx =& $transport->xpdo;
@@ -10,10 +11,10 @@ if ($transport->xpdo) {
         case xPDOTransport::ACTION_INSTALL:
         case xPDOTransport::ACTION_UPGRADE:
             $manifestIndex = 2; //кладём его поле двух файлов encryption и namespace
-            $modx->addPackage('yandexmarket2', MODX_CORE_PATH.'components/yandexmarket2/model/');
+            $modx->addPackage('YandexMarket\Model', MODX_CORE_PATH.'components/yandexmarket2/src/', null, 'YandexMarket\\');
             $manager = $modx->getManager();
             $objects = [];
-            $schemaFile = MODX_CORE_PATH.'components/yandexmarket2/model/schema/yandexmarket2.mysql.schema.xml';
+            $schemaFile = MODX_CORE_PATH.'components/yandexmarket2/schema/yandexmarket2.mysql.schema.xml';
 
             // $schemaFile = null;
             // $tmpPackage = $transport->path.$transport->signature.'/';
@@ -33,6 +34,7 @@ if ($transport->xpdo) {
                 unset($schema);
             }
             foreach ($objects as $class) {
+                $class = 'YandexMarket\\Model\\' . $class;
                 $table = $modx->getTableName($class);
                 $sql = "SHOW TABLES LIKE '".trim($table, '`')."'";
                 $stmt = $modx->prepare($sql);
@@ -84,7 +86,7 @@ if ($transport->xpdo) {
                     // Remove old indexes
                     foreach ($indexes as $key => $index) {
                         if (!isset($map[$key]) && $manager->removeIndex($class, $key)) {
-                            $modx->log(modX::LOG_LEVEL_INFO, "Removed index \"{$key}\" of the table \"{$class}\"");
+                            $modx->log(xPDO::LOG_LEVEL_INFO, "Removed index \"{$key}\" of the table \"{$class}\"");
                         }
                     }
                     // Add or alter existing
@@ -93,11 +95,11 @@ if ($transport->xpdo) {
                         $index = implode(':', array_keys($index['columns']));
                         if (!isset($indexes[$key])) {
                             if ($manager->addIndex($class, $key)) {
-                                $modx->log(modX::LOG_LEVEL_INFO, "Added index \"{$key}\" in the table \"{$class}\"");
+                                $modx->log(xPDO::LOG_LEVEL_INFO, "Added index \"{$key}\" in the table \"{$class}\"");
                             }
                         } elseif ($index != $indexes[$key]) {
                             if ($manager->removeIndex($class, $key) && $manager->addIndex($class, $key)) {
-                                $modx->log(modX::LOG_LEVEL_INFO,
+                                $modx->log(xPDO::LOG_LEVEL_INFO,
                                     "Updated index \"{$key}\" of the table \"{$class}\""
                                 );
                             }
@@ -108,22 +110,22 @@ if ($transport->xpdo) {
                     // if ($manager instanceof xPDOManager_mysql && $connect = $manager->xpdo->getConnection([
                     //         xPDO::OPT_CONN_MUTABLE => true
                     //     ])) {
-                    //     $modx->log(modX::LOG_LEVEL_INFO, 'config = '.print_r($connect->config, 1));
+                    //     $modx->log(xPDO::LOG_LEVEL_INFO, 'config = '.print_r($connect->config, 1));
                     //
                     //     // add here get constraints from mysql
                     //     $constraints = array_filter($modx->getAggregates($class), static function (array $item) {
                     //         return ($item['cardinality'] ?? null) === 'one';
                     //     });
-                    //     $modx->log(modX::LOG_LEVEL_INFO, print_r($constraints, 1));
+                    //     $modx->log(xPDO::LOG_LEVEL_INFO, print_r($constraints, 1));
                     //
                     //     if ($className = $manager->xpdo->loadClass($class)) {
                     //         $currentTable = $manager->xpdo->getTableName($className);
                     //         $grantsSql = "GRANT REFERENCES ON {$connect->config['dbname']}.{$currentTable}
                     //                     TO '{$connect->config['username']}'@'{$connect->config['host']}';";
-                    //         $modx->log(modX::LOG_LEVEL_INFO, 'grantsSql = '.$grantsSql);
+                    //         $modx->log(xPDO::LOG_LEVEL_INFO, 'grantsSql = '.$grantsSql);
                     //         foreach ($constraints as $key => $constraint) {
                     //             if ($foreignClassKey = $manager->xpdo->loadClass($constraint['class'])) {
-                    //                 $modx->log(modX::LOG_LEVEL_INFO, $className.' => '.$foreignClassKey);
+                    //                 $modx->log(xPDO::LOG_LEVEL_INFO, $className.' => '.$foreignClassKey);
                     //                 $foreignKey = mb_strtolower(implode('_',
                     //                     [$class, $constraint['local'], $key, $constraint['foreign']]));
                     //                 $sql = "ALTER TABLE {$manager->xpdo->getTableName($className)}
@@ -138,12 +140,12 @@ if ($transport->xpdo) {
                     //                         $sql .= " ON DELETE SET NULL";
                     //                         break;
                     //                 }
-                    //                 $modx->log(modX::LOG_LEVEL_INFO, 'sql = '.$sql);
+                    //                 $modx->log(xPDO::LOG_LEVEL_INFO, 'sql = '.$sql);
                     //             }
                     //         }
                     //     }
                     // } else {
-                    //     $modx->log(modX::LOG_LEVEL_ERROR, 'Could not create constraints keys in table');
+                    //     $modx->log(xPDO::LOG_LEVEL_ERROR, 'Could not create constraints keys in table');
                     // }
                 }
             }
