@@ -134,8 +134,9 @@ class QueryService
     public function handleResourceChanges(modResource $resource)
     {
         $q = $this->getOffersQuery();
-        $q->where([$q->getAlias().'.id' => $resource->id]);
-        if (!$this->modx->getCount($q->getClass(), $this->pricelist->id)) {
+        $currentQuery = clone $q;
+        $currentQuery->where([$q->getAlias().'.id' => $resource->id]);
+        if (!$this->modx->getCount($currentQuery->getClass(), $currentQuery)) {
             //предложения нет в прайс-листе, пропускаем
             return;
         }
