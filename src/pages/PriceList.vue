@@ -119,7 +119,7 @@ export default {
         this.pricelist.categories.push(parseInt(resourceId));
       }
       if (send) {
-        api.post('categories/create', {pricelist_id: this.pricelist.id, resource_id: resourceId})
+        api.post('Categories/Create', {pricelist_id: this.pricelist.id, resource_id: resourceId})
             .then(() => this.getXmlPreview())
             .catch(error => {
               console.error(error);
@@ -131,7 +131,7 @@ export default {
     categoryRemoved(resourceId, send = true) {
       this.pricelist.categories = this.pricelist.categories.filter(selected => selected !== resourceId);
       if (send) {
-        api.post('categories/remove', {pricelist_id: this.pricelist.id, resource_id: resourceId})
+        api.post('Categories/Remove', {pricelist_id: this.pricelist.id, resource_id: resourceId})
             .then(() => this.getXmlPreview())
             .catch(error => console.error(error)); // можно добавлять назад, если по какой-то причине не удалился
         this.pricelistUpdated({need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)}, false);
@@ -223,7 +223,7 @@ export default {
       }
       this.previewLoading = true;
       this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
-      api.post('xml/preview', {id: this.pricelist.id, method: this.previewType})
+      api.post('Xml/Preview', {id: this.pricelist.id, method: this.previewType})
           .then(({data}) => {
             this.code = data.message;
             this.debug = data.object;
@@ -232,7 +232,7 @@ export default {
           .then(() => this.previewLoading = false);
     },
     loadPricelist() {
-      api.post('pricelists/get', {id: this.id})
+      api.post('Pricelists/Get', {id: this.id})
           .then(({data}) => {
             this.pricelist = data.object;
             let route = this.$route.matched.find(r => r.meta && r.meta.replaceable);
@@ -254,7 +254,7 @@ export default {
         this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
         // eslint-disable-next-line no-unused-vars
         let {fields, categories, attributes, conditions, ...pricelist} = this.pricelist;
-        api.post('pricelists/update', {...pricelist})
+        api.post('Pricelists/Update', {...pricelist})
             .then(({data}) => {
               this.pricelist = {...this.pricelist, ...data.object};
               this.getXmlPreview()

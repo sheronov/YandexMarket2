@@ -126,7 +126,7 @@ export default {
       if (this.awaitChildren[item[this.itemKey]]) {
         delete this.awaitChildren[item[this.itemKey]];
       }
-      return api.post('categories/getlist', {...this.where, id: item.id})
+      return api.post('Categories/GetList', {...this.where, id: item.id})
           .then(({data}) => {
             this.$set(item, 'children', data);
             data.forEach((child) => {
@@ -153,7 +153,7 @@ export default {
     },
     loadContexts() {
       this.loading = true;
-      api.post('categories/getlist', {...this.where, id: 'root'})
+      api.post('Categories/GetList', {...this.where, id: 'root'})
           .then(({data}) => this.$emit('contexts:loaded', data))
           .catch(e => console.error(e))
           .then(() => {

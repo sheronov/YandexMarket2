@@ -199,7 +199,7 @@ export default {
     },
     saveChanges() {
       setTimeout(() => {
-        api.post(!this.item.id ? 'attributes/create' : 'attributes/update', this.item)
+        api.post(!this.item.id ? 'Attributes/Create' : 'Attributes/Update', this.item)
             .then(({data}) => {
               this.edit = false;
               this.$nextTick().then(() => this.$emit('attribute:updated', data.object));
@@ -216,7 +216,7 @@ export default {
         return;
       }
       if (confirm('Вы действительно хотите удалить атрибут ' + this.item.name + '?')) {
-        api.post('attributes/remove', {ids: JSON.stringify([this.item.id])})
+        api.post('Attributes/Remove', {id: this.item.id})
             .then(() => this.$emit('attribute:deleted', this.item))
             .catch(error => console.log(error));
       }

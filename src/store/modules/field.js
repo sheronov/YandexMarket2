@@ -44,7 +44,7 @@ export default {
     },
     actions: {
         loadListTypes({commit}) {
-            api.post('lists/fields')
+            api.post('Lists/Fields')
                 .then(({data}) => commit('setFieldTypes', data))
         }
     }

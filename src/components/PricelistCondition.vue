@@ -185,7 +185,7 @@ export default {
         return;
       }
       if (confirm('Вы действительно хотите удалить это условие?')) {
-        api.post('conditions/remove', {ids: JSON.stringify([this.condition.id])})
+        api.post('Conditions/Remove', {id: this.condition.id})
             .then(() => this.$emit('condition:deleted', this.condition))
             .catch(error => console.log(error));
       }
@@ -198,7 +198,7 @@ export default {
     },
     saveChanges() {
       setTimeout(() => {
-        api.post(!this.condition.id ? 'conditions/create' : 'conditions/update', this.condition)
+        api.post(!this.condition.id ? 'Conditions/Create' : 'Conditions/Update', this.condition)
             .then(({data}) => {
               this.edit = false;
               this.$nextTick().then(() => this.$emit('condition:updated', data.object));
@@ -238,7 +238,7 @@ export default {
           || (item && item.value && item.value.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1);
     },
     loadValues() {
-      api.post('lists/values', {column: this.condition.column})
+      api.post('Lists/Values', {column: this.condition.column})
           .then(({data}) => this.values = (data.results || []).filter(v => v !== null && v !== ''));
     }
   },

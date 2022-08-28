@@ -196,7 +196,7 @@ export default {
         sort: this.options.sortBy[0] || 'id',
         dir: Object.prototype.hasOwnProperty.call(this.options.sortDesc, 0) ? (this.options.sortDesc[0] ? 'desc' : 'asc') : 'desc'
       }
-      api.post('pricelists/getlist', params)
+      api.post('Pricelists/GetList', params)
           .then(({data}) => {
             this.lists = data.results;
             this.total = data.total;
@@ -212,7 +212,7 @@ export default {
     createPricelist() {
       this.errors = {};
       this.loading = true;
-      api.post('pricelists/create', {...this.pricelist, active: false})
+      api.post('Pricelists/Create', {...this.pricelist, active: false})
           .then(({data}) => {
             this.$router.push({name: 'pricelist', params: {id: data.object.id}});
             this.pricelist = {...this.defaultItem};
@@ -234,7 +234,7 @@ export default {
     removePricelist(pricelist) {
       if (confirm(`Вы действительно хотите удалить прайс-лист ${pricelist.id} ? Это действие безвозвратное`)) {
         this.loading = true;
-        api.post('pricelists/remove', {ids: JSON.stringify([pricelist.id])})
+        api.post('Pricelists/Remove', {id: pricelist.id})
             .then(() => this.loadLists())
             .catch(error => console.error(error))
             .then(() => this.loading = false);

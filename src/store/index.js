@@ -55,7 +55,7 @@ export default new Vuex.Store({
     },
     actions: {
         loadClassKeys({commit}) {
-            api.post('lists/classkeys')
+            api.post('Lists/ClassKeys')
                 .then(({data}) => commit('setClassKeys', data))
         },
     }

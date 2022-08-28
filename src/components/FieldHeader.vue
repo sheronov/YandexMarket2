@@ -129,14 +129,14 @@ export default {
         return;
       }
       if (confirm('Вы действительно хотите удалить поле ' + this.field.name + '?')) {
-        api.post('fields/remove', {ids: JSON.stringify([this.field.id])})
+        api.post('Fields/Remove', {id: this.field.id})
             .then(() => this.$emit('field:deleted', this.field))
             .catch(error => console.log(error));
       }
     },
     saveField(event) {
       setTimeout(() => {
-        api.post(!this.field.id ? 'fields/create' : 'fields/update', this.field)
+        api.post(!this.field.id ? 'Fields/Create' : 'Fields/Update', this.field)
             .then(({data}) => {
               this.$emit('edit:toggle', event, false);
               this.$nextTick().then(() => this.$emit('field:updated', data.object));

@@ -15,7 +15,7 @@
           v-model="classKey"
           :readonly="classKeyDisabled"
           placeholder="Класс для выборки предложений (class_key из таблицы ресурсов)"
-          hint="Аккуратнее с настройкой. Для простых ресурсов укажите modResource"
+          hint="Аккуратнее с настройкой. Для простых ресурсов укажите modDocument"
           dense
           :background-color="classKeyDisabled ? 'grey lighten-3' : 'grey lighten-5'"
           solo

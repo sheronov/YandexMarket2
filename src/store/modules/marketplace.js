@@ -32,7 +32,7 @@ export default {
     },
     actions: {
         loadList({commit}) {
-            api.post('lists/marketplaces')
+            api.post('Lists/Marketplaces')
                 .then(({data}) => commit('setMarketplaces', data))
         }
     }
