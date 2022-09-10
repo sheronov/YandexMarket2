@@ -126,7 +126,6 @@ class YandexMarket2Package
         $this->category_attributes = [
             'vehicle_class'                                                                                      => EncryptedVehicle::class,
             'vehicle_package'                                                                                    => '',
-            // TODO: тут может оставить
             MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'category',
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => false,

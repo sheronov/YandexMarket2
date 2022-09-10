@@ -21,17 +21,19 @@ if (file_exists(dirname(__FILE__, 5).'/index.php')) {
     echo "Could not load MODX!\n";
     return;
 }
+
 /** @var modX|\modX $modx */
+$isMODX3 = class_exists('MODX\Revolution\modX');
 // Включаем обработку ошибок
-$modx->getService('error', Service::isMODX3() ? modError::class : 'error.modError');
+$modx->getService('error', $isMODX3 ? modError::class : 'error.modError');
 $modx->setLogLevel(filter_var($modx->getOption('yandexmarket2_debug_mode', null, false), FILTER_VALIDATE_BOOLEAN)
-    ? Service::LOG_LEVEL_INFO : Service::LOG_LEVEL_WARN);
+    ? $modx::LOG_LEVEL_INFO : $modx::LOG_LEVEL_WARN);
 $modx->setLogTarget(XPDO_CLI_MODE ? 'ECHO' : 'HTML');
 
 $corePath = $modx->getOption('yandexmarket2_core_path', null,
     $modx->getOption('core_path').'components/yandexmarket2/');
 
-if (!class_exists('MODX\Revolution\modX')) {
+if (!$isMODX3) {
     require_once(dirname(__FILE__, 2).'/vendor/autoload.php');
     $modx->addPackage('yandexmarket2', $corePath.'model/');
 }
