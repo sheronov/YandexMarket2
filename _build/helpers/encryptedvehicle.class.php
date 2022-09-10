@@ -18,12 +18,11 @@ if (!defined('LOG_LEVEL_ERROR')) {
     define('LOG_LEVEL_ERROR', MODX3 ? xPDO3::LOG_LEVEL_ERROR : xPDO::LOG_LEVEL_ERROR);
 }
 
-
 class EncryptedVehicle extends xPDOObjectVehicle
 {
     public $class = 'EncryptedVehicle';
-    const VERSION = '2.0.0';
-    const CIPHER  = 'AES-256-CBC';
+    const VERSION    = '2.0.0';
+    const CIPHER     = 'AES-256-CBC';
     const KEY_LENGTH = 40;
 
     /**
@@ -249,3 +248,5 @@ class EncryptedVehicle extends xPDOObjectVehicle
         ];
     }
 }
+
+class_alias(EncryptedVehicle::class, 'xPDO\Transport\EncryptedVehicle');

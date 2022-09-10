@@ -53,7 +53,6 @@ if (!defined('XPDO_PHP_VERSION')) {
     define('XPDO_PHP_VERSION', PHP_VERSION);
 }
 
-
 class YandexMarket2Package
 {
     /** @var modX|modX3 $modx */
@@ -125,7 +124,8 @@ class YandexMarket2Package
         $this->category = $this->modx->newObject(MODX3 ? modCategory3::class : modCategory::class);
         $this->category->set('category', $this->config['name']);
         $this->category_attributes = [
-            'vehicle_class'                                                                                      => '\EncryptedVehicle',
+            'vehicle_class'                                                                                      => EncryptedVehicle::class,
+            'vehicle_package'                                                                                    => '',
             // TODO: тут может оставить
             MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'category',
@@ -141,6 +141,7 @@ class YandexMarket2Package
     {
         $this->builder->package->put(MODX3 ? new xPDOFileVehicle3() : new xPDOFileVehicle(), [
             'vehicle_class'                                                          => MODX3 ? xPDOFileVehicle3::class : xPDOFileVehicle::class,
+            'vehicle_package'                                                        => '',
             'namespace'                                                              => 'yandexmarket2',
             MODX3 ? xPDOTransport3::UNINSTALL_FILES : xPDOTransport::UNINSTALL_FILES => false,
             'object'                                                                 => [
@@ -150,9 +151,10 @@ class YandexMarket2Package
         ]);
 
         $this->builder->package->put(MODX3 ? new xPDOScriptVehicle3() : new xPDOScriptVehicle(), [
-            'vehicle_class' => MODX3 ? xPDOScriptVehicle3::class : xPDOScriptVehicle::class,
-            'namespace'     => 'yandexmarket2',
-            'object'        => [
+            'vehicle_class'   => MODX3 ? xPDOScriptVehicle3::class : xPDOScriptVehicle::class,
+            'vehicle_package' => '',
+            'namespace'       => 'yandexmarket2',
+            'object'          => [
                 'source' => $this->config['helpers'].'encryption.php'
             ]
         ]);
@@ -245,13 +247,13 @@ class YandexMarket2Package
             $schemaXML->attributes()->package = 'yandexmarket2';
             $schemaXML->attributes()->version = '1.1';
             $schemaXML->attributes()->baseClass = 'xPDOObject';
-            foreach($schemaXML->children() as $child) {
+            foreach ($schemaXML->children() as $child) {
                 $child->attributes()->extends = 'xPDOSimpleObject';
-                foreach($child->children() as $field) {
+                foreach ($child->children() as $field) {
                     if ($field->attributes()->class) {
-                        $field->attributes()->class = array_slice(explode('\\', (string)$field->attributes()->class), -1)[0];
+                        $field->attributes()->class = array_slice(explode('\\', (string)$field->attributes()->class),
+                            -1)[0];
                     }
-
                 }
             }
         }
@@ -321,7 +323,8 @@ class YandexMarket2Package
             return;
         }
         $attributes = [
-            'vehicle_class'                                                                                      => '\EncryptedVehicle',
+            'vehicle_class'                                                                                      => EncryptedVehicle::class,
+            'vehicle_package'                                                                                    => '',
             MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'key',
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => true,
@@ -352,7 +355,8 @@ class YandexMarket2Package
             return;
         }
         $attributes = [
-            'vehicle_class'                                                                                      => '\EncryptedVehicle',
+            'vehicle_class'                                                                                      => EncryptedVehicle::class,
+            'vehicle_package'                                                                                    => '',
             MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => true,
             MODX3 ? xPDOTransport3::UPDATE_OBJECT : xPDOTransport::UPDATE_OBJECT                                 => !empty($this->config['update']['menus']),
@@ -391,7 +395,8 @@ class YandexMarket2Package
             return;
         }
         $this->category_attributes[MODX3 ? xPDOTransport3::RELATED_OBJECT_ATTRIBUTES : xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Plugins'] = [
-            'vehicle_class'                                                                                      => '\EncryptedVehicle',
+            'vehicle_class'                                                                                      => EncryptedVehicle::class,
+            'vehicle_package'                                                                                    => '',
             MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'name',
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => false,
@@ -450,7 +455,8 @@ class YandexMarket2Package
         }
 
         $attributes = [
-            'vehicle_class'                                                                                      => '\EncryptedVehicle',
+            'vehicle_class'                                                                                      => EncryptedVehicle::class,
+            'vehicle_package'                                                                                    => '',
             MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => true,
             MODX3 ? xPDOTransport3::UPDATE_OBJECT : xPDOTransport::UPDATE_OBJECT                                 => !empty($this->config['update']['events']),
@@ -498,7 +504,8 @@ class YandexMarket2Package
         $versionSignature = explode('.', $sig[1]);
 
         /** @var modTransportPackage|modTransportPackage3 $package */
-        if (!$package = $this->modx->getObject(MODX3 ? modTransportPackage3::class : 'transport.modTransportPackage', ['signature' => $signature])) {
+        if (!$package = $this->modx->getObject(MODX3 ? modTransportPackage3::class : 'transport.modTransportPackage',
+            ['signature' => $signature])) {
             $package = $this->modx->newObject(MODX3 ? modTransportPackage3::class : 'transport.modTransportPackage');
             $package->set('signature', $signature);
             $package->fromArray([
@@ -579,11 +586,12 @@ class YandexMarket2Package
         //encryption resolver
         $guid = md5(uniqid(mt_rand(), true));
         $this->builder->package->put(MODX3 ? new xPDOScriptVehicle3() : new xPDOScriptVehicle(), [
-            'vehicle_class' => MODX3 ? xPDOScriptVehicle3::class : xPDOScriptVehicle::class,
-            'namespace'     => 'yandexmarket2',
-            'guid'          => $guid,
-            'native_key'    => $guid,
-            'object'        => [
+            'vehicle_class'   => MODX3 ? xPDOScriptVehicle3::class : xPDOScriptVehicle::class,
+            'vehicle_package' => '',
+            'namespace'       => 'yandexmarket2',
+            'guid'            => $guid,
+            'native_key'      => $guid,
+            'object'          => [
                 'source' => $this->config['helpers'].'encryption.php',
             ]
         ]);
