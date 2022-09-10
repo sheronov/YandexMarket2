@@ -184,7 +184,7 @@ class QueryService
 
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $query->prepare();
-            $this->modx->log(Service::LOG_LEVEL_INFO, 'Categories SQL: '.$query->toSQL(true));
+            $this->modx->log(Service::LOG_LEVEL_DEBUG, 'Categories SQL: '.$query->toSQL(true));
         }
 
         $resources = $this->modx->getIterator($query->getClass(), $query);
@@ -277,7 +277,7 @@ class QueryService
 
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
             $query->prepare();
-            $this->modx->log(Service::LOG_LEVEL_INFO, 'Offers SQL: '.$query->toSQL(true));
+            $this->modx->log(Service::LOG_LEVEL_DEBUG, 'Offers SQL: '.$query->toSQL(true));
         }
 
         if ($this->reduceQueries) {

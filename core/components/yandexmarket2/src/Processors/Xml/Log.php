@@ -3,6 +3,7 @@
 namespace YandexMarket\Processors\Xml;
 
 use MODX\Revolution\Processors\Processor;
+use MODX\Revolution\Registry\modFileRegister;
 use MODX\Revolution\Registry\modRegistry;
 use YandexMarket\Service;
 
@@ -27,7 +28,7 @@ class Log extends ALogProcessor
     public function process()
     {
         $register = trim($this->getProperty('register'));
-        $registerClass = trim($this->getProperty('register_class', 'registry.modFileRegister'));
+        $registerClass = trim($this->getProperty('register_class', Service::isMODX3() ? modFileRegister::class : 'registry.modFileRegister'));
         $topic = trim($this->getProperty('topic'));
 
         $options = [
@@ -38,7 +39,7 @@ class Log extends ALogProcessor
             'remove_read'   => true,
         ];
 
-        $this->modx->getService('registry', modRegistry::class);
+        $this->modx->getService('registry', Service::isMODX3() ? modRegistry::class : 'registry.modRegistry');
         $this->modx->registry->addRegister($register, $registerClass, ['directory' => $register]);
         if (!$this->modx->registry->$register->connect()) {
             return $this->failure($this->modx->lexicon('error'));
@@ -57,7 +58,7 @@ class Log extends ALogProcessor
                     continue;
                 }
 
-                if (!$this->modx->getOption('yandexmarket2_debug_mode', null, false) && $message['level'] === 'WARN') {
+                if (!$this->modx->getOption('yandexmarket2_debug_mode', null, false) && $message['level'] === 'DEBUG') {
                     continue;
                 }
 

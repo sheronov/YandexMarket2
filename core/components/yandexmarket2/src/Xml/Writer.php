@@ -54,7 +54,7 @@ abstract class Writer
         $this->modx = $pricelistService->getModx();
         $this->pricelist = $pricelistService->getPricelist();
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
-            $this->log('Включён режим отладки. Лог будет более подробный', false, Service::LOG_LEVEL_WARN);
+            $this->log('Включён режим отладки. Лог будет более подробный', false, Service::LOG_LEVEL_DEBUG);
         }
 
         $this->initializeJevix();
@@ -62,7 +62,7 @@ abstract class Writer
         $this->logTarget = $this->modx->getLogTarget();
         $this->logLevel = $this->modx->getLogLevel();
         if (!$this->initializePdoTools()) {
-            $this->log('Не найден pdoTools. Кода будет обработан парсером MODX', false, Service::LOG_LEVEL_WARN);
+            $this->log('Не найден pdoTools. Код будет обработан парсером MODX', false, Service::LOG_LEVEL_WARN);
         }
         $this->xml = new XMLWriter();
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
@@ -345,15 +345,18 @@ abstract class Writer
     protected function initializePdoTools(): bool
     {
         try {
-            $pdoTools = Service::isMODX3() ? $this->modx->services->get('pdotools') : $this->modx->getService('pdoTools');
-            if (Service::isMODX3() || $pdoTools instanceof \pdoTools) {
-                $this->pdoTools = $pdoTools;
+            if (Service::isMODX3()) {
+                $this->pdoTools = $this->modx->services->get('pdotools');
+                return true;
+            }
+            if (Service::hasPdoTools()) {
+                $this->pdoTools = $this->modx->getService('pdoTools');
                 return true;
             }
         } catch (\MODX\Revolution\Services\NotFoundException $exception) {
             $this->log('pdoTools does not existed on the system', true, Service::LOG_LEVEL_DEBUG);
         } catch (\MODX\Revolution\Services\ContainerException $exception) {
-            $this->errorLog('Can not initialize pdoTools!');
+            $this->errorLog('Could not initialize pdoTools!');
         } catch (\Exception $exception) {
             $this->errorLog($exception->getMessage());
         }

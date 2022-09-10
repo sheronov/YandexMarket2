@@ -79,6 +79,11 @@ class Service
         return file_exists(MODX_CORE_PATH.'components/minishop2/model/minishop2/msproduct.class.php');
     }
 
+    public static function hasPdoTools(): bool
+    {
+        return file_exists(MODX_CORE_PATH.'components/pdotools/model/pdotools/pdotools.class.php');
+    }
+
     public static function hasMs2Gallery(): bool
     {
         return file_exists(MODX_CORE_PATH.'components/ms2gallery/model/ms2gallery/ms2gallery.class.php');
