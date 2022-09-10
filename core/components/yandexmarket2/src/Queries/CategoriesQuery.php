@@ -2,15 +2,18 @@
 
 namespace YandexMarket\Queries;
 
-use MODX\Revolution\modX;
-use xPDO\om\xPDOQuery;
-use xPDO\xPDO;
-use YandexMarket\Model\YmCategory;
+use YandexMarket\Models\Category;
 use YandexMarket\Models\Field;
+use YandexMarket\Service;
 
 class CategoriesQuery extends ObjectsQuery
 {
-    public function setOffersQuery(xPDOQuery $query)
+    /**
+     * @param  \xPDO\om\xPDOQuery|\xPDOQuery  $query
+     *
+     * @return void
+     */
+    public function setOffersQuery($query)
     {
         $offersQuery = clone $query;
         $offersQuery->query['columns'] = '';
@@ -18,7 +21,7 @@ class CategoriesQuery extends ObjectsQuery
         $offersQuery->select(sprintf('DISTINCT `%s`.`%s`', $offersQuery->getAlias(), $this->offerParentField));
         $offersQuery->prepare();
         $this->query->where(sprintf('`modResource`.`id` IN (%s)', $offersQuery->toSQL(true)));
-        $this->modx->log(xPDO::LOG_LEVEL_INFO, 'Добавлено условие id IN (offers ids) для категорий', '',
+        $this->modx->log(Service::LOG_LEVEL_INFO, 'Добавлено условие id IN (offers ids) для категорий', '',
             'YandexMarket2');
         $this->usesOtherQuery = true;
     }
@@ -26,9 +29,9 @@ class CategoriesQuery extends ObjectsQuery
     protected function selectQuery()
     {
         parent::selectQuery();
-        if ($this->modx->getCount(YmCategory::class, ['pricelist_id' => $this->pricelist->id])) {
-            $this->query->innerJoin(YmCategory::class, 'Category', 'Category.resource_id = modResource.id');
-            $this->query->select($this->modx->getSelectColumns(YmCategory::class, 'Category', 'category_'));
+        if ($this->modx->getCount(Category::getObjectClass(), ['pricelist_id' => $this->pricelist->id])) {
+            $this->query->innerJoin(Category::getObjectClass(), 'Category', 'Category.resource_id = modResource.id');
+            $this->query->select($this->modx->getSelectColumns(Category::getObjectClass(), 'Category', 'category_'));
             $this->query->where(['Category.pricelist_id' => $this->pricelist->id]);
         }
     }

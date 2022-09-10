@@ -5,11 +5,23 @@ namespace YandexMarket\Processors\Categories;
 use MODX\Revolution\modAccessibleObject;
 use MODX\Revolution\Processors\Model\RemoveProcessor;
 use YandexMarket\Model\YmCategory;
+use YandexMarket\Service;
 
-class Remove extends RemoveProcessor
+if (!Service::isMODX3()) {
+    abstract class ARemove extends \modObjectRemoveProcessor
+    {
+        public $classKey = \YmCategory::class;
+    }
+} else {
+    abstract class ARemove extends RemoveProcessor
+    {
+        public $classKey = YmCategory::class;
+    }
+}
+
+class Remove extends ARemove
 {
     public $objectType     = 'ym2_category';
-    public $classKey       = YmCategory::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'remove';
 

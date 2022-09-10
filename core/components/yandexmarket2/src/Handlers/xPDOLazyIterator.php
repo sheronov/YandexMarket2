@@ -14,7 +14,7 @@ use YandexMarket\Service;
 
 class xPDOLazyIterator implements Iterator
 {
-    /** @var xPDO */
+    /** @var xPDO|\xPDO */
     private $xpdo    = null;
     private $index   = 0;
     private $current = null;
@@ -22,7 +22,7 @@ class xPDOLazyIterator implements Iterator
     private $stmt  = null;
     private $class = null;
     private $alias = null;
-    /** @var null|int|array|xPDOQuery */
+    /** @var null|int|array|xPDOQuery|\xPDOQuery */
     private $criteria     = null;
     private $criteriaType = 'xPDOQuery';
     private $cacheFlag    = false;
@@ -33,7 +33,7 @@ class xPDOLazyIterator implements Iterator
     /**
      * Construct a new xPDOIterator instance (do not call directly).
      *
-     * @param  xPDO &$xpdo  A reference to a valid xPDO instance.
+     * @param  xPDO|\xPDO &$xpdo  A reference to a valid xPDO instance.
      * @param  array  $options  An array of options for the iterator.
      *
      * @see xPDO::getIterator()
@@ -136,12 +136,18 @@ class xPDOLazyIterator implements Iterator
         }
     }
 
-    protected function loadXPDOInstance(array $row = []): xPDOObject
+    /**
+     * @param  array  $row
+     *
+     * @return xPDOObject|\xPDOObject
+     * @throws \ReflectionException
+     */
+    protected function loadXPDOInstance(array $row = [])
     {
         $rowPrefix = '';
 
         $instance = $this->xpdo->newObject($this->class);
-        if (is_object($instance) && $instance instanceof xPDOObject) {
+        if ($instance instanceof xPDOObject || $instance instanceof \xPDOObject) {
             $pk = $this->xpdo->getPK($this->class);
             if ($pk) {
                 if (is_array($pk)) {
@@ -159,7 +165,7 @@ class xPDOLazyIterator implements Iterator
             }
 
             if ($this->hasMS2 && $this->class === 'msProduct') {
-                $reflectionClass = new ReflectionClass(msProduct::class);
+                $reflectionClass = new ReflectionClass('msProduct');
 
                 /** @var \msProductData $msProductData */
                 $msProductData = $this->xpdo->newObject('msProductData');

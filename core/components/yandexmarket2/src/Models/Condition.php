@@ -2,10 +2,6 @@
 
 namespace YandexMarket\Models;
 
-
-use YandexMarket\Model\YmCondition;
-use YandexMarket\Model\YmPricelist;
-
 /**
  * @property int $id
  * @property int $pricelist_id
@@ -40,7 +36,7 @@ class Condition extends BaseObject
 
     public static function getObjectClass(): string
     {
-        return YmCondition::class;
+        return MODX3 ? \YandexMarket\Model\YmCondition::class : \YmCondition::class;
     }
 
     public function getPricelist(): Pricelist

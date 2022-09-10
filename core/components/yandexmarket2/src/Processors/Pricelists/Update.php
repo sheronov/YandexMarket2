@@ -9,10 +9,21 @@ use YandexMarket\Model\YmPricelist;
 use YandexMarket\Models\Pricelist;
 use YandexMarket\Service;
 
-class Update extends UpdateProcessor
+if (!Service::isMODX3()) {
+    abstract class AUpdate extends \modObjectUpdateProcessor
+    {
+        public $classKey = \YmPricelist::class;
+    }
+} else {
+    abstract class AUpdate extends UpdateProcessor
+    {
+        public $classKey = YmPricelist::class;
+    }
+}
+
+class Update extends AUpdate
 {
     public $objectType     = 'ym2_pricelist';
-    public $classKey       = YmPricelist::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 
@@ -57,13 +68,14 @@ class Update extends UpdateProcessor
         $this->setProperty('active', filter_var($this->getProperty('active', true), FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
         $this->unsetProperty('need_generate');
 
+        $documentClass = Service::isMODX3() ? modDocument::class : 'modDocument';
+
         if (!$this->getProperty('class')) {
-            $this->setProperty('class', $this->modx->getOption('ym2_default_pricelist_class', null,
-                Service::hasMiniShop2() ? 'msProduct' : modDocument::class));
+            $this->setProperty('class', $this->modx->getOption('ym2_default_pricelist_class', null, Service::hasMiniShop2() ? 'msProduct' : $documentClass));
         } elseif ($this->getProperty('class') === 'modResource') {
-            $this->setProperty('class', modResource::class);
+            $this->setProperty('class', Service::isMODX3() ? modResource::class : 'modResource');
         } elseif ($this->getProperty('class') === 'modDocument') {
-            $this->setProperty('class', modDocument::class);
+            $this->setProperty('class', $documentClass);
         }
 
         return parent::beforeSet();

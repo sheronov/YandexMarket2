@@ -1,11 +1,12 @@
 <?php
 
-use MODX\Revolution\modExtraManagerController;
+if (class_exists('MODX\Revolution\modX')) {
+    abstract class YandexMarket2HomeManagerControllerAbstract extends MODX\Revolution\modExtraManagerController {}
+} else {
+    abstract class YandexMarket2HomeManagerControllerAbstract extends modExtraManagerController {}
+}
 
-/**
- * The home manager controller for YandexMarket2.
- */
-class YandexMarket2HomeManagerController extends modExtraManagerController
+class YandexMarket2HomeManagerController extends YandexMarket2HomeManagerControllerAbstract
 {
 
     protected $connectorUrl;

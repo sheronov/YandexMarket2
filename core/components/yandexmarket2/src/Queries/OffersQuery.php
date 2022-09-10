@@ -4,17 +4,19 @@ namespace YandexMarket\Queries;
 
 use MODX\Revolution\modTemplateVar;
 use MODX\Revolution\modTemplateVarResource;
-use MODX\Revolution\modX;
 use MODX\Revolution\modResource;
-use xPDO\om\xPDOQuery;
-use xPDO\xPDO;
 use YandexMarket\Models\Field;
 use YandexMarket\Service;
 
 class OffersQuery extends ObjectsQuery
 {
 
-    public function setCategoriesQuery(xPDOQuery $query)
+    /**
+     * @param  \xPDO\om\xPDOQuery|\xPDOQuery  $query
+     *
+     * @return void
+     */
+    public function setCategoriesQuery($query)
     {
         $categoriesQuery = clone $query;
         $categoriesQuery->query['columns'] = '';
@@ -22,13 +24,18 @@ class OffersQuery extends ObjectsQuery
         $categoriesQuery->prepare();
         $this->query->where(sprintf("`%s`.`%s` IN (%s)", $this->query->getAlias(), $this->offerParentField,
             $categoriesQuery->toSQL(true)));
-        $this->modx->log(xPDO::LOG_LEVEL_INFO,
+        $this->modx->log(Service::LOG_LEVEL_INFO,
             "Добавлено условие {$this->offerParentField} IN (select id from parentsQuery) для товаров", '',
             'YandexMarket2');
         $this->usesOtherQuery = true;
     }
 
-    protected function newQuery(string $class = modResource::class): xPDOQuery
+    /**
+     * @param  string  $class
+     *
+     * @return \xPDO\om\xPDOQuery|\xPDOQuery
+     */
+    protected function newQuery(string $class = '')
     {
         return parent::newQuery($this->pricelist->getClass());
     }
@@ -43,7 +50,7 @@ class OffersQuery extends ObjectsQuery
         if (Service::hasMiniShop2()) {
             $this->query->join('msProductData', 'Data',
                 //к продуктам данные всё равно джойним, даже если участвуют просто ресурсы
-                mb_strtolower($this->pricelist->getClass()) === 'msproduct' ? xPDOQuery::SQL_JOIN_CROSS : xPDOQuery::SQL_JOIN_LEFT,
+                mb_strtolower($this->pricelist->getClass()) === 'msproduct' ? 'JOIN' : 'LEFT JOIN',
                 sprintf('`Data`.`id` = `%s`.`id`', $this->query->getAlias()));
             $dataColumns = $this->modx->getSelectColumns('msProductData', 'Data', 'data.', ['id'], true);
             $this->query->select($dataColumns);
@@ -121,7 +128,7 @@ class OffersQuery extends ObjectsQuery
             case 'category':
             case 'parent':
                 if (!isset($this->join['Category'])) {
-                    $this->query->leftJoin(modResource::class, 'Category',
+                    $this->query->leftJoin(Service::isMODX3() ? modResource::class : \modResource::class, 'Category',
                         sprintf('`Category`.`id` = `%s`.`%s`', $this->query->getAlias(), $this->offerParentField));
                     $this->join['Category'] = true;
                 }
@@ -133,17 +140,17 @@ class OffersQuery extends ObjectsQuery
             case 'categorytv':
             case 'parenttv':
                 if (!isset($this->join['Category'])) {
-                    $this->query->leftJoin(modResource::class, 'Category',
+                    $this->query->leftJoin(Service::isMODX3() ? modResource::class : \modResource::class, 'Category',
                         sprintf('`Category`.`id` = `%s`.`%s`', $this->query->getAlias(), $this->offerParentField));
                     $this->join['Category'] = true;
                 }
-                $qTvs = $this->modx->newQuery(modTemplateVar::class, ['name:IN' => $keys]);
+                $qTvs = $this->modx->newQuery(Service::isMODX3() ? modTemplateVar::class : \modTemplateVar::class, ['name:IN' => $keys]);
                 foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
-                    /** @var modTemplateVar $tv */
+                    /** @var modTemplateVar|\modTemplateVar $tv */
                     $alias = sprintf('CategoryTV-%s', $tv->name);
                     if (!isset($this->join[$alias])) {
-                        $this->query->leftJoin(modTemplateVarResource::class, $alias,
-                            sprintf('`%s`.`contentid` = `Category`.`id` AND `%s`.`tmplvarid` = %d',
+                        $this->query->leftJoin(Service::isMODX3() ? modTemplateVarResource::class : \modTemplateVarResource::class,
+                            $alias, sprintf('`%s`.`contentid` = `Category`.`id` AND `%s`.`tmplvarid` = %d',
                                 $alias, $alias, $tv->id));
                         $this->query->select(sprintf('`%s`.`value` as `categorytv.%s`', $alias, $tv->name));
                         $this->addColumnsToGroupBy(sprintf('`%s`.`value`', $alias));

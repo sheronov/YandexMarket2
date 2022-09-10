@@ -5,11 +5,23 @@ namespace YandexMarket\Processors\Fields;
 use MODX\Revolution\Processors\Model\UpdateProcessor;
 use YandexMarket\Model\YmField;
 use YandexMarket\Models\Field;
+use YandexMarket\Service;
 
-class Update extends UpdateProcessor
+if (!Service::isMODX3()) {
+    abstract class AUpdate extends \modObjectUpdateProcessor
+    {
+        public $classKey = \YmField::class;
+    }
+} else {
+    abstract class AUpdate extends UpdateProcessor
+    {
+        public $classKey = YmField::class;
+    }
+}
+
+class Update extends AUpdate
 {
     public $objectType     = 'ym2_field';
-    public $classKey       = YmField::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 

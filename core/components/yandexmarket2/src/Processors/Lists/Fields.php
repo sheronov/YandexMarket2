@@ -5,10 +5,14 @@ namespace YandexMarket\Processors\Lists;
 use MODX\Revolution\Processors\Processor;
 use YandexMarket\Service;
 
+if (!Service::isMODX3()) {
+    abstract class AFieldsProcessor extends \modProcessor { }
+} else {
+    abstract class AFieldsProcessor extends Processor { }
+}
 
-class Fields extends Processor
+class Fields extends AFieldsProcessor
 {
-
     /** @var Service */
     protected $service;
 
@@ -18,7 +22,7 @@ class Fields extends Processor
         return parent::initialize();
     }
 
-    public function process(): string
+    public function process()
     {
         return $this->outputArray($this->service->getAvailableFields());
     }

@@ -6,9 +6,11 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
 use InvalidArgumentException;
-use MODX\Revolution\modX;
-use xPDO\xPDO;
-use xPDO\Om\xPDOObject;
+use YandexMarket\Service;
+
+if (!defined('MODX3')) {
+    define('MODX3', class_exists('MODX\Revolution\modX'));
+}
 
 abstract class BaseObject
 {
@@ -21,10 +23,14 @@ abstract class BaseObject
     const DATETIME_FIELDS = ['created_on', 'edited_on', 'generated_on'];
     const ARRAY_FIELDS    = ['properties'];
 
-    public function __construct(modX $modx, xPDOObject $object = null)
+    /**
+     * @param  \MODX\Revolution\modX|\modX  $modx
+     * @param  \xPDO\Om\xPDOObject|\xPDOObject|null  $object
+     */
+    public function __construct($modx, $object = null)
     {
         $objectClass = static::getObjectClass();
-        /** @var xPDOObject $newObj */
+        /** @var \xPDO\Om\xPDOObject|\xPDOObject $newObj */
         if (!$object && $newObj = $modx->newObject($objectClass)) {
             $object = $newObj;
         }
@@ -42,27 +48,30 @@ abstract class BaseObject
      */
     abstract public static function getObjectClass(): string;
 
-    public function getObject(): xPDOObject
+    /**
+     * @return \xPDO\Om\xPDOObject|\xPDOObject
+     */
+    public function getObject()
     {
         return $this->object;
     }
 
     /**
      * @param  int  $id
-     * @param  modX  $modX
+     * @param  \MODX\Revolution\modX|\modX $modx
      *
      * @return static|null
      */
-    public static function getById(int $id, modX $modX)
+    public static function getById(int $id, $modx)
     {
-        $object = $modX->getObject(static::getObjectClass(), $id);
-        return $object ? new static($modX, $object) : null;
+        $object = $modx->getObject(static::getObjectClass(), $id);
+        return $object ? new static($modx, $object) : null;
     }
 
     /**
      * @param $name
      *
-     * @return array|DateTimeInterface|mixed|xPDOObject|null
+     * @return array|DateTimeInterface|mixed|\xPDO\Om\xPDOObject|\xPDOObject|null
      * @throws Exception
      */
     public function __get($name)
@@ -119,13 +128,19 @@ abstract class BaseObject
                         $data[$key] = $value;
                         // $data[$key] = new DateTimeImmutable($value);
                     } catch (Exception $exception) {
-                        $this->modx->log(xPDO::LOG_LEVEL_ERROR, "[YandexMarket] wrong datetime {$key} = {$value}");
+                        $this->modx->log(Service::LOG_LEVEL_ERROR, "[YandexMarket] wrong datetime {$key} = {$value}");
                         $data[$key] = $value;
                     }
                 }
             }
         }
         return $data;
+    }
+
+    protected function getClassByAlias(string $alias): string
+    {
+        $definition = $this->object->getFKDefinition($alias);
+        return !empty($definition) ? $definition['class'] : '';
     }
 
 }

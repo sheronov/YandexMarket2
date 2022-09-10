@@ -4,15 +4,19 @@ namespace YandexMarket\Processors\Xml;
 
 use Exception;
 use MODX\Revolution\Processors\Processor;
-use xPDO\xPDO;
 use YandexMarket\Models\Pricelist;
 use YandexMarket\QueryService;
 use YandexMarket\Service;
 use YandexMarket\Xml\FileGenerator;
 
-class Generate extends Processor
-{
+if (!Service::isMODX3()) {
+    abstract class AGenerateProcessor extends \modProcessor { }
+} else {
+    abstract class AGenerateProcessor extends Processor { }
+}
 
+class Generate extends AGenerateProcessor
+{
     /** @var FileGenerator */
     protected $xmlGenerator;
     /** @var Pricelist */
@@ -34,12 +38,12 @@ class Generate extends Processor
         try {
             $this->xmlGenerator->makeFile();
         } catch (Exception $exception) {
-            $this->modx->log(xPDO::LOG_LEVEL_ERROR, $exception->getMessage());
+            $this->modx->log(Service::LOG_LEVEL_ERROR, $exception->getMessage());
         } finally {
             if ($debugInfo = Service::debugInfo($this->modx)) {
-                $this->modx->log(xPDO::LOG_LEVEL_INFO, print_r($debugInfo, true));
+                $this->modx->log(Service::LOG_LEVEL_INFO, print_r($debugInfo, true));
             }
-            $this->modx->log(xPDO::LOG_LEVEL_INFO, 'COMPLETED');
+            $this->modx->log(Service::LOG_LEVEL_INFO, 'COMPLETED');
             return $this->modx->error->process('', !isset($exception), $this->pricelist->toArray());
         }
     }

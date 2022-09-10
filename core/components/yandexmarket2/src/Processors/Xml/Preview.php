@@ -8,7 +8,13 @@ use YandexMarket\QueryService;
 use YandexMarket\Service;
 use YandexMarket\Xml\Previewer;
 
-class Preview extends Processor
+if (!Service::isMODX3()) {
+    abstract class APreviewProcessor extends \modProcessor { }
+} else {
+    abstract class APreviewProcessor extends Processor { }
+}
+
+class Preview extends APreviewProcessor
 {
     /** @var Previewer */
     protected $xmlPreviewer;

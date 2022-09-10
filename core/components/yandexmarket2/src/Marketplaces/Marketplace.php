@@ -4,7 +4,6 @@ namespace YandexMarket\Marketplaces;
 
 use Exception;
 use HaydenPierce\ClassFinder\ClassFinder;
-use MODX\Revolution\modX;
 use YandexMarket\Models\Field;
 use YandexMarket\Service;
 
@@ -12,7 +11,10 @@ abstract class Marketplace
 {
     protected $modx;
 
-    public function __construct(modX $modx)
+    /**
+     * @param  \MODX\Revolution\modX|\modX  $modx
+     */
+    public function __construct($modx)
     {
         $this->modx = $modx;
     }
@@ -87,11 +89,11 @@ abstract class Marketplace
 
     /**
      * @param  string  $type
-     * @param  modX  $modx
+     * @param  \MODX\Revolution\modX|\modX  $modx
      *
      * @return Marketplace|null
      */
-    public static function getMarketPlace(string $type, modX $modx)
+    public static function getMarketPlace(string $type, $modx)
     {
         try {
             $marketplaces = self::listMarketplaces();

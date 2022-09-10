@@ -3,15 +3,9 @@
 namespace YandexMarket\Xml;
 
 use Exception;
-use MODX\Revolution\modChunk;
-use MODX\Revolution\modX;
-use MODX\Revolution\Services\ContainerException;
-use MODX\Revolution\Services\NotFoundException;
-use ModxPro\PdoTools\CoreTools;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use XMLWriter;
-use xPDO\xPDO;
 use YandexMarket\Handlers\XmlJevix;
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Category;
@@ -36,9 +30,9 @@ abstract class Writer
     protected $currentOffer;
     /** @var Category */
     protected $currentCategory;
-    /** @var null|CoreTools */
+    /** @var null|\ModxPro\PdoTools\CoreTools|\pdoTools */
     protected $pdoTools;
-    /** @var modX */
+    /** @var \MODX\Revolution\modX|\modX */
     protected $modx;
     protected $errors  = [];
     protected $start   = 0;
@@ -60,7 +54,7 @@ abstract class Writer
         $this->modx = $pricelistService->getModx();
         $this->pricelist = $pricelistService->getPricelist();
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
-            $this->log('Включён режим отладки. Лог будет более подробный', false, xPDO::LOG_LEVEL_WARN);
+            $this->log('Включён режим отладки. Лог будет более подробный', false, Service::LOG_LEVEL_WARN);
         }
 
         $this->initializeJevix();
@@ -68,7 +62,7 @@ abstract class Writer
         $this->logTarget = $this->modx->getLogTarget();
         $this->logLevel = $this->modx->getLogLevel();
         if (!$this->initializePdoTools()) {
-            $this->log('Не найден pdoTools. Кода будет обработан парсером MODX', false, xPDO::LOG_LEVEL_WARN);
+            $this->log('Не найден pdoTools. Кода будет обработан парсером MODX', false, Service::LOG_LEVEL_WARN);
         }
         $this->xml = new XMLWriter();
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
@@ -275,7 +269,7 @@ abstract class Writer
         } elseif (isset($pls[$column])) {
             $value = $pls[$column];
         } else {
-            $this->log(sprintf('Could not resolve column "%s"', $column), false, xPDO::LOG_LEVEL_WARN);
+            $this->log(sprintf('Could not resolve column "%s"', $column), false, Service::LOG_LEVEL_WARN);
         }
 
         return $value;
@@ -320,8 +314,9 @@ abstract class Writer
 
         $cacheKey = md5($code);
         if (!$element = $this->simpleStore[$cacheKey] ?? null) {
-            /** @var modChunk $element */
-            $element = $this->modx->newObject(modChunk::class, ['name' => $cacheKey]);
+            /** @var \MODX\Revolution\modChunk|\modChunk $element */
+            $element = $this->modx->newObject(Service::isMODX3() ? \MODX\Revolution\modChunk::class : \modChunk::class,
+                ['name' => $cacheKey]);
             $element->setContent(str_replace(['{{', '}}'], ['[[', ']]'], $code));
             $this->simpleStore[$cacheKey] = $element;
         }
@@ -350,12 +345,17 @@ abstract class Writer
     protected function initializePdoTools(): bool
     {
         try {
-            $this->pdoTools = $this->modx->services->get('pdotools');
-            return true;
-        } catch (NotFoundException $exception) {
-            $this->log('pdoTools does not existed on the system', true, xPDO::LOG_LEVEL_DEBUG);
-        } catch (ContainerException $exception) {
+            $pdoTools = Service::isMODX3() ? $this->modx->services->get('pdotools') : $this->modx->getService('pdoTools');
+            if (Service::isMODX3() || $pdoTools instanceof \pdoTools) {
+                $this->pdoTools = $pdoTools;
+                return true;
+            }
+        } catch (\MODX\Revolution\Services\NotFoundException $exception) {
+            $this->log('pdoTools does not existed on the system', true, Service::LOG_LEVEL_DEBUG);
+        } catch (\MODX\Revolution\Services\ContainerException $exception) {
             $this->errorLog('Can not initialize pdoTools!');
+        } catch (\Exception $exception) {
+            $this->errorLog($exception->getMessage());
         }
 
         return false;
@@ -617,7 +617,7 @@ abstract class Writer
                 if (($limit = $field->properties['count'] ?? 0) && $i >= $limit) {
                     break;
                 }
-                if (mb_strpos($picture,'//') === false) {
+                if (mb_strpos($picture, '//') === false) {
                     $field->value = Service::preparePath($this->modx, '{images_url}/'.$picture, true);
                 } else {
                     $field->value = $picture;
@@ -630,7 +630,7 @@ abstract class Writer
         $field->type = $fieldType;
     }
 
-    protected function log(string $message, bool $withTime = true, int $level = xPDO::LOG_LEVEL_INFO)
+    protected function log(string $message, bool $withTime = true, int $level = Service::LOG_LEVEL_INFO)
     {
         if ($withTime) {
             $message = sprintf("%2.4f s: %s", (microtime(true) - $this->start), $message);
@@ -640,7 +640,7 @@ abstract class Writer
 
     protected function errorLog(string $message)
     {
-        $this->log($message, false, xPDO::LOG_LEVEL_ERROR);
+        $this->log($message, false, Service::LOG_LEVEL_ERROR);
     }
 
 }

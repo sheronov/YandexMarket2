@@ -1,14 +1,15 @@
 <?php
 
+use MODX\Revolution\modX;
 use MODX\Revolution\Error\modError;
 use YandexMarket\Model\YmPricelist;
 use YandexMarket\Models\Pricelist;
 use YandexMarket\QueryService;
+use YandexMarket\Service;
 use YandexMarket\Xml\FileGenerator;
 
 define('MODX_API_MODE', true);
 /** @noinspection PhpIncludeInspection */
-require_once(dirname(__FILE__, 2).'/vendor/autoload.php');
 
 if (file_exists(dirname(__FILE__, 5).'/index.php')) {
     /** @noinspection PhpIncludeInspection */
@@ -20,26 +21,31 @@ if (file_exists(dirname(__FILE__, 5).'/index.php')) {
     echo "Could not load MODX!\n";
     return;
 }
-/** @var modX $modx */
+/** @var modX|\modX $modx */
 // Включаем обработку ошибок
-$modx->getService('error', modError::class);
-$modx->setLogLevel($modx->getOption('yandexmarket2_debug_mode', null,
-    false) ? modX::LOG_LEVEL_INFO : modX::LOG_LEVEL_WARN);
+$modx->getService('error', Service::isMODX3() ? modError::class : 'error.modError');
+$modx->setLogLevel(filter_var($modx->getOption('yandexmarket2_debug_mode', null, false), FILTER_VALIDATE_BOOLEAN)
+    ? Service::LOG_LEVEL_INFO : Service::LOG_LEVEL_WARN);
 $modx->setLogTarget(XPDO_CLI_MODE ? 'ECHO' : 'HTML');
 
 $corePath = $modx->getOption('yandexmarket2_core_path', null,
     $modx->getOption('core_path').'components/yandexmarket2/');
-// $modx->addPackage('yandexmarket2', $corePath.'model/');
 
-$q = $modx->newQuery(YmPricelist::class);
-$q->where(['active' => 1, 'generate_mode:!=' => Pricelist::GENERATE_MODE_MANUALLY]);
+if (!class_exists('MODX\Revolution\modX')) {
+    require_once(dirname(__FILE__, 2).'/vendor/autoload.php');
+    $modx->addPackage('yandexmarket2', $corePath.'model/');
+}
+
+$q = $modx->newQuery(Service::isMODX3() ? YmPricelist::class : \YmPricelist::class)
+    ->where(['active' => 1, 'generate_mode:!=' => Pricelist::GENERATE_MODE_MANUALLY]);
+
 if ($pricelistIds = $argv[1] ?? '') {
     $q->where(['id:IN' => explode(',', $pricelistIds)]);
 }
-if (!$modx->getCount(YmPricelist::class, $q)) {
+if (!$modx->getCount($q->getClass(), $q)) {
     echo "Not found pricelists to generate\n";
 }
-foreach ($modx->getIterator(YmPricelist::class, $q) as $ymPricelist) {
+foreach ($modx->getIterator($q->getClass(), $q) as $ymPricelist) {
     $pricelist = new Pricelist($modx, $ymPricelist);
 
     if (!$pricelist->generated_on) {

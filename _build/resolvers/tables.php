@@ -1,21 +1,29 @@
 <?php
-/** @var xPDO\Transport\xPDOTransport $transport */
+/** @var xPDO\Transport\xPDOTransport|xPDOTransport $transport */
 /** @var array $options */
-/** @var  MODX\Revolution\modX $modx */
+/** @var  MODX\Revolution\modX|modX $modx */
+
+if (!defined('MODX3')) {
+    define('MODX3', class_exists('MODX\Revolution\modX'));
+}
 
 if ($transport->xpdo) {
-    /** @var modX $modx */
+    /** @var MODX\Revolution\modX|modX $modx */
     $modx =& $transport->xpdo;
 
-    switch ($options[xPDOTransport::PACKAGE_ACTION]) {
-        case xPDOTransport::ACTION_INSTALL:
-        case xPDOTransport::ACTION_UPGRADE:
-            $manifestIndex = 2; //кладём его поле двух файлов encryption и namespace
-            $modx->addPackage('YandexMarket\Model', MODX_CORE_PATH.'components/yandexmarket2/src/', null, 'YandexMarket\\');
+    switch ($options[MODX3 ? \xPDO\Transport\xPDOTransport::PACKAGE_ACTION : xPDOTransport::PACKAGE_ACTION]) {
+        case MODX3 ? \xPDO\Transport\xPDOTransport::ACTION_INSTALL : xPDOTransport::ACTION_INSTALL:
+        case MODX3 ? \xPDO\Transport\xPDOTransport::ACTION_UPGRADE : xPDOTransport::ACTION_UPGRADE:
+            if (MODX3) {
+                $modx->addPackage('YandexMarket\Model', MODX_CORE_PATH.'components/yandexmarket2/src/', null, 'YandexMarket\\');
+            } else {
+                $modx->addPackage('yandexmarket2', MODX_CORE_PATH.'components/yandexmarket2/model/');
+            }
             $manager = $modx->getManager();
             $objects = [];
             $schemaFile = MODX_CORE_PATH.'components/yandexmarket2/schema/yandexmarket2.mysql.schema.xml';
 
+            // $manifestIndex = 2; //кладём его поле двух файлов encryption и namespace
             // $schemaFile = null;
             // $tmpPackage = $transport->path.$transport->signature.'/';
             // $filePath = $tmpPackage.$transport->vehicles[$manifestIndex]['filename'];
@@ -34,7 +42,9 @@ if ($transport->xpdo) {
                 unset($schema);
             }
             foreach ($objects as $class) {
-                $class = 'YandexMarket\\Model\\' . $class;
+                if (MODX3) {
+                    $class = 'YandexMarket\\Model\\'.$class;
+                }
                 $table = $modx->getTableName($class);
                 $sql = "SHOW TABLES LIKE '".trim($table, '`')."'";
                 $stmt = $modx->prepare($sql);
@@ -86,7 +96,7 @@ if ($transport->xpdo) {
                     // Remove old indexes
                     foreach ($indexes as $key => $index) {
                         if (!isset($map[$key]) && $manager->removeIndex($class, $key)) {
-                            $modx->log(xPDO::LOG_LEVEL_INFO, "Removed index \"{$key}\" of the table \"{$class}\"");
+                            $modx->log(MODX3 ? \xPDO\xPDO::LOG_LEVEL_INFO : xPDO::LOG_LEVEL_INFO, "Removed index \"{$key}\" of the table \"{$class}\"");
                         }
                     }
                     // Add or alter existing
@@ -95,11 +105,11 @@ if ($transport->xpdo) {
                         $index = implode(':', array_keys($index['columns']));
                         if (!isset($indexes[$key])) {
                             if ($manager->addIndex($class, $key)) {
-                                $modx->log(xPDO::LOG_LEVEL_INFO, "Added index \"{$key}\" in the table \"{$class}\"");
+                                $modx->log(MODX3 ? \xPDO\xPDO::LOG_LEVEL_INFO : xPDO::LOG_LEVEL_INFO, "Added index \"{$key}\" in the table \"{$class}\"");
                             }
                         } elseif ($index != $indexes[$key]) {
                             if ($manager->removeIndex($class, $key) && $manager->addIndex($class, $key)) {
-                                $modx->log(xPDO::LOG_LEVEL_INFO,
+                                $modx->log(MODX3 ? \xPDO\xPDO::LOG_LEVEL_INFO : xPDO::LOG_LEVEL_INFO,
                                     "Updated index \"{$key}\" of the table \"{$class}\""
                                 );
                             }

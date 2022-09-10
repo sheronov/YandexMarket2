@@ -2,15 +2,11 @@
 
 namespace YandexMarket\Models;
 
-use miniShop2;
-use msProduct;
-use \MODX\Revolution\modResource;
-use \xPDO\Om\xPDOObject;
 use YandexMarket\Service;
 
 /**
  * @package YandexMarket\Models
- * @property msProduct|modResource|xPDOObject $object
+ * @property \msProduct|\MODX\Revolution\modResource|\modResource|\xPDO\Om\xPDOObject|\xPDOObject $object
  */
 class Offer extends BaseObject
 {
@@ -20,7 +16,7 @@ class Offer extends BaseObject
     // под оффером может быть не только modResource, а любой XPDO object
     public static function getObjectClass(): string
     {
-        return xPDOObject::class;
+        return MODX3 ? \xPDO\Om\xPDOObject::class : \xPDOObject::class;
     }
 
     public function setPricelist(Pricelist $pricelist): Offer
@@ -160,7 +156,7 @@ class Offer extends BaseObject
             }
         }
 
-        /** @var miniShop2 $miniShop2 */
+        /** @var \miniShop2 $miniShop2 */
         if (!$hasModificationPrice && $miniShop2 = $this->modx->getService('miniShop2')) {
             $params = [
                 'product' => $this->object,

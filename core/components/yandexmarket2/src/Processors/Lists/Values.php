@@ -5,9 +5,14 @@ namespace YandexMarket\Processors\Lists;
 use MODX\Revolution\Processors\Processor;
 use YandexMarket\Service;
 
-class Values extends Processor
-{
+if (!Service::isMODX3()) {
+    abstract class AValuesProcessor extends \modProcessor { }
+} else {
+    abstract class AValuesProcessor extends Processor { }
+}
 
+class Values extends AValuesProcessor
+{
     /** @var Service */
     protected $service;
 

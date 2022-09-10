@@ -5,17 +5,25 @@ namespace YandexMarket\Processors\Attributes;
 use MODX\Revolution\Processors\Model\CreateProcessor;
 use YandexMarket\Model\YmFieldAttribute;
 use YandexMarket\Models\Attribute;
+use YandexMarket\Service;
 
-class Create extends CreateProcessor
+if (!Service::isMODX3()) {
+    abstract class ACreate extends \modObjectCreateProcessor
+    {
+        public $classKey = \YmFieldAttribute::class;
+    }
+} else {
+    abstract class ACreate extends CreateProcessor
+    {
+        public $classKey = YmFieldAttribute::class;
+    }
+}
+class Create extends ACreate
 {
     public $objectType     = 'ym2_attribute';
-    public $classKey       = YmFieldAttribute::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 
-    /**
-     * @return bool
-     */
     public function beforeSet()
     {
         $name = trim($this->getProperty('name'));

@@ -4,17 +4,16 @@ namespace YandexMarket\Queries;
 
 use MODX\Revolution\modResource;
 use MODX\Revolution\modTemplateVar;
-use MODX\Revolution\modX;
-use xPDO\om\xPDOQuery;
-use xPDO\xPDO;
+use MODX\Revolution\modTemplateVarResource;
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Condition;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
+use YandexMarket\Service;
 
 abstract class ObjectsQuery
 {
-    /** @var xPDOQuery $query */
+    /** @var \xPDO\om\xPDOQuery|\xPDOQuery $query */
     protected $query;
     protected $classKeys       = [];
     protected $join            = []; // TODO: как значение сделать не true - а класс
@@ -38,7 +37,11 @@ abstract class ObjectsQuery
     protected $type;
     protected $offerParentField = 'parent';
 
-    public function __construct(Pricelist $pricelist, modX $modx)
+    /**
+     * @param  Pricelist  $pricelist
+     * @param  \MODX\Revolution\modX|\modX  $modx
+     */
+    public function __construct(Pricelist $pricelist, $modx)
     {
         $this->pricelist = $pricelist;
         $this->modx = $modx;
@@ -66,7 +69,10 @@ abstract class ObjectsQuery
         $this->query = $this->newQuery();
     }
 
-    public function getQuery(): xPDOQuery
+    /**
+     * @return \xPDO\om\xPDOQuery|\xPDOQuery
+     */
+    public function getQuery()
     {
         if (!$this->queryPrepared) {
             $this->selectQuery();
@@ -135,8 +141,16 @@ abstract class ObjectsQuery
         $this->addColumnsToGroupBy($columns);
     }
 
-    protected function newQuery(string $class = modResource::class): xPDOQuery
+    /**
+     * @param  string  $class
+     *
+     * @return \xPDO\om\xPDOQuery|\xPDOQuery
+     */
+    protected function newQuery(string $class = '')
     {
+        if (empty($class)) {
+            $class = Service::isMODX3() ? modResource::class : \modResource::class;
+        }
         $this->modx->invokeEvent('ym2OnBeforeQuery', [
             'pricelist' => &$this->pricelist,
             'class'     => $class,
@@ -154,7 +168,7 @@ abstract class ObjectsQuery
         $classKeys = $this->collectExternalClassKeys();
         foreach ($classKeys as $class => $keys) {
             $this->joinExternalClassKey($class, $keys);
-            $this->modx->log(xPDO::LOG_LEVEL_INFO,
+            $this->modx->log(Service::LOG_LEVEL_INFO,
                 sprintf('Приджойнена таблица `%s` со столбцами "%s" к %s', $class, implode(',', $keys), $this->type),
                 '', 'YandexMarket2');
         }
@@ -295,13 +309,13 @@ abstract class ObjectsQuery
             case 'tv':
             case 'modtemplatevar':
             case 'modtemplatevarresource':
-                $qTvs = $this->modx->newQuery(modTemplateVar::class);
+                $qTvs = $this->modx->newQuery(Service::isMODX3() ? modTemplateVar::class : \modTemplateVar::class);
                 $qTvs->where(['name:IN' => $keys]);
                 foreach ($this->modx->getIterator($qTvs->getClass(), $qTvs) as $tv) {
-                    /** @var modTemplateVar $tv */
+                    /** @var modTemplateVar|\modTemplateVar $tv */
                     $alias = sprintf('TV-%s', $tv->name);
                     if (!isset($this->join[$alias])) {
-                        $this->query->leftJoin('modTemplateVarResource', $alias,
+                        $this->query->leftJoin(Service::isMODX3() ? modTemplateVarResource::class : \modTemplateVarResource::class, $alias,
                             sprintf('`%s`.`contentid` = `%s`.`id` AND `%s`.`tmplvarid` = %d',
                                 $alias, $this->query->getAlias(), $alias, $tv->id));
                         $this->query->select(sprintf('`%s`.`value` as `tv.%s`', $alias, $tv->name));
@@ -366,7 +380,7 @@ abstract class ObjectsQuery
             case 'ms2gallery':
             case 'msresourcefile':
                 if (!$this->modx->addPackage('ms2gallery', MODX_CORE_PATH.'components/ms2gallery/model/')) {
-                    $this->modx->log(xPDO::LOG_LEVEL_ERROR,
+                    $this->modx->log(Service::LOG_LEVEL_ERROR,
                         'Не удалось загрузить ms2Gallery. Проверьте настройки полей.', '', 'YandexMarket2');
                     break;
                 }
@@ -389,7 +403,7 @@ abstract class ObjectsQuery
             case 'msopmodification':
                 // TODO: вообще к этому моменту приджойнено, но вполне может быть неактивна настрока
                 if (empty($this->join['Modification'])) {
-                    $this->modx->log(xPDO::LOG_LEVEL_ERROR,
+                    $this->modx->log(Service::LOG_LEVEL_ERROR,
                         'Для модификаций msOptionsPrice2 в прайс-листе в настройке предложений добавьте к классу ресурса ":msop2", пример "msProduct:msop2"',
                         '', 'YandexMarket2');
                 }
@@ -412,7 +426,7 @@ abstract class ObjectsQuery
                     return mb_strtolower($v['alias']) === mb_strtolower($class);
                 })) {
                     // учитываем уже приджойненные классы из плагинов
-                    $this->modx->log(xPDO::LOG_LEVEL_ERROR,
+                    $this->modx->log(Service::LOG_LEVEL_ERROR,
                         'Неизвестный класс '.$class.'. Загрузите модель в своём плагине на событие ym2OnBeforeOffersQuery или обратитесь в поддержку.',
                         '', 'YandexMarket2');
                 }
@@ -465,7 +479,7 @@ abstract class ObjectsQuery
                 }
 
                 if (!array_key_exists($condition->operator, Condition::OPERATOR_SYMBOLS)) {
-                    $this->modx->log(xPDO::LOG_LEVEL_WARN, 'Неизвестный оператор для условия', '', 'YandexMarket2');
+                    $this->modx->log(Service::LOG_LEVEL_WARN, 'Неизвестный оператор для условия', '', 'YandexMarket2');
                     continue;
                 }
 

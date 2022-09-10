@@ -6,13 +6,53 @@ use MODX\Revolution\modContext;
 use MODX\Revolution\modResource;
 use MODX\Revolution\Processors\Resource\GetNodes;
 use PDO;
-use xPDO\Om\xPDOQuery;
 use YandexMarket\Model\YmCategory;
+use YandexMarket\Service;
 
-class GetList extends GetNodes
+if (!Service::isMODX3()) {
+    require_once MODX_CORE_PATH.'model/modx/processors/resource/getnodes.class.php';
+
+    abstract class AGetList extends \modResourceGetNodesProcessor
+    {
+        public $classKey = \YmCategory::class;
+
+        public function prepareContextNode(\modContext $context)
+        {
+            return static::prepareNodeContext(parent::prepareContextNode($context));
+        }
+
+        public function prepareResourceNode(\modResource $resource)
+        {
+            return static::prepareNodeResource(parent::prepareResourceNode($resource), $resource);
+        }
+
+    }
+} else {
+    abstract class AGetList extends GetNodes
+    {
+        public $classKey = YmCategory::class;
+
+        public function prepareContextNode(modContext $context)
+        {
+            return static::prepareNodeContext(parent::prepareContextNode($context));
+        }
+
+        public function prepareResourceNode(modResource $resource)
+        {
+            return static::prepareNodeResource(parent::prepareResourceNode($resource), $resource);
+        }
+
+    }
+}
+
+
+class GetList extends AGetList
 {
-    protected $categories   = [];
-    protected $neededToOpen = [];
+    /**
+     * @var mixed|string
+     */
+    protected        $categories   = [];
+    protected        $neededToOpen = [];
 
     public function initialize(): bool
     {
@@ -36,7 +76,7 @@ class GetList extends GetNodes
         }
     }
 
-    public function getResourceQuery(): xPDOQuery
+    public function getResourceQuery()
     {
         $c = parent::getResourceQuery();
         $c->select([
@@ -48,9 +88,8 @@ class GetList extends GetNodes
         return $c;
     }
 
-    public function prepareContextNode(modContext $context): array
+    public function prepareNodeContext(array $node): array
     {
-        $node = parent::prepareContextNode($context);
         $node['selectable'] = false;
         unset($node['settings']);
         $node['children'] = [];
@@ -71,10 +110,14 @@ class GetList extends GetNodes
         return $node;
     }
 
-    public function prepareResourceNode(modResource $resource): array
+    /**
+     * @param  array  $node
+     * @param modResource|\modResource $resource
+     *
+     * @return array
+     */
+    public function prepareNodeResource(array $node, $resource): array
     {
-        $node = parent::prepareResourceNode($resource);
-
         unset($node['menu'], $node['allowDrop']);
 
         $node['selected'] = in_array($resource->id, $this->categories, true);
@@ -99,9 +142,9 @@ class GetList extends GetNodes
     protected function getSelectedCategories(): array
     {
         $categories = [];
-        $stmt = $this->modx->newQuery(YmCategory::class)
+        $stmt = $this->modx->newQuery($this->classKey)
             ->where(['pricelist_id' => $this->getProperty('pricelist_id')])
-            ->select($this->modx->getSelectColumns(YmCategory::class, 'YmCategory', '', ['resource_id']))
+            ->select($this->modx->getSelectColumns($this->classKey, 'YmCategory', '', ['resource_id']))
             ->prepare();
 
         if ($stmt && $stmt->execute()) {

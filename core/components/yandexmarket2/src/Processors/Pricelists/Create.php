@@ -10,13 +10,23 @@ use YandexMarket\Model\YmPricelist;
 use YandexMarket\Models\Pricelist;
 use YandexMarket\Service;
 
+if (!Service::isMODX3()) {
+    abstract class ACreate extends \modObjectCreateProcessor
+    {
+        public $classKey = \YmPricelist::class;
+    }
+} else {
+    abstract class ACreate extends CreateProcessor
+    {
+        public $classKey = YmPricelist::class;
+    }
+}
 /**
  * @property Pricelist|YmPricelist $object
  */
-class Create extends CreateProcessor
+class Create extends ACreate
 {
     public $objectType     = 'ym2_pricelist';
-    public $classKey       = YmPricelist::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'create';
 
@@ -73,5 +83,4 @@ class Create extends CreateProcessor
     {
         return $this->success('', $this->object->toArray());
     }
-
 }

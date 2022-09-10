@@ -7,11 +7,23 @@ use YandexMarket\Handlers\PricelistFiller;
 use YandexMarket\Model\YmField;
 use YandexMarket\Models\Field;
 use YandexMarket\Models\Pricelist;
+use YandexMarket\Service;
 
-class Create extends CreateProcessor
+if (!Service::isMODX3()) {
+    abstract class ACreate extends \modObjectCreateProcessor
+    {
+        public $classKey = \YmField::class;
+    }
+} else {
+    abstract class ACreate extends CreateProcessor
+    {
+        public $classKey = YmField::class;
+    }
+}
+
+class Create extends ACreate
 {
     public $objectType     = 'ym2_field';
-    public $classKey       = YmField::class;
     public $languageTopics = ['yandexmarket2'];
 
     //public $permission = 'save';

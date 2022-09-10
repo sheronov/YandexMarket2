@@ -1,9 +1,23 @@
 <?php
 
-use \MODX\Revolution\Rest\modRest;
-use \MODX\Revolution\Transport\modTransportPackage;
-use \MODX\Revolution\Transport\modTransportProvider;
-use \xPDO\xPDO;
+use \MODX\Revolution\Rest\modRest as modRest3;
+use \MODX\Revolution\Transport\modTransportPackage as modTransportPackage3;
+use \MODX\Revolution\Transport\modTransportProvider as modTransportProvider3;
+use \xPDO\Transport\xPDOTransport as xPDOTransport3;
+use \xPDO\xPDO as xPDO3;
+
+if (!defined('MODX3')) {
+    define('MODX3', class_exists('MODX\Revolution\modX'));
+}
+
+if (!defined('LOG_LEVEL_INFO')) {
+    define('LOG_LEVEL_INFO', MODX3 ? xPDO3::LOG_LEVEL_INFO : xPDO::LOG_LEVEL_INFO);
+}
+
+if (!defined('LOG_LEVEL_ERROR')) {
+    define('LOG_LEVEL_ERROR', MODX3 ? xPDO3::LOG_LEVEL_ERROR : xPDO::LOG_LEVEL_ERROR);
+}
+
 
 class EncryptedVehicle extends xPDOObjectVehicle
 {
@@ -13,7 +27,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
     const KEY_LENGTH = 40;
 
     /**
-     * @param $transport xPDOTransport
+     * @param $transport xPDOTransport|xPDOTransport3
      * @param $object
      * @param  array  $attributes
      */
@@ -35,15 +49,15 @@ class EncryptedVehicle extends xPDOObjectVehicle
                 unset($this->payload['related_object_attributes']);
             }
 
-            $this->payload[xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL] = true;
-            $this->payload[xPDOTransport::NATIVE_KEY] = $this->payload[xPDOTransport::NATIVE_KEY] ?? 1;
+            $this->payload[MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL] = true;
+            $this->payload[MODX3 ? xPDOTransport3::NATIVE_KEY : xPDOTransport::NATIVE_KEY] = $this->payload[MODX3 ? xPDOTransport3::NATIVE_KEY : xPDOTransport::NATIVE_KEY] ?? 1;
 
-            $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle encrypted!');
+            $transport->xpdo->log(LOG_LEVEL_INFO, 'Vehicle encrypted!');
         }
     }
 
     /**
-     * @param $transport xPDOTransport
+     * @param $transport xPDOTransport|xPDOTransport3
      * @param $options
      *
      * @return bool
@@ -51,17 +65,17 @@ class EncryptedVehicle extends xPDOObjectVehicle
     public function install(&$transport, $options)
     {
         if (!$this->decodePayloads($transport, 'install')) {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Vehicle can not be decrypted!');
+            $transport->xpdo->log(LOG_LEVEL_ERROR, 'Vehicle can not be decrypted!');
             return false;
         }
 
-        $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle decrypted!');
+        $transport->xpdo->log(LOG_LEVEL_INFO, 'Vehicle decrypted!');
 
         return parent::install($transport, $options);
     }
 
     /**
-     * @param $transport xPDOTransport
+     * @param $transport xPDOTransport|xPDOTransport3
      * @param $options
      *
      * @return bool
@@ -69,11 +83,11 @@ class EncryptedVehicle extends xPDOObjectVehicle
     public function uninstall(&$transport, $options)
     {
         if (!$this->decodePayloads($transport, 'uninstall')) {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Vehicle can not be decrypted!');
+            $transport->xpdo->log(LOG_LEVEL_ERROR, 'Vehicle can not be decrypted!');
             return false;
         }
 
-        $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Vehicle decrypted!');
+        $transport->xpdo->log(LOG_LEVEL_INFO, 'Vehicle decrypted!');
 
         return parent::uninstall($transport, $options);
     }
@@ -113,7 +127,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
     }
 
     /**
-     * @param $transport xPDOTransport
+     * @param $transport xPDOTransport|xPDOTransport3
      * @param  string  $action
      *
      * @return bool
@@ -121,7 +135,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
     protected function decodePayloads(&$transport, $action = 'install')
     {
         if (!$key = $this->getDecodeKey($transport, $action)) {
-            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Decode key is not received");
+            $transport->xpdo->log(LOG_LEVEL_ERROR, "Decode key is not received");
             return false;
         }
 
@@ -143,7 +157,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
     }
 
     /**
-     * @param $transport xPDOTransport
+     * @param $transport xPDOTransport|xPDOTransport3
      * @param $action
      *
      * @return bool|string
@@ -156,13 +170,13 @@ class EncryptedVehicle extends xPDOObjectVehicle
         $key = false;
         $endpoint = 'package/decode/'.$action;
 
-        /** @var modTransportPackage $package */
-        $package = $transport->xpdo->getObject(modTransportPackage::class, [
+        /** @var modTransportPackage|modTransportPackage3 $package */
+        $package = $transport->xpdo->getObject(MODX3 ? modTransportPackage3::class : 'transport.modTransportPackage', [
             'signature' => $transport->signature,
         ]);
 
-        if ($package instanceof modTransportPackage) {
-            /** @var modTransportProvider $provider */
+        if ((MODX3 && $package instanceof modTransportPackage3) || (!MODX3 && $package instanceof modTransportPackage)) {
+            /** @var modTransportProvider|modTransportProvider3 $provider */
             if ($provider = $package->getOne('Provider')) {
                 $provider->xpdo->setOption('contentType', 'default');
                 $params = [
@@ -178,8 +192,8 @@ class EncryptedVehicle extends xPDOObjectVehicle
                 */
                 $options = $this->getBaseArgs($provider);
 
-                /** @var modRest $rest */
-                $rest = $transport->xpdo->getService('modRest', modRest::class, '', [
+                /** @var modRest|modRest3 $rest */
+                $rest = $transport->xpdo->getService('modRest', MODX3 ? modRest3::class : 'rest.modRest', '', [
                     'baseUrl'        => rtrim($provider->get('service_url'), '/'),
                     'suppressSuffix' => true,
                     'timeout'        => 10,
@@ -189,23 +203,23 @@ class EncryptedVehicle extends xPDOObjectVehicle
 
                 if ($rest) {
                     $level = $transport->xpdo->getLogLevel();
-                    $transport->xpdo->setLogLevel(xPDO::LOG_LEVEL_FATAL);
+                    $transport->xpdo->setLogLevel(MODX3 ? xPDO3::LOG_LEVEL_FATAL : xPDO::LOG_LEVEL_FATAL);
                     $result = $rest->post($endpoint, array_merge($options, $params));
                     if ($result->responseError) {
-                        $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, $result->responseError);
+                        $transport->xpdo->log(LOG_LEVEL_ERROR, $result->responseError);
                     } else {
                         $response = $result->process();
                         if (!empty($response['key']) && mb_strlen($response['key']) === self::KEY_LENGTH) {
                             $key = $response['key'];
                         } else {
-                            $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR,
+                            $transport->xpdo->log(LOG_LEVEL_ERROR,
                                 'Invalid key from '.$provider->get('service_url'));
                         }
                     }
                     $transport->xpdo->setLogLevel($level);
                 }
             } else {
-                $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Set MODStore as a provider in package details");
+                $transport->xpdo->log(LOG_LEVEL_ERROR, "Set MODStore as a provider in package details");
             }
         }
         define('YANDEXMARKET2_DECODE_KEY', $key);
@@ -214,7 +228,7 @@ class EncryptedVehicle extends xPDOObjectVehicle
 
     protected function getBaseArgs($provider)
     {
-        /** @var modTransportProvider $provider */
+        /** @var modTransportProvider|modTransportProvider3 $provider */
         if (!defined('XPDO_PHP_VERSION')) {
             define('XPDO_PHP_VERSION', PHP_VERSION);
         }

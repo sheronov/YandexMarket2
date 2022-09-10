@@ -4,11 +4,23 @@ namespace YandexMarket\Processors\Categories;
 
 use MODX\Revolution\Processors\Model\CreateProcessor;
 use YandexMarket\Model\YmCategory;
+use YandexMarket\Service;
 
-class Create extends CreateProcessor
+if (!Service::isMODX3()) {
+    abstract class ACreate extends \modObjectCreateProcessor
+    {
+        public $classKey = \YmCategory::class;
+    }
+} else {
+    abstract class ACreate extends CreateProcessor
+    {
+        public $classKey = YmCategory::class;
+    }
+}
+
+class Create extends ACreate
 {
     public $objectType     = 'ym2_category';
-    public $classKey       = YmCategory::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'create';
 

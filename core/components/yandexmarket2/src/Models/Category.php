@@ -2,10 +2,6 @@
 
 namespace YandexMarket\Models;
 
-use MODX\Revolution\modResource;
-use YandexMarket\Model\YmCategory;
-use YandexMarket\Model\YmPricelist;
-
 /**
  * @property int $id
  * @property int $resource_id
@@ -15,14 +11,15 @@ use YandexMarket\Model\YmPricelist;
  */
 class Category extends BaseObject
 {
-    /** @var null|modResource $resource */
+    /** @var null|\MODX\Revolution\modResource|\modResource $resource */
     protected $resource;
 
+    /** @var \YandexMarket\Model\YmPricelist|\YmPricelist */
     protected $pricelist;
 
     public static function getObjectClass(): string
     {
-        return YmCategory::class;
+        return MODX3 ? \YandexMarket\Model\YmCategory::class : \YmCategory::class;
     }
 
     public function get(string $field)
@@ -86,14 +83,19 @@ class Category extends BaseObject
         return $this->pricelist;
     }
 
-    public function setResource(modResource $resource): Category
+    /**
+     * @param \MODX\Revolution\modResource|\modResource  $resource
+     *
+     * @return $this
+     */
+    public function setResource($resource): Category
     {
         $this->resource = $resource;
         return $this;
     }
 
     /**
-     * @return modResource|null
+     * @return \MODX\Revolution\modResource|\modResource|null
      */
     public function getResource()
     {

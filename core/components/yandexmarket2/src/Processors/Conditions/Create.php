@@ -6,11 +6,23 @@ namespace YandexMarket\Processors\Conditions;
 use MODX\Revolution\Processors\Model\CreateProcessor;
 use YandexMarket\Model\YmCondition;
 use YandexMarket\Models\Condition;
+use YandexMarket\Service;
 
-class Create extends CreateProcessor
+if (!Service::isMODX3()) {
+    abstract class ACreate extends \modObjectCreateProcessor
+    {
+        public $classKey = \YmCondition::class;
+    }
+} else {
+    abstract class ACreate extends CreateProcessor
+    {
+        public $classKey = YmCondition::class;
+    }
+}
+
+class Create extends ACreate
 {
     public $objectType     = 'ym2_condition';
-    public $classKey       = YmCondition::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 

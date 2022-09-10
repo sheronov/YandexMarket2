@@ -2,28 +2,40 @@
 
 namespace YandexMarket;
 
-use Exception;
-use MODX\Revolution\modResource;
-use MODX\Revolution\modTemplateVar;
-use MODX\Revolution\modTemplateVarResource;
-use MODX\Revolution\modX;
-use MODX\Revolution\Registry\modDbRegister;
-use MODX\Revolution\Registry\modRegistry;
-use MODX\Revolution\Rest\modRest;
-use MODX\Revolution\Transport\modTransportPackage;
-use MODX\Revolution\Transport\modTransportProvider;
-use msOption;
-use PDO;
-use xPDO\xPDO;
+use xPDO\xPDO as xPDO3;
+use MODX\Revolution\modTemplateVar as modTemplateVar3;
+use MODX\Revolution\modTemplateVarResource as modTemplateVarResource3;
+use MODX\Revolution\Registry\modDbRegister as modDbRegister3;
+use MODX\Revolution\Registry\modRegistry as modRegistry3;
+use MODX\Revolution\Rest\modRest as modRest3;
+use MODX\Revolution\Transport\modTransportPackage as modTransportPackage3;
+use MODX\Revolution\Transport\modTransportProvider as modTransportProvider3;
 use YandexMarket\Marketplaces\Marketplace;
 use YandexMarket\Models\Field;
+use Exception;
+use PDO;
+
+if (!defined('MODX3')) {
+    define('MODX3', class_exists('MODX\Revolution\modX'));
+}
 
 class Service
 {
+    /** @var \MODX\Revolution\modX|\modX */
     protected $modx;
     protected $config = [];
 
-    public function __construct(modX $modx, array $config = [])
+    const LOG_LEVEL_FATAL = MODX3 ? xPDO3::LOG_LEVEL_FATAL : \xPDO::LOG_LEVEL_FATAL;
+    const LOG_LEVEL_ERROR = MODX3 ? xPDO3::LOG_LEVEL_ERROR : \xPDO::LOG_LEVEL_ERROR;
+    const LOG_LEVEL_WARN  = MODX3 ? xPDO3::LOG_LEVEL_WARN : \xPDO::LOG_LEVEL_WARN;
+    const LOG_LEVEL_INFO  = MODX3 ? xPDO3::LOG_LEVEL_INFO : \xPDO::LOG_LEVEL_INFO;
+    const LOG_LEVEL_DEBUG = MODX3 ? xPDO3::LOG_LEVEL_DEBUG : \xPDO::LOG_LEVEL_DEBUG;
+
+    /**
+     * @param  \MODX\Revolution\modX|\modX  $modx
+     * @param  array  $config
+     */
+    public function __construct($modx, array $config = [])
     {
         $this->modx = $modx;
         $corePath = $modx->getOption('yandexmarket2_core_path', null,
@@ -39,7 +51,12 @@ class Service
         $this->checkStat();
     }
 
-    public static function debugInfo(xPDO $xpdo): array
+    /**
+     * @param  xPDO3|\xPDO  $xpdo
+     *
+     * @return array
+     */
+    public static function debugInfo($xpdo): array
     {
         if (!$xpdo->getOption('yandexmarket2_debug_mode')) {
             return [];
@@ -50,6 +67,11 @@ class Service
             'totalTime' => sprintf("%2.4f s", (microtime(true) - $xpdo->startTime)),
             'memory'    => number_format(memory_get_usage(true) / 1024, 0, ",", " ").' kb'
         ];
+    }
+
+    public static function isMODX3(): bool
+    {
+        return MODX3;
     }
 
     public static function hasMiniShop2(): bool
@@ -356,7 +378,7 @@ class Service
         }
 
         foreach ($this->modx->getIterator('msOption') as $option) {
-            /** @var msOption $option */
+            /** @var \msOption $option */
             $fields[] = [
                 'value'   => $columnPrefix.$option->get('key'),
                 'text'    => $option->get('caption'),
@@ -374,8 +396,8 @@ class Service
         $this->modx->lexicon->load('tv_input_types');
         $this->modx->lexicon->load('tv_widget');
 
-        foreach ($this->modx->getIterator(modTemplateVar::class) as $tv) {
-            /** @var modTemplateVar $tv */
+        foreach ($this->modx->getIterator(MODX3 ? modTemplateVar3::class : \modTemplateVar::class) as $tv) {
+            /** @var \modTemplateVar|modTemplateVar3 $tv */
             $fields[] = [
                 'value'   => $columnPrefix.$tv->get('name'),
                 'text'    => $tv->get('caption'),
@@ -387,7 +409,12 @@ class Service
         return $fields;
     }
 
-    public static function getSitePaths(xPDO $xpdo): array
+    /**
+     * @param  xPDO3|\xPDO  $xpdo
+     *
+     * @return array
+     */
+    public static function getSitePaths($xpdo): array
     {
         $siteUrl = $xpdo->getOption('yandexmarket2_site_url', null,
             $xpdo->getOption('site_url', null, MODX_SITE_URL), true);
@@ -401,7 +428,14 @@ class Service
         ];
     }
 
-    public static function preparePath(xPDO $xpdo, string $path, bool $collapseSlashes = false): string
+    /**
+     * @param  xPDO3|\xPDO  $xpdo
+     * @param  string  $path
+     * @param  bool  $collapseSlashes
+     *
+     * @return string
+     */
+    public static function preparePath($xpdo, string $path, bool $collapseSlashes = false): string
     {
         $paths = self::getSitePaths($xpdo);
         $path = str_replace(array_map(static function (string $key) {
@@ -418,11 +452,11 @@ class Service
     protected function checkStat()
     {
         $key = 'yandexmarket2';
-        /** @var modRegistry $registry */
-        if (!$registry = $this->modx->getService('registry', modRegistry::class)) {
+        /** @var modRegistry3|\modRegistry $registry */
+        if (!$registry = $this->modx->getService('registry', MODX3 ? modRegistry3::class : 'registry.modRegistry')) {
             return;
         }
-        if (!$register = $registry->getRegister('user', modDbRegister::class)) {
+        if (!$register = $registry->getRegister('user', MODX3 ? modDbRegister3::class : 'registry.modDbRegister')) {
             return;
         }
         $register->connect();
@@ -430,10 +464,11 @@ class Service
         if ($register->read(['poll_limit' => 1, 'remove_read' => false])) {
             return;
         }
-        $c = $this->modx->newQuery(modTransportProvider::class, ['service_url:LIKE' => '%modstore%']);
-        $c->select('username,api_key');
-        /** @var modRest $rest */
-        $rest = $this->modx->getService('modRest', modRest::class, '', [
+        $c = $this->modx->newQuery(MODX3 ? modTransportProvider3::class : 'transport.modTransportProvider')
+            ->where(['service_url:LIKE' => '%modstore%'])
+            ->select('username,api_key');
+        /** @var modRest3|\modRest $rest */
+        $rest = $this->modx->getService('modRest', MODX3 ? modRest3::class : 'rest.modRest', '', [
             'baseUrl'        => 'https://modstore.pro/extras',
             'suppressSuffix' => true,
             'timeout'        => 1,
@@ -442,11 +477,11 @@ class Service
 
         if ($rest) {
             $level = $this->modx->getLogLevel();
-            $this->modx->setLogLevel(xPDO::LOG_LEVEL_FATAL);
+            $this->modx->setLogLevel(self::LOG_LEVEL_FATAL);
 
-            $tpQuery = $this->modx->newQuery(modTransportPackage::class);
-            $tpQuery->where(['signature:LIKE' => 'yandexmarket2%']);
-            $tpQuery->select('signature');
+            $tpQuery = $this->modx->newQuery(MODX3 ? modTransportPackage3::class : 'transport.modTransportPackage')
+                ->where(['signature:LIKE' => 'yandexmarket2%'])
+                ->select('signature');
             $version = $this->modx->getValue($tpQuery->prepare()) ?: '1.0.0-beta';
 
             if (method_exists($this->modx, 'getVersionData')) {
@@ -499,10 +534,10 @@ class Service
             case 'tv':
             case 'modtemplatevar':
             case 'modtemplatevarresource':
-                $qtv = $this->modx->newQuery(modTemplateVar::class);
+                $qtv = $this->modx->newQuery(MODX3 ? modTemplateVar3::class : \modTemplateVar::class);
                 $qtv->where(['name' => $key]);
-                if ($tv = $this->modx->getObject(modTemplateVar::class, $qtv)) {
-                    $q = $this->modx->newQuery(modTemplateVarResource::class);
+                if ($tv = $this->modx->getObject($qtv->getClass(), $qtv)) {
+                    $q = $this->modx->newQuery(MODX3 ? modTemplateVarResource3::class : \modTemplateVarResource::class);
                     $q->where(['tmplvarid' => $tv->get('id')]);
                     $q->select('value');
                 }
@@ -517,7 +552,7 @@ class Service
             case 'offer':
             case 'resource':
             case 'modresource':
-                $q = $this->modx->newQuery(modResource::class);
+                $q = $this->modx->newQuery(MODX3 ? \MODX\Revolution\modResource::class : \modResource::class);
                 $q->select($key);
                 break;
             case 'data':

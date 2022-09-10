@@ -5,11 +5,23 @@ namespace YandexMarket\Processors\Conditions;
 use MODX\Revolution\Processors\Model\UpdateProcessor;
 use YandexMarket\Model\YmCondition;
 use YandexMarket\Models\Condition;
+use YandexMarket\Service;
 
-class Update extends UpdateProcessor
+if (!Service::isMODX3()) {
+    abstract class AUpdate extends \modObjectUpdateProcessor
+    {
+        public $classKey = \YmCondition::class;
+    }
+} else {
+    abstract class AUpdate extends UpdateProcessor
+    {
+        public $classKey = YmCondition::class;
+    }
+}
+
+class Update extends AUpdate
 {
     public $objectType     = 'ym2_condition';
-    public $classKey       = YmCondition::class;
     public $languageTopics = ['yandexmarket2'];
     //public $permission = 'save';
 

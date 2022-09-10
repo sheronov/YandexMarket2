@@ -2,11 +2,6 @@
 
 namespace YandexMarket\Models;
 
-use xPDO\xPDO;
-use YandexMarket\Model\YmField;
-use YandexMarket\Model\YmFieldAttribute;
-use YandexMarket\Model\YmPricelist;
-
 /**
  * @property int $id
  * @property string $name
@@ -73,7 +68,7 @@ class Field extends BaseObject
 
     public static function getObjectClass(): string
     {
-        return YmField::class;
+        return MODX3 ? \YandexMarket\Model\YmField::class : \YmField::class;
     }
 
     public function isArrayValue(): bool
@@ -106,8 +101,10 @@ class Field extends BaseObject
     {
         if (!isset($this->attributes)) {
             $this->attributes = [];
-            $q = $this->modx->newQuery(YmFieldAttribute::class, ['field_id' => $this->id])->sortby('id');
-            foreach ($this->modx->getIterator(YmFieldAttribute::class, $q) as $ymFieldAttribute) {
+            $q = $this->modx->newQuery($this->getClassByAlias('Attributes'))
+                ->where(['field_id' => $this->id])
+                ->sortby('id');
+            foreach ($this->modx->getIterator($q->getClass(), $q) as $ymFieldAttribute) {
                 $this->attributes[] = new Attribute($this->modx, $ymFieldAttribute);
             }
         }
@@ -162,8 +159,10 @@ class Field extends BaseObject
     {
         if (!isset($this->children)) {
             $this->children = [];
-            $q = $this->modx->newQuery(YmField::class, ['parent' => $this->id])->sortby('`rank`');
-            foreach ($this->modx->getIterator(YmField::class, $q) as $ymField) {
+            $q = $this->modx->newQuery($this->getClassByAlias('Children'))
+                ->where(['parent' => $this->id])
+                ->sortby('`rank`');
+            foreach ($this->modx->getIterator($q->getClass(), $q) as $ymField) {
                 $this->children[] = new Field($this->modx, $ymField);
             }
         }

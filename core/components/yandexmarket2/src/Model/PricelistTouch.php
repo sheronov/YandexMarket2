@@ -8,9 +8,10 @@ trait PricelistTouch
     {
         $saved = parent::save($cacheFlag);
 
-        if ($saved && $pricelist = $this->getOne('Pricelist')) {
-            /** @var ymPricelist $pricelist */
-            $pricelist->touch();
+        if ($saved && ($pricelist = $this->getOne('Pricelist')) && $pricelist->get('active')) {
+            /** @var YmPricelist|\YmPricelist $pricelist */
+            $pricelist->set('need_generate', true);
+            $pricelist->save();
         }
 
         return $saved;
@@ -18,12 +19,12 @@ trait PricelistTouch
 
     public function remove(array $ancestors = [])
     {
-        /** @var ymPricelist $pricelist */
-        $pricelist = $this->getOne('Pricelist');
         $removed = parent::remove($ancestors);
 
-        if ($removed && $pricelist) {
-            $pricelist->touch();
+        if ($removed && ($pricelist = $this->getOne('Pricelist')) && $pricelist->get('active')) {
+            /** @var YmPricelist|\YmPricelist $pricelist */
+            $pricelist->set('need_generate', true);
+            $pricelist->save();
         }
 
         return $removed;

@@ -4,8 +4,15 @@ namespace YandexMarket\Processors\Xml;
 
 use MODX\Revolution\Processors\Processor;
 use MODX\Revolution\Registry\modRegistry;
+use YandexMarket\Service;
 
-class Log extends Processor
+if (!Service::isMODX3()) {
+    abstract class ALogProcessor extends \modProcessor { }
+} else {
+    abstract class ALogProcessor extends Processor { }
+}
+
+class Log extends ALogProcessor
 {
     public function initialize()
     {
