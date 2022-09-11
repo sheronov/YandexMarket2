@@ -1,5 +1,5 @@
 <template>
-  <div id="yandexmarket-app" data-vuetify>
+  <div id="yandexmarket-app" data-vuetify :class="$isMODX3 ? 'modx3' : 'modx2'">
     <v-app style="background: transparent;">
       <router-view></router-view>
     </v-app>
@@ -23,15 +23,20 @@ export default {
   padding: 0 15px;
   width: 100%;
   height: 100%;
-  position: absolute;
+  position: inherit; /* inherit from #modx-content */
   z-index: 1;
   overflow: hidden auto;
 }
 
 @media screen and (max-width: 960px) {
-  #yandexmarket-app {
+  #yandexmarket-app.modx3 {
     padding: 0 10px;
-    position: relative;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  #yandexmarket-app.modx2 {
+    padding: 0 10px;
   }
 }
 

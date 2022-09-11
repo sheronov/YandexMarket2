@@ -1,9 +1,9 @@
 <?php
 
 if (class_exists('MODX\Revolution\modX')) {
-    abstract class YandexMarket2HomeManagerControllerAbstract extends MODX\Revolution\modExtraManagerController {}
+    abstract class YandexMarket2HomeManagerControllerAbstract extends MODX\Revolution\modExtraManagerController { }
 } else {
-    abstract class YandexMarket2HomeManagerControllerAbstract extends modExtraManagerController {}
+    abstract class YandexMarket2HomeManagerControllerAbstract extends modExtraManagerController { }
 }
 
 class YandexMarket2HomeManagerController extends YandexMarket2HomeManagerControllerAbstract
@@ -21,8 +21,9 @@ class YandexMarket2HomeManagerController extends YandexMarket2HomeManagerControl
             $this->modx->getOption('assets_url').'components/yandexmarket2/');
         $this->connectorUrl = $assetsUrl.'connector.php';
         $this->mgrAssetsUrl = $assetsUrl.'mgr/';
+        $this->sentryDsn = $this->modx->getOption('yandexmarket2_sentry_dsn', null, '');
         $this->xmlLoaded = class_exists('XmlWriter');
-        $this->sentryDsn = $this->modx->getOption('yandexmarket2_sentry_dsn', null,'');
+        $this->isMODX3 = class_exists('MODX\Revolution\modX');
         // $this->lexicons = json_encode($this->modx->lexicon->fetch('yandexmarket2_', true));
 
         parent::initialize();
@@ -49,15 +50,15 @@ class YandexMarket2HomeManagerController extends YandexMarket2HomeManagerControl
         $this->addCss($this->mgrAssetsUrl.'css/chunk-vendors.css');
         $this->addCss($this->mgrAssetsUrl.'css/app.css');
 
-        $this->addHtml("<script type=\"text/javascript\">
-        window.ym2Config = {
-            apiUrl: \"{$this->connectorUrl}\",
-            modAuth: \"{$this->modx->user->getUserToken($this->modx->context->key)}\",
-            sentry: \"{$this->sentryDsn}\",
-            xmlLoaded: {$this->xmlLoaded}, 
-            lang: {}
-        }
-        </script>");
+        $ym2ConfigJson = $this->modx->toJSON([
+            'apiUrl'    => $this->connectorUrl,
+            'modAuth'   => $this->modx->user->getUserToken($this->modx->context->key),
+            'sentry'    => $this->sentryDsn,
+            'xmlLoaded' => $this->xmlLoaded,
+            'isMODX3'   => $this->isMODX3,
+            'lang'      => []
+        ]);
+        $this->addHtml('<script type="text/javascript">window.ym2Config = '.$ym2ConfigJson.'</script>');
         //  lang: {$this->lexicons} // TODO: добавить лексиконы для фронта
 
         $this->addJavascript($this->mgrAssetsUrl.'js/chunk-vendors.js');
