@@ -43,8 +43,15 @@ $lexicon = [
     'Generated at'                                       => 'Сформирован',
     'Active'                                             => 'Активен',
     'Actions'                                            => 'Действия',
+    'Field'                                              => 'Поле',
+    'Value' => 'Значение',
 
     'Are you sure you want to remove the pricelist {pricelist}? This action is irreversible' => 'Вы действительно хотите удалить прайс-лист {pricelist} ? Это действие безвозвратное',
+
+    // routes
+    'Pricelists' => 'Прайс-листы',
+    'Categories' => 'Категории',
+    'Offers' => 'Предложения',
 
     // pricelist common
     'Shop settings' => 'Настройки магазина',
@@ -125,6 +132,103 @@ $lexicon = [
     'The pricelist will be formed immediately. Force update by cron' => 'Прайс-лист будет формироваться сразу. Принудительное обновление по cron',
     'By cron when changing products (recommended)' => 'По cron при изменении товаров (рекомендуется)',
     'Install a cron job every minute at /core/components/yandexmarket2/cron/generate.php' => 'Поставьте ежеминутную крон-задачу на /core/components/yandexmarket2/cron/generate.php',
+
+    // operators
+    'Operator' => 'Оператор',
+    'equals' => 'Равно',
+    'not equals' => 'Не равно',
+    'greater than' => 'Больше чем',
+    'less than' => 'Меньше чем',
+    'greater than or equal to' => 'Больше или равно',
+    'less than or equal to' => 'Меньше или равно',
+    'like' => 'В строке',
+    'not like' => 'Не в строке',
+    'exists in' => 'В списке',
+    'not exists in' => 'Не в списке',
+    'is null' => 'Null-значение',
+    'is not null' => 'Не null',
+
+    // categories tree
+    'Select categories for the pricelist' => 'Выберите категории для выгрузки',
+    'Selected {total} {categories}' => 'Выбрано {total} {categories}',
+    'category|categories|categories' => 'категория|категории|категорий',
+    'Expand all categories' => 'Раскрыть все категории',
+    'Collapse all categories' => 'Свернуть все категории',
+    'Refresh categories tree' => 'Обновить дерево категорий',
+    'Select category' => 'Выбрать категорию',
+    'Select with all subcategories' => 'Выбрать со всеми подкатегориями',
+
+    // field attributes
+    'Select from the list' => 'Выберите из списка',
+    'Enter value' => 'Введите значение',
+    'Edit attribute properties' => 'Отредактировать свойства атрибута',
+    'Editing the {name} attribute' => 'Редактирование атрибута {name}',
+    'Adding a new attribute' => 'Добавление нового атрибута',
+    'Attribute description can be specified through lexicons' => 'Описание атрибута можно задать через лексиконы',
+    'Delete field' => 'Удалить поле',
+    'Parameter *' => 'Параметр *',
+    'in latin' => 'латиницей',
+    'Value type' => 'Тип значения',
+    'Product field' => 'Поле товара',
+    'To close, clear the entered code' => 'Для закрытия очистите введённый код',
+    'Add value handler code' => 'Добавить код-обработчик значения',
+    'Example' => 'Пример',
+    'text (without processing)' => 'текст (без обработки)',
+    'value from column' => 'значение из столбца',
+    'Are you sure you want to remove the {name} attribute?' => 'Вы действительно хотите удалить атрибут {name}?',
+
+    // field header
+    'Sequence number (click to change)' => 'Порядковый номер (нажмите, чтобы изменить)',
+    'Priority' => 'Приоритет',
+    'enter element' => 'введите элемент',
+    '(select type)' => '(выберите тип)',
+    'Save new first' => 'Сначала сохраните новый',
+    'Add attribute' => 'Добавить атрибут',
+    'Edit field name and type' => 'Отредактировать название и тип поля',
+    'Are you sure you want to delete the {name} field?' => 'Вы действительно хотите удалить поле {name}?',
+
+    // field value
+    'Main currency' => 'Основная валюта',
+    'Make main' => 'Выбрать основной',
+    'Will get into XML without processing and replacing placeholders' => 'Попадёт в XML без обработки и замен плейсхолдеров',
+    'Text' => 'Текст',
+    'The result will not be wrapped. Make sure you are generating valid XML.' => 'Результат не будет обернут. Убедитесь, что формируете валидный XML.',
+    'This is the standard code handler where the corresponding fields are available.' => 'Это стандартный обработчик кода, где доступны соответствующие поля.',
+    'Select object field' => 'Выберите поле объекта',
+    'or type in Class.key format and press Enter' => 'или введите в формате Class.key и нажмите Enter',
+    'Number of images for each product (10 maximum)' => 'Количество изображений для каждого товара (10 максимум)',
+    'Count' => 'Кол-во',
+    'INLINE processing of the field on Fenom (the value goes to $input)' => 'INLINE обработка поля на Fenom (значение попадает в $input)',
+    'Needed to cast boolean, cut out unnecessary tags/texts, process arrays, TV fields, or for independent values.' => 'Нужно для приведения boolean, вырезанию лишних тегов/текстов, обработки массивов, ТВ-полей или для независимых значений.',
+    'Available resource fields {$resource.pagetitle}, miniShop2 products {$data.price}, ms2 options {$option.color}, TV fields {$tv.tag}.' => 'Доступны поля ресурса {$resource.pagetitle}, товаров miniShop2 {$data.price}, опций ms2 {$option.color}, тв полей {$tv.tag}.',
+    'All required TV fields, options will be joined automatically' => 'Все нужные ТВ-поля, опции будут приджойнены автоматически.',
+    'Do not write @INLINE before the code.' => 'Писать @INLINE перед кодом НЕ нужно.',
+
+    // pricelist conditions
+    'Edit condition' => 'Отредактировать условие',
+    'Delete condition' => 'Удалить условие',
+    'Are you sure you want to remove this condition?' => 'Вы действительно хотите удалить это условие?',
+    'Enter or select from the list' => 'Введите или выберите из списка',
+    'Save the new condition' => 'Сохраните новое условие',
+    'Add condition' => 'Добавить условие',
+
+    // pricelist field
+    'Element' => 'Элемент',
+    'Element type' => 'Тип элемента',
+    'Select type' => 'Выберите тип',
+    'Type' => 'Тип',
+    'Attributes' => 'Аттрибуты',
+    'The categories is selected on the tab' => 'Список категорий выбирается на вкладке',
+    'Product fields are configured on the tab' => 'Поля товаров настраиваются на вкладке',
+    'Shop fields are configured on the tab' => 'Поля магазина настраиваются на вкладке',
+    'Child elements' => 'Дочерние элементы',
+    'No child elements yet' => 'Ещё нет дочерних элементов',
+    'Save the new field' => 'Сохраните новое поле',
+    'Save first to add items' => 'Сохраните, чтобы добавлять элементы',
+    'Add element into' => 'Добавить элемент в',
+    'New field' => 'Новое поле',
+    'Field description can be specified through lexicons' => 'Описание поля можно задать через лексиконы',
+    'New attribute' => 'Новый атрибут',
 ];
 
 $_lang = array_merge($_lang ?? [], array_combine(array_map(static function (string $key) {

@@ -6,7 +6,7 @@
         :is="item.values ? 'v-select' : 'v-text-field'"
         v-model="item.value"
         :items="item.values"
-        :placeholder="item.values ? 'Выберите из списка' : 'Введите значение'"
+        :placeholder="$t(item.values ? 'Select from the list' : 'Enter value')"
         :hint="item.handler ? '</> '+item.handler : null"
         :persistent-hint="!!item.handler"
         :hide-details="!item.handler"
@@ -18,56 +18,59 @@
     >
       <template v-slot:prepend-inner>
         <div class="text-no-wrap mr-1 ml-n1">
-          <v-icon color="inherit" class="mr-1" title="Атрибут">icon-font</v-icon>
+          <v-icon color="inherit" class="mr-1" :title="$t('Attribute')">icon-font</v-icon>
           <code style="position:relative; top:1px;">{{ item.name }}</code>
         </div>
       </template>
       <template v-slot:append>
-        <v-btn small v-if="!edited" icon :title="'Отредактировать свойства атрибута '+item.name" @click.stop="editAttr"
+        <v-btn small v-if="!edited" icon :title="$t('Edit attribute properties')" @click.stop="editAttr"
                class="mt-n1 mr-n2">
           <v-icon>icon-pencil</v-icon>
         </v-btn>
-        <v-btn v-else small icon @click.stop="saveChanges" title="Сохранить изменения" class="mt-1"
+        <v-btn v-else small icon @click.stop="saveChanges" :title="$t('Save changes')" class="mt-1"
                color="secondary">
           <v-icon>icon-save</v-icon>
         </v-btn>
       </template>
       <template v-slot:append-outer v-if="edited">
         <v-btn fab x-small absolute depressed width="24" height="24" style="top:-5px;right:0" color="grey lighten-4">
-          <v-icon size="14" @click="cancelChanges" title="Отменить изменения" color="orange">icon-rotate-left</v-icon>
+          <v-icon size="14" @click="cancelChanges" :title="$t('Cancel changes')" color="orange">icon-rotate-left
+          </v-icon>
         </v-btn>
       </template>
     </component>
     <v-sheet v-else elevation="1" class="pt-1 px-2" color="grey lighten-5">
       <v-row class="ma-0">
-        <div v-if="attribute.id">Редактирование атрибута {{ attribute.name }}</div>
-        <div v-else>Добавление нового атрибута
+        <div v-if="attribute.id">{{ $t('Editing the {name} attribute', {name: attribute.name}) }}</div>
+        <div v-else>{{ $t('Adding a new attribute') }}
           <v-tooltip bottom :max-width="400" :close-delay="200" :attach="true">
             <template v-slot:activator="{ on }">
               <v-btn small icon v-on="on" class="mt-n1">
                 <v-icon>icon-question-circle</v-icon>
               </v-btn>
             </template>
-            <div class="text-caption" style="white-space: pre-line;">Описание атрибута можно задать через лексиконы
+            <div class="text-caption" style="white-space: pre-line;">{{
+                $t('Attribute description can be specified through lexicons')
+              }}
             </div>
           </v-tooltip>
         </div>
         <v-spacer/>
         <template v-if="edited">
-          <v-btn @click="cancelChanges" small icon title="Отменить изменения" class="ml-1" color="orange darken-1">
+          <v-btn @click="cancelChanges" small icon :title="$t('Cancel changes')" class="ml-1" color="orange darken-1">
             <v-icon>icon-rotate-left</v-icon>
           </v-btn>
-          <v-btn @click="saveChanges" small title="Сохранить изменения" class="ml-2 mb-1" color="secondary" height="26">
+          <v-btn @click="saveChanges" small :title="$t('Save changes')" class="ml-2 mb-1" color="secondary" height="26">
             <v-icon left>icon-save</v-icon>
-            Сохранить
+            {{ $t('Save') }}
           </v-btn>
         </template>
         <template v-else>
-          <v-btn v-if="item.id" small icon title="Отменить редактирование" @click="editAttr" class="ml-1"
+          <v-btn v-if="item.id" small icon :title="$t('Cancel')" @click="editAttr" class="ml-1"
                  color="secondary">
             <v-icon>icon-pencil</v-icon>
           </v-btn>
-          <v-btn small icon title="Удалить поле" @click="deleteAttribute" class="ml-1">
+          <v-btn small icon :title="$t('Delete field')" @click="deleteAttribute" class="ml-1">
             <v-icon>icon-trash</v-icon>
           </v-btn>
         </template>
@@ -76,8 +79,8 @@
         <v-col md="4">
           <v-text-field
               v-model="item.name"
-              label="Параметр *"
-              placeholder="латиницей"
+              :label="$t('Parameter *')"
+              :placeholder="$t('in latin')"
               dense
               required
           ></v-text-field>
@@ -85,7 +88,7 @@
         <v-col md="4">
           <v-select
               v-model="item.type"
-              label="Тип значения"
+              :label="$t('Value type')"
               :items="items"
               dense
               :menu-props="{offsetY: true}"
@@ -98,8 +101,8 @@
               :value="item.value"
               @input="item.value = $event"
               :items="item.values"
-              :label="item.values ? 'Выберите из списка' : 'Введите значение'"
-              placeholder="Поле товара"
+              :label="$t(item.values ? 'Select from the list' : 'Enter value')"
+              :placeholder="$t('Product field')"
               hide-details
               :attach="true"
               :menu-props="{offsetY: true}"
@@ -107,7 +110,7 @@
           >
             <template v-slot:append-outer v-if="item.type !== 0">
               <v-btn
-                  :title="openedCode ? 'Для закрытия очистите введённый код' :'Добавить код-обработчик значения'"
+                  :title="$t(openedCode ? 'To close, clear the entered code' : 'Add value handler code')"
                   :color="openedCode ? 'secondary' : 'accent'"
                   @click="toggleCode"
                   small
@@ -125,7 +128,7 @@
           class="pb-2 mt-n2"
           v-model="item.handler"
           :options="cmOptions"
-          placeholder="Пример: {$input === 'Да' ? true : false}"
+          :placeholder="`${$t('Example')}: {$input === '${$t('Yes')}' ? true : false}`"
       ></vue-codemirror>
     </v-sheet>
   </v-col>
@@ -149,26 +152,28 @@ export default {
   props: {
     attribute: {required: true, type: [Object]}
   },
-  data: () => ({
-    code: false,
-    item: {},
-    edit: false,
-    items: [
-      {value: 0, text: 'текст (без обработки)'},
-      {value: 1, text: 'значение из столбца'},
-    ],
-    cmOptions: {
-      taSize: 4,
-      mode: {
-        name: 'smarty',
-        baseMode: 'text/html',
-        version: 3,
+  data() {
+    return {
+      code: false,
+      item: {},
+      edit: false,
+      items: [
+        {value: 0, text: this.$t('text (without processing)')},
+        {value: 1, text: this.$t('value from column')},
+      ],
+      cmOptions: {
+        taSize: 4,
+        mode: {
+          name: 'smarty',
+          baseMode: 'text/html',
+          version: 3,
+        },
+        line: true,
+        lineNumbers: true,
+        lineWrapping: true
       },
-      line: true,
-      lineNumbers: true,
-      lineWrapping: true
-    },
-  }),
+    }
+  },
   watch: {
     attribute: {
       immediate: true,
@@ -215,7 +220,7 @@ export default {
         this.$emit('attribute:deleted', this.item);
         return;
       }
-      if (confirm('Вы действительно хотите удалить атрибут ' + this.item.name + '?')) {
+      if (confirm(this.$t('Are you sure you want to remove the {name} attribute?', {name: this.item.name}))) {
         api.post('Attributes/Remove', {id: this.item.id})
             .then(() => this.$emit('attribute:deleted', this.item))
             .catch(error => console.log(error));

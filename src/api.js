@@ -2,7 +2,7 @@ import axios from "axios";
 
 export class ErrorException extends Error {
     constructor(response) {
-        super((response && response.message) || 'Ошибка');
+        super((response && response.message) || 'Error');
         this.response = response;
     }
 

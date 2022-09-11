@@ -9,7 +9,7 @@
             :items="classKeys.filter(ck => !ck.skipped)"
             :attach="true"
             :label="columnLabel"
-            placeholder='Или введите в формате "Class.key"'
+            :placeholder="$t('or type in Class.key format and press Enter')"
             item-value="value"
             item-text="text"
             class="mb-0"
@@ -29,8 +29,8 @@
       <v-col cols="12" sm="4">
         <v-select
             v-model="condition.operator"
-            :label="`Оператор ${operator ? operator.sign : ''}`"
-            :items="operatorsList"
+            :label="`${$t('Operator')} ${operator ? operator.sign : ''}`"
+            :items="operators"
             dense
             :menu-props="{offsetY: true}"
             :attach="true"
@@ -49,8 +49,8 @@
             :filter="valueSearch"
             :items="values"
             :attach="true"
-            label="Значение"
-            placeholder="Введите или выберите из списка"
+            :label="$t('Value')"
+            :placeholder="$t('Enter or select from the list')"
             item-value="value"
             item-text="text"
             class="mb-0"
@@ -65,8 +65,8 @@
             v-else-if="!nullValue"
             :value="condition.value"
             @input="changedValue"
-            label="Значение"
-            placeholder="Введите значение"
+            :label="$t('Value')"
+            :placeholder="$t('Enter value')"
             class="mb-0"
             :disabled="!edit"
             hide-details
@@ -78,16 +78,16 @@
     </v-row>
     <div class="yandexmarket-pricelist-condition-actions align-center justify-center">
       <template v-if="edited">
-        <v-btn @click="cancelEdit" small icon title="Отменить изменения" color="orange darken-1">
+        <v-btn @click="cancelEdit" small icon :title="$t('Cancel changes')" color="orange darken-1">
           <v-icon>icon-rotate-left</v-icon>
         </v-btn>
-        <v-btn @click="saveChanges" small icon title="Сохранить изменения" color="secondary" height="26">
+        <v-btn @click="saveChanges" small icon :title="$t('Save changes')" color="secondary" height="26">
           <v-icon>icon-save</v-icon>
         </v-btn>
       </template>
       <template v-else>
         <v-btn small icon
-               title="Отредактировать условие"
+               :title="$t('Edit condition')"
                @click="editCondition"
                :color="edit ? 'secondary': 'default'"
         >
@@ -95,7 +95,7 @@
         </v-btn>
         <v-btn
             small icon
-            title="Удалить условие"
+            :title="$t('Delete condition')"
             @click.stop="deleteCondition"
         >
           <v-icon>icon-trash</v-icon>
@@ -149,8 +149,11 @@ export default {
     edited() {
       return JSON.stringify(this.item) !== JSON.stringify(this.condition);
     },
+    operators () {
+      return this.operatorsList.map(operator => ({...operator, text: this.$t(operator.value)}))
+    },
     operator() {
-      return this.operatorsList.find(op => op.value === this.condition.operator);
+      return this.operators.find(op => op.value === this.condition.operator);
     },
     selectable() {
       return !!(this.operator && this.operator.select);
@@ -173,9 +176,9 @@ export default {
     },
     columnLabel() {
       if (this.column && this.column.value !== this.column.text) {
-        return 'Поле ' + this.column.value;
+        return this.$t('Field') + ' ' + this.column.value;
       }
-      return 'Поле';
+      return this.$t('Field');
     },
   },
   methods: {
@@ -184,7 +187,7 @@ export default {
         this.$emit('condition:deleted', this.condition);
         return;
       }
-      if (confirm('Вы действительно хотите удалить это условие?')) {
+      if (confirm(this.$t('Are you sure you want to remove this condition?'))) {
         api.post('Conditions/Remove', {id: this.condition.id})
             .then(() => this.$emit('condition:deleted', this.condition))
             .catch(error => console.log(error));
@@ -214,7 +217,7 @@ export default {
         value = val;
       } else if (typeof val === 'object') {
         value = val.value;
-      } else { //новое значение текстом
+      } else { //new text value
         value = val;
       }
       this.condition.column = value;
@@ -228,7 +231,7 @@ export default {
         value = val;
       } else if (typeof val === 'object') {
         value = val.value;
-      } else { //новое значение текстом
+      } else { //new text value
         value = val;
       }
       this.condition.value = value;

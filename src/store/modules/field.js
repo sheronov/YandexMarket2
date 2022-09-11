@@ -12,12 +12,12 @@ export default {
             return found ? found.text : null;
         },
         selectableTypes: state => state.types.filter(type => !type.hidden),
-        isSingle: state => ({type}) => !!state.types.find(t => t.single && t.value === type), // одно на уровне
-        isParent: state => ({type}) => !!state.types.find(t => t.value === type && t.parent), //может иметь узлы
-        isUnique: state => ({type}) => !!state.types.find(t => t.unique && t.value === type), //иной обработчик
-        isSimpleString: () => ({type}) => parseInt(type) === 0, //простое текстовое поле без подстановки значений
-        isEmptyType: () => ({type}) => parseInt(type) === 20, //пустой элемент только для атрибутов
-        isRoot: () => ({type}) => parseInt(type) === 1, // рут элемент
+        isSingle: state => ({type}) => !!state.types.find(t => t.single && t.value === type), // only one on level
+        isParent: state => ({type}) => !!state.types.find(t => t.value === type && t.parent), // can have child elements
+        isUnique: state => ({type}) => !!state.types.find(t => t.unique && t.value === type), // other handler
+        isSimpleString: () => ({type}) => parseInt(type) === 0, // basic text field without values replacement
+        isEmptyType: () => ({type}) => parseInt(type) === 20, // empty element for attributes only
+        isRoot: () => ({type}) => parseInt(type) === 1, // root element
         isCategories: () => ({type}) => [4, 14].indexOf(parseInt(type)) !== -1,
         isCurrencies: () => ({type}) => parseInt(type) === 3,
         isOffers: () => ({type}) => [5, 15].indexOf(parseInt(type)) !== -1,

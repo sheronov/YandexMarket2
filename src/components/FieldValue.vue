@@ -26,7 +26,7 @@
                 :input-value="selected"
                 text-color="white"
                 :color="!index ? 'primary' : 'grey'"
-                :title="!index ? 'Основная валюта' : 'Выбрать основной'"
+                :title="$t(!index ? 'Main currency' : 'Make main')"
                 @click.stop="makeFirst(item)"
                 @click:close="removeChip(item)"
                 close
@@ -43,8 +43,8 @@
         <v-text-field
             :value="field.value"
             @input="changedValue"
-            label="Введите значение"
-            placeholder="Попадёт в XML без обработки и замен плейсхолдеров"
+            :label="$t('Enter value')"
+            :placeholder="$t('Will get into XML without processing and replacing placeholders')"
             hide-details
             solo
             dense
@@ -52,15 +52,15 @@
           <template v-slot:prepend-inner>
             <div class="text-no-wrap mr-2">
               <v-icon left color="inherit">icon-paragraph</v-icon>
-              <code style="position:relative; top:1px;">Текст</code>
+              <code style="position:relative; top:1px;">{{ $t('Text') }}</code>
             </div>
           </template>
         </v-text-field>
       </template>
       <template v-else-if="isRawXml(field)">
         <div class="text-caption">
-          Результат не оборачивается. Убедитесь, что формируете валидный XML.
-          Это стандартный Fenom-обработчик, где доступны соответствующие поля.
+          {{ $t('The result will not be wrapped. Make sure you are generating valid XML.') }}
+          {{ $t('This is the standard code handler where the corresponding fields are available.') }}
         </div>
       </template>
       <template v-else>
@@ -70,8 +70,8 @@
             :filter="valueSearch"
             :items="classKeys.filter(ck => !ck.skipped)"
             :attach="true"
-            label="Выберите поле объекта"
-            placeholder='или введите в формате "Class.key" и нажмите Enter'
+            :label="$t('Select object field')"
+            :placeholder="$t('or type in Class.key format and press Enter')"
             item-value="value"
             item-text="text"
             hide-details
@@ -97,10 +97,10 @@
             @input="countChanged"
             type="number"
             class="ml-2"
-            title="Количество изображений для каждого товара (10 максимум)"
+            :title="$t('Number of images for each product (10 maximum)')"
             min="0"
             max="10"
-            label="Кол-во"
+            :label="$t('Count')"
             style="max-width: 100px"
             solo
             dense
@@ -108,7 +108,7 @@
         >
         </v-text-field>
         <v-btn v-else
-               :title="openedCode ? 'Для закрытия очистите введённый код' :'Добавить код-обработчик значения'"
+               :title="$t(openedCode ? 'To close, clear the entered code' : 'Add value handler code')"
                :color="openedCode ? 'secondary' : 'accent'"
                @click="toggleCode"
                class="ml-3"
@@ -123,7 +123,7 @@
           v-if="rerender"
           v-model="field.handler"
           :options="cmOptions"
-          placeholder="Пример: {$input === 'Да' ? true : false}"
+          :placeholder="`${$t('Example')}: {$input === '${$t('Yes')}' ? true : false}`"
       ></vue-codemirror>
       <v-tooltip left :max-width="450" :close-delay="200" :attach="true">
         <template v-slot:activator="{on}">
@@ -132,15 +132,13 @@
           </v-btn>
         </template>
         <div class="text-caption" style="white-space: pre-line;">
-          INLINE обработка поля на Fenom (значение попадает в $input)<br>
-          Нужно для приведения к boolean, вырезанию лишних тегов/текстов, обработки массивов, ТВ-полей или для
-          независимых значений.
+          {{ $t('INLINE processing of the field on Fenom (the value goes to $input)') }}<br>
+          {{ $t('Needed to cast boolean, cut out unnecessary tags/texts, process arrays, TV fields, or for independent values.') }}
           <br><br>
-          Доступны поля ресурса {$resource.pagetitle}, товаров miniShop2 {$data.price}, опций ms2 {$option.color},
-          тв полей {$tv.tag}.<br>
-          Все нужные ТВ-поля, опции будут приджойнены автоматически.<br>
+          {{ $t('Available resource fields {$resource.pagetitle}, miniShop2 products {$data.price}, ms2 options {$option.color}, TV fields {$tv.tag}.') }}<br>
+          {{ $t('All required TV fields, options will be joined automatically') }}<br>
           <br>
-          Писать @INLINE перед кодом НЕ нужно.
+          {{ $t('Do not write @INLINE before the code.') }}
         </div>
       </v-tooltip>
     </v-sheet>
@@ -208,7 +206,7 @@ export default {
       if (this.value && this.value.value !== this.value.text) {
         return this.value.value;
       }
-      return 'Поле';
+      return this.$t('Field');
     },
     openedCode() {
       return this.field.handler || this.code || this.isRawXml(this.field);
@@ -227,7 +225,7 @@ export default {
         value = val;
       } else if (typeof val === 'object') {
         value = val.value;
-      } else { //новое значение текстом
+      } else { //new value by text
         value = val;
       }
       this.$emit('input', value);

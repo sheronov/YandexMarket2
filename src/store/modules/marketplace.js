@@ -3,9 +3,7 @@ import api from "@/api";
 export default {
     namespaced: true,
     state: {
-        marketplaces: [
-            {text: 'Яндекс Маркет', value: 'yandex.market'} //default
-        ],
+        marketplaces: [],
     },
     getters: {
         marketplaceText: state => value => {

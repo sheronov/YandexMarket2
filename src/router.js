@@ -14,7 +14,7 @@ const routes = [
     {
         path: '/',
         component: Main,
-        meta: {title: 'Прайс-листы', to: 'pricelists'},
+        meta: {title: 'Pricelists', to: 'pricelists'},
         children: [{
             path: '',
             component: PriceLists,
@@ -22,7 +22,7 @@ const routes = [
         }, {
             path: ':id',
             component: PriceList,
-            meta: {title: 'Настройки магазина', to: 'pricelist', replaceable: true},
+            meta: {title: 'Shop settings', to: 'pricelist', replaceable: true},
             children: [{
                 path: '',
                 component: PriceListShop,
@@ -31,17 +31,17 @@ const routes = [
                 path: 'categories',
                 component: PriceListCategories,
                 name: 'pricelist.categories',
-                meta: {title: 'Категории'}
+                meta: {title: 'Categories'}
             }, {
                 path: 'offers',
                 component: PriceListOffer,
                 name: 'pricelist.offers',
-                meta: {title: 'Предложения'}
+                meta: {title: 'Offers'}
             }, {
                 path: 'generate',
                 component: PriceListGenerate,
                 name: 'pricelist.generate',
-                meta: {title: 'Выгрузка'}
+                meta: {title: 'File generation'}
             }]
         }, {
             path: '*', redirect: '/'

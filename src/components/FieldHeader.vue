@@ -8,14 +8,14 @@
     <!--  <v-sheet :color="color" class="v-expansion-panel-header pr-2 pb-1">-->
     <!--    <v-expansion-panel-header :color="color" hide-actions class="pr-2 pb-1">-->
     <inline-edit-dialog v-if="!isSingle(field)">
-      <v-btn icon small title="Порядковый номер (нажмите, чтобы изменить)" class="ml-n2">
+      <v-btn icon small :title="$t('Sequence number (click to change)')" class="ml-n2">
         #{{ field.rank }}
       </v-btn>
       <template v-slot:input>
         <v-text-field
             :value="field.rank"
             @input="field.rank = parseInt($event || '0')"
-            label="Приоритет"
+            :label="$t('Priority')"
             single-line
             type="number"
             prepend-icon="icon-sort"
@@ -24,11 +24,11 @@
       </template>
     </inline-edit-dialog>
     <span style="padding-left: 1px; padding-right: 4px;">
-         &lt;{{ item.name || 'введите элемент' }}&gt;
+         &lt;{{ item.name || $t('enter element') }}&gt;
     </span>
     <span class="pl-1 grey--text">
       <span v-if="item.label.replace(' *','') !== item.name">{{ item.label.replace(' *', '') }}</span>
-      <small v-if="!item.id"> (выберите тип)</small>
+      <small v-if="!item.id"> {{ $t('(select type)') }}</small>
     </span>
     <v-tooltip v-if="item.help" bottom :max-width="400" :close-delay="200" :attach="true">
       <template v-slot:activator="{ on }">
@@ -42,13 +42,13 @@
     </v-tooltip>
     <v-spacer/>
     <template v-if="edited">
-      <v-btn @click.stop="$emit('edit:cancel')" small icon title="Отменить изменения" class="ml-1"
+      <v-btn @click.stop="$emit('edit:cancel')" small icon :title="$t('Cancel changes')" class="ml-1"
              color="orange darken-1">
         <v-icon>icon-rotate-left</v-icon>
       </v-btn>
-      <v-btn @click.stop="saveField" small title="Сохранить изменения" class="ml-2 mb-1" color="secondary" height="26">
+      <v-btn @click.stop="saveField" small :title="$t('Save changes')" class="ml-2 mb-1" color="secondary" height="26">
         <v-icon left>icon-save</v-icon>
-        Сохранить
+        {{ $t('Save') }}
       </v-btn>
     </template>
     <template v-else>
@@ -56,7 +56,7 @@
           v-if="field.id"
           small depressed
           @click="$emit('attribute:add',$event)"
-          :title="disabledAddAttribute ? 'Сначала сохраните новый' : 'Добавить атрибут'"
+          :title="$t(disabledAddAttribute ? 'Save new first' : 'Add attribute')"
           color="transparent"
           min-width="40"
           class="px-0"
@@ -67,7 +67,7 @@
       </v-btn>
       <v-btn v-if="field.id"
              small icon
-             title="Отредактировать название и тип поля"
+             :title="$t('Edit field name and type')"
              @click="$emit('edit:toggle',$event)"
              :color="edit ? 'secondary': 'default'"
              class="ml-1"
@@ -75,7 +75,7 @@
         <v-icon>icon-pencil</v-icon>
       </v-btn>
       <v-btn small icon
-             title="Удалить поле"
+             :title="$t('Delete field')"
              @click.stop="deleteField"
              v-if="!isSingle(field)"
              class="ml-1">
@@ -128,7 +128,7 @@ export default {
         this.$emit('field:deleted', this.field);
         return;
       }
-      if (confirm('Вы действительно хотите удалить поле ' + this.field.name + '?')) {
+      if (confirm(this.$t('Are you sure you want to delete the {name} field?', {name: this.field.name} ))) {
         api.post('Fields/Remove', {id: this.field.id})
             .then(() => this.$emit('field:deleted', this.field))
             .catch(error => console.log(error));

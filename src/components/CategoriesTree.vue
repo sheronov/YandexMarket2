@@ -1,16 +1,19 @@
 <template>
   <v-card :loading="loading" flat tile>
     <v-toolbar flat color="grey lighten-2" dense height="40">
-      <span v-if="!selected.length">Выберите категории для выгрузки</span>
-      <span v-else>Выбрано {{ declension(selected.length, ['категория', 'категории', 'категорий']) }}</span>
+      <span v-if="!selected.length">{{ $t('Select categories for the pricelist') }}</span>
+      <span v-else>{{ $t('Selected {total} {categories}', {
+        total: selected.length,
+        categories: declension(selected.length, $t('category|categories|categories').split('|'), false)
+      }) }}</span>
       <v-spacer/>
-      <v-btn small icon title="Раскрыть все категории" @click="expandTree">
+      <v-btn small icon :title="$t('Expand all categories')" @click="expandTree">
         <v-icon>icon icon-expand</v-icon>
       </v-btn>
-      <v-btn small icon title="Свернуть все категории" @click="collapseTree">
+      <v-btn small icon :title="$t('Collapse all categories')" @click="collapseTree">
         <v-icon>icon icon-compress</v-icon>
       </v-btn>
-      <v-btn small icon title="Обновить дерево" @click="reloadTree">
+      <v-btn small icon :title="$t('Refresh categories tree')" @click="reloadTree">
         <v-icon>icon icon-refresh</v-icon>
       </v-btn>
     </v-toolbar>
@@ -30,7 +33,7 @@
       >
         <template v-slot:prepend="{ item }">
           <v-simple-checkbox
-              title="Выбрать категорию"
+              :title="$t('Select category')"
               v-if="item.selectable"
               color="primary"
               class="text-center"
@@ -46,7 +49,7 @@
             </div>
             <div class="v-treeview-node__label" v-html="item.text"></div>
             <div class="v-treeview-action" v-if="item.hasChildren">
-              <v-btn icon small @click.stop="recursiveSelect(item)" title="Выбрать со всеми подкатегориями">
+              <v-btn icon small @click.stop="recursiveSelect(item)" :title="$t('Select with all subcategories')">
                 <v-icon>icon icon-magic</v-icon>
               </v-btn>
             </div>

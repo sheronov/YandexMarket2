@@ -18,7 +18,7 @@ export default {
           .filter(item => item.meta && item.meta.title && (item.name || item.meta.to))
           .map(item => {
             return {
-              text: item.meta.title,
+              text: this.$t(item.meta.title),
               to: {name: item.name || item.meta.to, params: this.$route.params || {}},
               exact: true,
               disabled: false

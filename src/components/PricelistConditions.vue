@@ -11,10 +11,10 @@
              :disabled="!!conditions.filter(c => !c.id).length">
         <v-icon class="icon-sm" left>icon-plus</v-icon>
         <template v-if="conditions.filter(c => !c.id).length">
-          Сохраните новое условие
+          {{ $t('Save the new condition') }}
         </template>
         <template v-else>
-          Добавить условие
+          {{ $t('Add condition') }}
         </template>
       </v-btn>
     </div>

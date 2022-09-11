@@ -21,7 +21,7 @@
               @input="changedName"
               :items="availableFields"
               class="yandexmarket-field-tag mr-2"
-              placeholder="Введите или выберите из списка"
+              :placeholder="$t('Enter or select from the list')"
               :attach="true"
               item-value="value"
               item-text="value"
@@ -31,7 +31,7 @@
           >
             <template v-slot:prepend-inner>
               <div class="text-no-wrap">
-                <code class="mr-2 mt-1 d-inline-block">Элемент:</code>
+                <code class="mr-2 mt-1 d-inline-block">{{ $t('Element') }}:</code>
                 <v-icon class="mr-1">icon-angle-left</v-icon>
               </div>
             </template>
@@ -50,8 +50,8 @@
               :items="types"
               class="yandexmarket-field-type"
               :full-width="false"
-              label="Тип элемента"
-              placeholder="Выберите тип"
+              :label="$t('Element type')"
+              :placeholder="$t('Select type')"
               :menu-props="{offsetY: true}"
               :attach="true"
               :_disabled="!!(field.type && !availableType)"
@@ -61,36 +61,36 @@
           >
             <template v-slot:prepend-inner>
               <div class="text-no-wrap mr-2">
-                <code>Тип:</code>
+                <code>{{ $t('Type') }}:</code>
               </div>
             </template>
           </v-select>
         </v-col>
       </v-row>
       <template v-if="attrs.length">
-        <!--        <div class="grey&#45;&#45;text mb-1" style="font-size: 13px;">Атрибуты:</div>-->
+        <!--        <div class="grey&#45;&#45;text mb-1" style="font-size: 13px;">{{$t('Attributes')}}:</div>-->
         <v-row dense class="mb-1 mt-0">
           <field-attribute v-for="attribute in attrs" :key="attribute.id" :attribute="attribute" v-on="$listeners"/>
         </v-row>
       </template>
       <template v-if="isCategories(field)">
-        <div class="text-body-2">Список категорий выбирается на вкладке&nbsp;
-          <router-link :to="{name:'pricelist.categories', params:this.$route.params}">Категории и условия</router-link>
+        <div class="text-body-2">{{ $t('The categories is selected on the tab') }} &nbsp;
+          <router-link :to="{name:'pricelist.categories', params:this.$route.params}">{{ $t('Categories settings') }}</router-link>
         </div>
       </template>
       <template v-else-if="isOffers(field)">
-        <div class="text-body-2">Поля товаров настраиваются на вкладке &nbsp;
-          <router-link :to="{name:'pricelist.offers', params:this.$route.params}">Поля предложений</router-link>
+        <div class="text-body-2">{{ $t('Product fields are configured on the tab') }} &nbsp;
+          <router-link :to="{name:'pricelist.offers', params:this.$route.params}">{{ $t('Offers settings') }}</router-link>
         </div>
       </template>
       <template v-else-if="isShop(field) && parent === 1">
-        <div class="text-body-2">Поля магазина настраиваются на вкладке &nbsp;
-          <router-link :to="{name:'pricelist', params:this.$route.params}">Настройки магазина</router-link>
+        <div class="text-body-2">{{ $t('Shop fields are configured on the tab') }} &nbsp;
+          <router-link :to="{name:'pricelist', params:this.$route.params}">{{ $t('Shop settings') }}</router-link>
         </div>
       </template>
       <v-card-text class="pa-0" v-else-if="isParent(field)">
         <template v-if="children.length">
-          <div class="grey--text" style="font-size: 13px;">Дочерние элементы:</div>
+          <div class="grey--text" style="font-size: 13px;">{{ $t('Child elements') }}:</div>
           <v-expansion-panels :value="opened" multiple accordion :key="field.name">
             <pricelist-field
                 v-for="child in children"
@@ -107,19 +107,19 @@
           </v-expansion-panels>
         </template>
         <v-row class="ma-0 align-center" v-if="!isRoot(field)">
-          <div v-if="!children.length" class="grey--text">Ещё нет дочерних элементов</div>
+          <div v-if="!children.length" class="grey--text">{{ $t('No child elements yet') }}</div>
           <v-spacer/>
           <v-btn small class="mt-4" color="white" @click="addField"
                  :disabled="!!children.filter(f => !f.id).length || !item.id">
             <v-icon class="icon-sm" left>icon-plus</v-icon>
             <template v-if="children.filter(f => !f.id).length">
-              Сохраните новое поле
+              {{ $t('Save the new field') }}
             </template>
             <template v-else-if="!item.id">
-              Сохраните, чтобы добавлять элементы
+              {{ $t('Save first to add items') }}
             </template>
             <template v-else>
-              Добавить элемент в &lt;{{ field.name }}&gt;
+              {{ $t('Add element into') }} &lt;{{ field.name }}&gt;
             </template>
           </v-btn>
         </v-row>
@@ -255,7 +255,7 @@ export default {
             this.attributesToAdd = [];
           }
         }
-      } else { //новое значение текстом
+      } else { //new text value
         value = val;
       }
       this.field.name = value;
@@ -265,9 +265,9 @@ export default {
         id: null,
         name: null,
         type: null,
-        label: 'Новое поле',
+        label: this.$t('New field'),
         text: '',
-        help: 'Описание поля можно задать через лексиконы',
+        help: this.$t('Field description can be specified through lexicons'),
         value: null,
         handler: null,
         pricelist_id: this.field.pricelist_id,
@@ -288,7 +288,7 @@ export default {
       }
       this.edit = val;
     },
-    addAttribute(event, field_id = this.field.id, name = '', type = 0, label = 'Новый атрибут') {
+    addAttribute(event, field_id = this.field.id, name = '', type = 0, label = this.$t('New attribute')) {
       if (event && this.$refs['panel' + this.field.id] && this.$refs['panel' + this.field.id].isActive) {
         event.stopPropagation();
       }
