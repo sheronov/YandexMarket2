@@ -56,9 +56,9 @@ class FileGenerator extends Writer
 
         $pricelistFilePath = $this->pricelist->getFilePath(true);
         if (file_exists($pricelistFilePath)) {
-            $this->log(sprintf('Файл %s уже существует и будет перезаписан', basename($pricelistFilePath)));
+            $this->log(sprintf($this->lexicon('ym2_xml_file_existed'), basename($pricelistFilePath)));
         } else {
-            $this->log('Запущен процесс записи в файл '.$pricelistFilePath);
+            $this->log($this->lexicon('ym2_xml_file_writing') .' '.$pricelistFilePath);
         }
 
         return $pricelistFilePath;
@@ -70,7 +70,7 @@ class FileGenerator extends Writer
         $this->xml->flush();
 
         if (rename($this->pricelistPath.$this->tmpSuffix, $this->pricelistPath)) {
-            $this->log(sprintf('Файл %s успешно записан', basename($this->pricelistPath)));
+            $this->log(sprintf($this->lexicon('ym2_xml_file_written'), basename($this->pricelistPath)));
         } else {
             $this->errorLog(sprintf('Could not rename file %s to %s', $this->pricelistPath.$this->tmpSuffix,
                 $this->pricelistPath));

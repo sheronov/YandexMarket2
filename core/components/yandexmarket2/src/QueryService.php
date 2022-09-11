@@ -260,7 +260,7 @@ class QueryService
             if (!empty($neededToAdd)) {
                 $query->where(['OR:'.$query->getAlias().'.id:IN' => array_unique($neededToAdd)]);
                 $this->modx->log(Service::LOG_LEVEL_INFO,
-                    sprintf('К запросу категорий добавлены недостающие категории: %s',
+                    sprintf($this->modx->lexicon('ym2_debug_query_add_categories'),
                         implode(',', $neededToAdd)), '', 'YandexMarket2');
             }
         }

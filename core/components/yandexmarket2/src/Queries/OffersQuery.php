@@ -25,7 +25,7 @@ class OffersQuery extends ObjectsQuery
         $this->query->where(sprintf("`%s`.`%s` IN (%s)", $this->query->getAlias(), $this->offerParentField,
             $categoriesQuery->toSQL(true)));
         $this->modx->log(Service::LOG_LEVEL_INFO,
-            "Добавлено условие {$this->offerParentField} IN (select id from parentsQuery) для товаров", '',
+            sprintf($this->modx->lexicon('ym2_debug_add_categories_condition'), $this->offerParentField), '',
             'YandexMarket2');
         $this->usesOtherQuery = true;
     }

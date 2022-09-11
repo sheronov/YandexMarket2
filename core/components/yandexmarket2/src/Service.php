@@ -145,7 +145,7 @@ class Service
     protected function prepareFields(array $keyFields, string $marketplace, string $parent = ''): array
     {
         $fields = [
-            ['header' => 'Возможные элементы']
+            ['header' => $this->modx->lexicon('ym2_fields_possible_elements')]
         ];
 
         foreach ($keyFields as $key => $data) {
@@ -157,7 +157,7 @@ class Service
             ]);
         }
         $fields[] = ['divider' => true];
-        $fields[] = ['header' => 'Вы также можете ввести любое название'];
+        $fields[] = ['header' => $this->modx->lexicon('ym2_fields_type_any_name')];
 
         return $fields;
     }
@@ -168,43 +168,43 @@ class Service
 
         if ($resourceFields = $this->getModResourceFields()) {
             $groups[] = [
-                'header' => 'Поля ресурса',
+                'header' => $this->modx->lexicon('ym2_resource_fields'),
                 'groups' => ['offers', 'categories'],
                 'fields' => $resourceFields,
             ];
         }
 
         $groups[] = [
-            'header' => 'Вспомогательные поля предложений',
+            'header' => $this->modx->lexicon('ym2_resource_additional_fields'),
             'groups' => ['offers'],
             'fields' => $this->getOfferFields(),
         ];
 
         if (self::hasMs2Gallery()) {
             $groups[] = [
-                'header' => 'Изображения ресурса ms2Gallery',
+                'header' => $this->modx->lexicon('ym2_ms2gallery_header'),
                 'groups' => ['offers', 'categories'],
-                'fields' => [['value' => 'ms2Gallery.image', 'text' => 'Изображения ресурса ms2Gallery']]
+                'fields' => [['value' => 'ms2Gallery.image', 'text' => $this->modx->lexicon('ym2_ms2gallery_header')]]
             ];
         }
 
         if (self::hasMiniShop2()) {
             if ($productFields = $this->getMsProductFields()) {
                 $groups[] = [
-                    'header' => 'Поля товара miniShop2',
+                    'header' => $this->modx->lexicon('ym2_minishop2_fields'),
                     'groups' => ['offers'],
                     'fields' => $productFields,
                 ];
                 $groups[] = [
-                    'header' => 'Галерея miniShop2',
+                    'header' => $this->modx->lexicon('ym2_minishop2_gallery'),
                     'groups' => ['offers'],
-                    'fields' => [['value' => 'msGallery.image', 'text' => 'Изображения товара miniShop2']],
+                    'fields' => [['value' => 'msGallery.image', 'text' => $this->modx->lexicon('ym2_minishop2_images')]],
                 ];
             }
 
             if ($optionFields = $this->getMsOptionFields()) {
                 $groups[] = [
-                    'header' => 'Опции miniShop2',
+                    'header' => $this->modx->lexicon('ym2_minishop2_options'),
                     'groups' => ['offers'],
                     'fields' => $optionFields,
                 ];
@@ -212,7 +212,7 @@ class Service
 
             if ($vendorFields = $this->getMsVendorFields()) {
                 $groups[] = [
-                    'header' => 'Производитель miniShop2',
+                    'header' => $this->modx->lexicon('ym2_minishop2_vendor'),
                     'groups' => ['offers'],
                     'fields' => $vendorFields,
                 ];
@@ -221,30 +221,30 @@ class Service
 
         if ($tvFields = $this->getTvFields()) {
             $groups[] = [
-                'header' => 'Дополнительные поля (TV)',
+                'header' => $this->modx->lexicon('ym2_tv_fields'),
                 'groups' => ['offers', 'categories'],
                 'fields' => $tvFields,
             ];
         }
 
         $groups[] = [
-            'header' => 'Поля родительской категории (стандартные)',
+            'header' => $this->modx->lexicon('ym2_category_fields'),
             'groups' => ['offers'],
             'fields' => [
-                ['value' => 'Category.pagetitle', 'text' => 'Заголовок родительской категории'],
-                ['value' => 'Category.name', 'text' => 'Формат под любое другое поле родителя']
+                ['value' => 'Category.pagetitle', 'text' => $this->modx->lexicon('ym2_category_pagetitle')],
+                ['value' => 'Category.name', 'text' => $this->modx->lexicon('ym2_category_name')]
             ]
         ];
 
         $groups[] = [
-            'header' => 'Дополнительные поля категории (TV)',
+            'header' => $this->modx->lexicon('ym2_category_tv'),
             'groups' => ['offers'],
-            'fields' => [['value' => 'CategoryTV.name', 'text' => 'Формат для ТВ-полей категории']]
+            'fields' => [['value' => 'CategoryTV.name', 'text' => $this->modx->lexicon('ym2_category_tv_name')]]
         ];
 
         if (self::hasMsOp2() && $modificationFields = $this->getMsOp2ModificationFields()) {
             $groups[] = [
-                'header' => 'Поля модификации msOptionsPrice2',
+                'header' => $this->modx->lexicon('ym2_msop2_modification_fields'),
                 'groups' => ['offers'],
                 'fields' => $modificationFields,
             ];
@@ -303,13 +303,12 @@ class Service
         }, array_keys($fields));
     }
 
-    // TODO: в лексиконы перевести тексты
     protected function getOfferFields(string $columnPrefix = 'Offer.'): array
     {
         return [
-            ['value' => $columnPrefix.'url', 'text' => 'Полная ссылка на товар'],
-            ['value' => $columnPrefix.'price', 'text' => 'Цена с учётом плагинов ms2 и модификаций msOp2'],
-            ['value' => $columnPrefix.'image', 'text' => 'Изображение товара с полной ссылкой (из поля image)']
+            ['value' => $columnPrefix.'url', 'text' => $this->modx->lexicon('ym2_offer_field_url')],
+            ['value' => $columnPrefix.'price', 'text' => $this->modx->lexicon('ym2_offer_field_price')],
+            ['value' => $columnPrefix.'image', 'text' => $this->modx->lexicon('ym2_offer_field_image')]
         ];
     }
 

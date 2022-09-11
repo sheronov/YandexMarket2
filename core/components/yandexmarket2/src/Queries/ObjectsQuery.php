@@ -169,7 +169,7 @@ abstract class ObjectsQuery
         foreach ($classKeys as $class => $keys) {
             $this->joinExternalClassKey($class, $keys);
             $this->modx->log(Service::LOG_LEVEL_INFO,
-                sprintf('Приджойнена таблица `%s` со столбцами "%s" к %s', $class, implode(',', $keys), $this->type),
+                sprintf($this->modx->lexicon('ym2_debug_joined_table_with_columns'), $class, implode(',', $keys), $this->type),
                 '', 'YandexMarket2');
         }
     }
@@ -380,8 +380,7 @@ abstract class ObjectsQuery
             case 'ms2gallery':
             case 'msresourcefile':
                 if (!$this->modx->addPackage('ms2gallery', MODX_CORE_PATH.'components/ms2gallery/model/')) {
-                    $this->modx->log(Service::LOG_LEVEL_ERROR,
-                        'Не удалось загрузить ms2Gallery. Проверьте настройки полей.', '', 'YandexMarket2');
+                    $this->modx->log(Service::LOG_LEVEL_ERROR, $this->modx->lexicon('ym2_debug_ms2gallery_error'), '', 'YandexMarket2');
                     break;
                 }
                 foreach ($keys as $key) {
@@ -403,9 +402,7 @@ abstract class ObjectsQuery
             case 'msopmodification':
                 // TODO: вообще к этому моменту приджойнено, но вполне может быть неактивна настрока
                 if (empty($this->join['Modification'])) {
-                    $this->modx->log(Service::LOG_LEVEL_ERROR,
-                        'Для модификаций msOptionsPrice2 в прайс-листе в настройке предложений добавьте к классу ресурса ":msop2", пример "msProduct:msop2"',
-                        '', 'YandexMarket2');
+                    $this->modx->log(Service::LOG_LEVEL_ERROR, $this->modx->lexicon('ym2_debug_msop2_modification'), '', 'YandexMarket2');
                 }
                 break;
             case 'offer':
@@ -426,9 +423,7 @@ abstract class ObjectsQuery
                     return mb_strtolower($v['alias']) === mb_strtolower($class);
                 })) {
                     // учитываем уже приджойненные классы из плагинов
-                    $this->modx->log(Service::LOG_LEVEL_ERROR,
-                        'Неизвестный класс '.$class.'. Загрузите модель в своём плагине на событие ym2OnBeforeOffersQuery или обратитесь в поддержку.',
-                        '', 'YandexMarket2');
+                    $this->modx->log(Service::LOG_LEVEL_ERROR, sprintf($this->modx->lexicon('ym2_debug_unknown_class'), $class), '', 'YandexMarket2');
                 }
                 break;
         }
@@ -479,7 +474,7 @@ abstract class ObjectsQuery
                 }
 
                 if (!array_key_exists($condition->operator, Condition::OPERATOR_SYMBOLS)) {
-                    $this->modx->log(Service::LOG_LEVEL_WARN, 'Неизвестный оператор для условия', '', 'YandexMarket2');
+                    $this->modx->log(Service::LOG_LEVEL_WARN, $this->modx->lexicon('ym2_debug_unknown_operator'), '', 'YandexMarket2');
                     continue;
                 }
 

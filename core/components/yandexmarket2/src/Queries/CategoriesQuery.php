@@ -21,7 +21,7 @@ class CategoriesQuery extends ObjectsQuery
         $offersQuery->select(sprintf('DISTINCT `%s`.`%s`', $offersQuery->getAlias(), $this->offerParentField));
         $offersQuery->prepare();
         $this->query->where(sprintf('`modResource`.`id` IN (%s)', $offersQuery->toSQL(true)));
-        $this->modx->log(Service::LOG_LEVEL_INFO, 'Добавлено условие id IN (offers ids) для категорий', '',
+        $this->modx->log(Service::LOG_LEVEL_INFO, $this->modx->lexicon('ym2_debug_add_offers_condition'), '',
             'YandexMarket2');
         $this->usesOtherQuery = true;
     }

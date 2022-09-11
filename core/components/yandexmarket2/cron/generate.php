@@ -24,7 +24,6 @@ if (file_exists(dirname(__FILE__, 5).'/index.php')) {
 
 /** @var modX|\modX $modx */
 $isMODX3 = class_exists('MODX\Revolution\modX');
-// Включаем обработку ошибок
 $modx->getService('error', $isMODX3 ? modError::class : 'error.modError');
 $modx->setLogLevel(filter_var($modx->getOption('yandexmarket2_debug_mode', null, false))
     ? $modx::LOG_LEVEL_DEBUG : $modx::LOG_LEVEL_WARN);

@@ -28,16 +28,16 @@ class Previewer extends Writer
     public function previewCategories(): string
     {
         if (!$offersCount = $this->pricelistService->getOffersCount()) {
-            $this->writeComment(' Не найдено подходящих предложений ');
+            $this->writeComment($this->lexicon('ym2_debug_offers_not_found'));
             return $this->getPreviewXml();
         }
-        $this->writeComment(' Подходящих предложений: '.$offersCount.' ');
+        $this->writeComment($this->lexicon('ym2_debug_suitable_offers').$offersCount.' ');
 
         $categoriesCount = $this->pricelistService->getCategoriesCount();
-        $this->writeComment(' Подходящих категорий: '.$categoriesCount.' ');
+        $this->writeComment($this->lexicon('ym2_debug_suitable_categories').$categoriesCount.' ');
 
         if ($this->pricelistService->isCategoriesPluginPrepared()) {
-            $this->writeComment(' Возможно используются условия для категорий из плагинов ');
+            $this->writeComment($this->lexicon('ym2_debug_possible_categories_plugins'));
         }
 
         if ($categoriesField = $this->pricelistService->getFieldByType(Field::TYPE_CATEGORIES)) {
@@ -50,12 +50,12 @@ class Previewer extends Writer
                     $this->writeCategoryField($categoryField, $category);
                 }
             } else {
-                $this->writeComment(' Не найден элемент category ');
+                $this->writeComment($this->lexicon('ym2_debug_element_not_found').'category ');
             }
 
             $this->xml->endElement();
         } else {
-            $this->writeComment(' Не найден элемент categories ');
+            $this->writeComment($this->lexicon('ym2_debug_element_not_found').'categories ');
         }
 
         return $this->getPreviewXml();
@@ -75,7 +75,7 @@ class Previewer extends Writer
                 Field::TYPE_CATEGORIES_TRANSPARENT
             ]);
         } else {
-            $this->writeComment(' Не найден элемент shop ');
+            $this->writeComment($this->lexicon('ym2_debug_element_not_found').'shop ');
         }
         return $this->getPreviewXml();
     }
@@ -87,19 +87,19 @@ class Previewer extends Writer
     public function previewOffer(): string
     {
         if (!$offerField = $this->pricelistService->getFieldByType(Field::TYPE_OFFER)) {
-            $this->writeComment(' Не найден элемент offer ');
+            $this->writeComment($this->lexicon('ym2_debug_element_not_found').'offer ');
         } else {
             $this->pricelistService->setOffersOrder('RAND()', '');
             $this->pricelistService->setOffersLimit(1);
 
             if (!$offersCount = $this->pricelistService->getOffersCount()) {
-                $this->writeComment(' Не найдено подходящих предложений ');
+                $this->writeComment($this->lexicon('ym2_debug_offers_not_found'));
                 return $this->getPreviewXml();
             }
-            $this->writeComment(' Подходящих предложений: '.$offersCount.' ');
+            $this->writeComment($this->lexicon('ym2_debug_suitable_offers').$offersCount.' ');
 
             if ($this->pricelistService->isOffersPluginPrepared()) {
-                $this->writeComment(' Возможно используются условия для предложений из плагинов ');
+                $this->writeComment($this->lexicon('ym2_debug_possible_offers_plugins'));
             }
 
             $offers = $this->pricelistService->offersGenerator();

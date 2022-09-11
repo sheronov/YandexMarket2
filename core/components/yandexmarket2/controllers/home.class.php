@@ -59,8 +59,6 @@ class YandexMarket2HomeManagerController extends YandexMarket2HomeManagerControl
             'lang'      => $this->modx->lexicon->fetch('yandexmarket2_vuetify_', true)
         ]);
         $this->addHtml('<script type="text/javascript">window.ym2Config = '.$ym2ConfigJson.'</script>');
-        //  lang: {$this->lexicons} // TODO: добавить лексиконы для фронта
-
         $this->addJavascript($this->mgrAssetsUrl.'js/chunk-vendors.js');
         $this->addLastJavascript($this->mgrAssetsUrl.'js/app.js');
     }

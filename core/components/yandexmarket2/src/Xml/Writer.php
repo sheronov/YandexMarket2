@@ -47,22 +47,25 @@ abstract class Writer
     protected $arraysGlue       = ', ';
     protected $offerParentField = 'parent';
 
+    protected $loadedLexicons = [];
+
     public function __construct(QueryService $pricelistService)
     {
         $this->start = microtime(true);
         $this->pricelistService = $pricelistService;
         $this->modx = $pricelistService->getModx();
         $this->pricelist = $pricelistService->getPricelist();
+        $this->modx->lexicon->load('yandexmarket2:default');
+        $this->loadedLexicons = $this->modx->lexicon->fetch('ym2_');
         if ($this->modx->getOption('yandexmarket2_debug_mode')) {
-            $this->log('Включён режим отладки. Лог будет более подробный', false, Service::LOG_LEVEL_DEBUG);
+            $this->log($this->lexicon('ym2_debug_mode_enabled'), false, Service::LOG_LEVEL_DEBUG);
         }
-
         $this->initializeJevix();
         $this->contextKey = $this->modx->context->key;
         $this->logTarget = $this->modx->getLogTarget();
         $this->logLevel = $this->modx->getLogLevel();
         if (!$this->initializePdoTools()) {
-            $this->log('Не найден pdoTools. Код будет обработан парсером MODX', false, Service::LOG_LEVEL_WARN);
+            $this->log($this->lexicon('ym2_debug_pdotools_not_found'), false, Service::LOG_LEVEL_WARN);
         }
         $this->xml = new XMLWriter();
         $this->prepareArrays = $this->modx->getOption('yandexmarket2_prepare_arrays', null, false);
@@ -136,12 +139,12 @@ abstract class Writer
             case Field::TYPE_CATEGORIES:
             case Field::TYPE_CATEGORIES_TRANSPARENT:
                 $categoriesCount = $this->writeCategoriesField($field, $pls);
-                $this->log(sprintf('Записано категорий: %d', $categoriesCount));
+                $this->log(sprintf($this->lexicon('ym2_debug_categories_written'), $categoriesCount));
                 break;
             case Field::TYPE_OFFERS:
             case Field::TYPE_OFFERS_TRANSPARENT:
                 $offersCount = $this->writeOffersField($field, $pls);
-                $this->log(sprintf('Записано товаров: %d', $offersCount));
+                $this->log(sprintf($this->lexicon('ym2_debug_offers_written'), $offersCount));
                 break;
             case Field::TYPE_CURRENCIES:
                 $this->writeCurrenciesField($field, $pls);
@@ -160,7 +163,7 @@ abstract class Writer
                 $this->writeRawXmlField($field, $pls);
                 break;
             default:
-                $this->errorLog("Неизвестный тип \"{$field->type}\" для поля \"{$field->name}\" (ID: {$field->id})");
+                $this->errorLog(sprintf($this->lexicon('ym2_debug_undefined_type'), $field->type, $field->name, $field->id));
         }
     }
 
@@ -189,7 +192,7 @@ abstract class Writer
         if ($value === '' || $value === null) {
             //пустые значения пропускаются, даже если у них есть атрибуты
             if ($this->preview && ($field->properties['required'] ?? false)) {
-                $this->writeComment("Пустое значение для обязательного элемента {$field->name}");
+                $this->writeComment(sprintf($this->lexicon('ym2_debug_empty_value'), $field->name));
             }
             return;
         }
@@ -216,7 +219,7 @@ abstract class Writer
         $value = $this->prepareValue($this->resolveColumn($field->value, $pls), $field->handler, $pls);
         if ($value === '' || $value === null) {
             if ($this->preview) {
-                $this->writeComment("Пустой сырой XML, пропущен элемент {$field->name}");
+                $this->writeComment(sprintf($this->lexicon('ym2_debug_empty_raw'), $field->name));
             }
             return;
         }
@@ -245,7 +248,7 @@ abstract class Writer
                 $value = $this->prepareValue($this->resolveColumn($attribute->value, $pls), $attribute->handler, $pls);
                 break;
             default:
-                $this->errorLog("Неизвестный тип \"{$attribute->type}\" для атрибута \"{$attribute->name}\" (ID: {$attribute->id})");
+                $this->errorLog(sprintf($this->lexicon('ym2_debug_undefined_attribute_type'), $attribute->type, $attribute->name, $attribute->id));
         }
 
         if ($value !== null && $value !== '') {
@@ -410,7 +413,7 @@ abstract class Writer
                 $this->writeCategoryField($categoryField, $category, $pls);
             }
         } else {
-            $this->errorLog("Пустой список категорий в поле \"{$field->name}\" (ID: {$field->id})");
+            $this->errorLog(sprintf($this->lexicon('ym2_debug_empty_categories'), $field->name, $field->id));
         }
 
         $this->currentCategory = null;
@@ -456,7 +459,7 @@ abstract class Writer
                 $this->switchContext($this->contextKey);
             }
         } else {
-            $this->errorLog("Пустой список товаров в поле \"{$field->name}\" (ID: {$field->id})");
+            $this->errorLog(sprintf($this->lexicon('ym2_debug_empty_offers'), $field->name, $field->id));
         }
 
         $this->currentOffer = null;
@@ -644,6 +647,14 @@ abstract class Writer
     protected function errorLog(string $message)
     {
         $this->log($message, false, Service::LOG_LEVEL_ERROR);
+    }
+
+    protected function lexicon(string $key)
+    {
+        if (!array_key_exists($key, $this->loadedLexicons)) {
+            $this->loadedLexicons[$key] = $this->modx->lexicon($key);
+        }
+        return $this->loadedLexicons[$key];
     }
 
 }
