@@ -1,7 +1,7 @@
 <template>
   <div class="yandexmarket-pricelist-categories">
-    <h4>Категории, участвующие в выгрузке - вложенные тоже нужно выбирать</h4>
-    <p class="mb-2">Если ничего не выбрать, то будут выгружены категории всех подходящих товаров</p>
+    <h4>{{ $t('Categories involved in file generation - nested categories must also be selected') }}</h4>
+    <p class="mb-2">{{ $t('If nothing is selected, the categories of all matching products will be unloaded') }}</p>
     <CategoriesTree
         :selected="selected"
         :categories="categories"
@@ -12,7 +12,7 @@
     />
 
     <template v-if="categoryField">
-      <h4 class="mb-1 mt-2">Настройки элемента категории в XML</h4>
+      <h4 class="mb-1 mt-2">{{ $t('Category element settings in XML') }}</h4>
       <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
         <pricelist-field
             :item="categoryField"
@@ -26,7 +26,9 @@
       </v-expansion-panels>
     </template>
     <v-alert v-else type="info" color="grey" dense border="left">
-      Не найден элемент с типом category(7). Возможно, был удалён элемент categories. Будут учитываться только условия.
+      {{ $t('An element of type "category" was not found.') }}
+      {{ $t('The categories element may have been removed or is not needed in the file.') }}
+      {{ $t('Only the conditions will be considered') }}
     </v-alert>
   </div>
 </template>

@@ -1,11 +1,11 @@
 <template>
   <v-row class="yandexmarket-pricelist-generate">
     <v-col cols="12" md="6">
-      <h4>Основные параметры выгрузки прайс-листа</h4>
-      <p class="mb-2">Все поля обязательны к заполнению</p>
+      <h4>{{ $t('Main parameters of price list generation') }}</h4>
+      <p class="mb-2">{{ $t('All fields are required') }}</p>
       <v-select
           filled
-          label="Тип прайс-листа (задаётся при создании)"
+          :label="$t('Pricelist type (set when creating)')"
           dense
           disabled
           v-model="data.type"
@@ -13,7 +13,7 @@
       ></v-select>
       <v-text-field
           filled
-          label="Название прайс-листа"
+          :label="$t('Pricelist name')"
           dense
           v-model="data.name"
       ></v-text-field>
@@ -21,15 +21,15 @@
           filled
           dense
           class="mb-1"
-          label="Название файла (укажите вместе с расширением xml)"
-          :hint="`Файл будет доступен по адресу ${pricelist.fileUrl}`"
+          :label="$t('Pricelist filename') + ' ' + $t('(specify with xml extension)')"
+          :hint="$t('The file will be available at {fileUrl}', {fileUrl: pricelist.fileUrl})"
           v-model="data.file"
       ></v-text-field>
       <v-select
           filled
           dense
           class="mb-2"
-          label="Режим формирования файла"
+          :label="$t('File generation mode')"
           v-model="data.generate_mode"
           :items="modes"
           :hint="modeHint"
@@ -42,32 +42,32 @@
           filled
           :min="0"
           dense
-          label="Обновлять файл каждые N минут, даже если не было изменений"
-          hint="0 - без дополнительных обновлений. Чтобы обновлять файл раз в сутки укажите 1440"
+          :label="$t('Regenerate the file every N minutes, even if there were no changes')"
+          :hint="$t('0 - no additional updates. To update the file once a day, specify 1440')"
           v-model="data.generate_interval"
           type="number"
       ></v-text-field>
       <v-checkbox
           v-model="data.active"
           :label="data.active
-          ? 'Прайс-лист активен (отслеживаются изменения настроек и связанных товаров)'
-          : 'Прайс-лист НЕ активен (активируйте после завершения настройки)'"
+          ? $t('Pricelist is active (monitoring changes in settings and related products)')
+          : $t('Pricelist is NOT active (activate after setup is complete)')"
           hide-details
           class="mt-0 mb-2"
       />
       <v-card-actions class="px-0">
-        <v-btn small v-if="hasChanges" @click="cancelChanges" title="Отменить все изменения">
+        <v-btn small v-if="hasChanges" @click="cancelChanges" :title="$t('Revert all changes')">
           <v-icon left>icon-undo</v-icon>
-          Отменить изменения
+          {{ $t('Cancel changes') }}
         </v-btn>
         <v-spacer/>
         <v-btn :disabled="!hasChanges" @click="saveChanges" color="secondary" small>
           <v-icon left small>icon-save</v-icon>
-          Сохранить
+          {{ $t('Save') }}
         </v-btn>
       </v-card-actions>
       <template v-if="rootField">
-        <h4 class="mb-1">Настройки корневого элемента файла</h4>
+        <h4 class="mb-1">{{ $t('File root element settings') }}</h4>
         <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers">
           <pricelist-field
               :readonly="false"
@@ -85,21 +85,21 @@
     </v-col>
     <v-col cols="12" md="6">
       <v-alert v-if="pricelist.need_generate" type="warning" dense>
-        Изменились товары или настройки. Файл нужно перегенерировать!
+        {{ $t('Products or settings have changed. The file needs to be regenerated!') }}
       </v-alert>
       <v-alert v-if="pricelist.generated_on" type="info" color="accent" dense>
-        Предыдущий прайс-лист сформирован {{ pricelist.generated_on }}
+        {{ $t('Previous pricelist generated in {generatedAt}', {generatedAt: pricelist.generated_on}) }}
       </v-alert>
-      <p v-if="pricelist.generated_on">Ссылка на файл:
-        <a :href="pricelist.fileUrl" title="Файл откроется в новом окне" target="_blank">{{ pricelist.fileUrl }}</a>
+      <p v-if="pricelist.generated_on">{{ $t('Link to file:') }}
+        <a :href="pricelist.fileUrl" :title="$t('The file will open in a new window')" target="_blank">{{ pricelist.fileUrl }}</a>
       </p>
-      <h4 v-else class="mb-3">Прайс-лист ещё ни разу не был сформирован</h4>
+      <h4 v-else class="mb-3">{{ $t('The pricelist has not yet been formed') }}</h4>
       <v-btn @click="generateFile" :disabled="loading" color="secondary" class="mb-3"
-             title="Существующий файл будет перезаписан">
-        Сформировать новый файл
+             :title="$t('The existing file will be overwritten')">
+        {{ $t('Generate a new file') }}
       </v-btn>
       <fieldset class="x-window modx-console zoom-in generation-log pa-2">
-        <legend class="px-2">Лог выгрузки</legend>
+        <legend class="px-2">{{ $t('File generation log') }}</legend>
         <div v-html="log" class="modx-console-text px-2"></div>
       </fieldset>
     </v-col>
@@ -119,29 +119,31 @@ export default {
   components: {
     PricelistField
   },
-  data: () => ({
-    openedFields: [],
-    data: {},
-    loading: false,
-    log: 'Здесь появится лог генерации файла',
-    modes: [
-      {
-        value: 0,
-        text: 'Только вручную в админ-панели (ручной режим)',
-        hint: 'Если установлена крон задача - то этот прайслист туда не попадёт'
-      },
-      {
-        value: 1,
-        text: 'При изменении товаров на лету (для небольших сайтов)',
-        hint: 'Прайс-лист будет формироваться сразу. Принудительное обновление по cron'
-      },
-      {
-        value: 2,
-        text: 'По cron при изменении товаров (рекомендуется)',
-        hint: 'Поставьте ежеминутную крон-задачу на /core/components/yandexmarket2/cron/generate.php'
-      },
-    ],
-  }),
+  data() {
+    return {
+      openedFields: [],
+      data: {},
+      loading: false,
+      log: this.$t('File generation log will appear here'),
+      modes: [
+        {
+          value: 0,
+          text: this.$t('Only manually in the admin panel (manual mode)'),
+          hint: this.$t('If a cron task is set, then this pricelist will not be included')
+        },
+        {
+          value: 1,
+          text: this.$t('When changing products on the fly (for small sites)'),
+          hint: this.$t('The pricelist will be formed immediately. Force update by cron')
+        },
+        {
+          value: 2,
+          text: this.$t('By cron when changing products (recommended)'),
+          hint: this.$t('Install a cron job every minute at /core/components/yandexmarket2/cron/generate.php')
+        },
+      ],
+    }
+  },
   watch: {
     pricelist: {
       immediate: true,
@@ -194,7 +196,7 @@ export default {
           });
     },
     generateFile() {
-      if (!this.pricelist.generated_on || confirm('Вы действительно хотите перегенерировать файл? Старый файл будет перезаписан')) {
+      if (!this.pricelist.generated_on || confirm(this.$t('Are you sure you want to regenerate the file?') + ' ' + this.$t('The existing file will be overwritten'))) {
         this.loading = true;
         this.log = '';
         api.post('Xml/Generate', {id: this.pricelist.id, topic: this.topic, clear: true})

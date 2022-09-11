@@ -2,23 +2,23 @@
   <div class="yandexmarket-pricelist">
     <v-tabs v-if="id" class="yandexmarket-pricelist-tabs pr-15" background-color="transparent" :height="40">
       <v-tab :to="{name: 'pricelist', params: {id: id}}" :ripple="false" exact>
-        Настройки магазина
+        {{ $t('Shop settings') }}
       </v-tab>
       <v-tab :to="{name: 'pricelist.categories', params: {id: id}}" :ripple="false" exact>
-        Настройки категорий
+        {{ $t('Categories settings') }}
       </v-tab>
       <v-tab v-if="hasOffers" :to="{name: 'pricelist.offers', params: {id: id}}" :ripple="false" exact>
-        Настройки предложений
+        {{ $t('Offers settings') }}
       </v-tab>
       <v-tab :to="{name: 'pricelist.generate', params: {id: id}}" :ripple="false" exact>
-        Выгрузка и параметры
+        {{ $t('File generation and parameters') }}
       </v-tab>
     </v-tabs>
     <v-card class="yandexmarket-pricelist-card" :loading="!pricelist">
       <v-card-text style="min-height: 300px;">
         <v-btn v-if="showPreview"
                @click="togglePreview" fab absolute top right small elevation="1" color="white"
-               :title="preview ? 'Отключить предпросмотр' : 'Включить предпросмотр'">
+               :title="preview ? $t('Disable preview') : $t('Enable preview')">
           <v-icon :color="preview ? 'primary' : 'default'">icon-file-code-o</v-icon>
         </v-btn>
         <v-row dense>
@@ -41,25 +41,25 @@
                 @pricelist:updated="pricelistUpdated"
             ></router-view>
             <v-card-actions class="px-0" v-if="false">
-              <v-btn v-if="!hasChanges" :to="{name: 'pricelists'}" exact title="Ко всем прайс-листам">
+              <v-btn v-if="!hasChanges" :to="{name: 'pricelists'}" exact :title="$t('To all pricelists')">
                 <v-icon left>icon-arrow-left</v-icon>
-                Вернуться
+                {{ $t('Return') }}
               </v-btn>
-              <v-btn v-else title="Отменить все изменения">
+              <v-btn v-else :title="$t('Revert all changes')">
                 <v-icon left>icon-undo</v-icon>
-                Отменить
+                {{ $t('Cancel') }}
               </v-btn>
               <v-spacer/>
               <v-btn :disabled="!hasChanges" color="secondary">
                 <v-icon left>icon-save</v-icon>
-                Сохранить
+                {{ $t('Save') }}
               </v-btn>
             </v-card-actions>
           </v-col>
           <v-col cols="12" md="5" v-if="showPreview && preview">
             <div class="yandexmarket-xml-preview">
-              <h4><label for="yandexmarket-preview">Предпросмотр XML элемента &lt;{{ previewType }}&gt;</label></h4>
-              <p class="mb-2">Автоматически обновляется при любом изменении</p>
+              <h4><label for="yandexmarket-preview">{{ $t('XML element preview') }} &lt;{{ previewType }}&gt;</label></h4>
+              <p class="mb-2">{{ $t('Automatically updated on any change') }}</p>
               <codemirror id="yandexmarket-preview" v-model="code" :options="cmOptions"></codemirror>
             </div>
             <pre v-if="debug && Object.keys(debug).length">{{ debug }}</pre>
@@ -133,7 +133,7 @@ export default {
       if (send) {
         api.post('Categories/Remove', {pricelist_id: this.pricelist.id, resource_id: resourceId})
             .then(() => this.getXmlPreview())
-            .catch(error => console.error(error)); // можно добавлять назад, если по какой-то причине не удалился
+            .catch(error => console.error(error)); // we can add back, if it's not deleted by some reason
         this.pricelistUpdated({need_generate: this.pricelist.need_generate || (this.pricelist.active && this.pricelist.generated_on)}, false);
       }
     },
@@ -222,7 +222,7 @@ export default {
         return;
       }
       this.previewLoading = true;
-      this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
+      this.code = `<!-- ${this.$t('Loading an XML element')} ${this.previewType} -->`;
       api.post('Xml/Preview', {id: this.pricelist.id, method: this.previewType})
           .then(({data}) => {
             this.code = data.message;
@@ -251,7 +251,7 @@ export default {
         ...pricelist,
       };
       if (save) {
-        this.code = '<!-- Загружается XML элемент ' + this.previewType + ' -->';
+        this.code = `<!-- ${this.$t('Loading an XML element')} ${this.previewType} -->`;
         // eslint-disable-next-line no-unused-vars
         let {fields, categories, attributes, conditions, ...pricelist} = this.pricelist;
         api.post('Pricelists/Update', {...pricelist})

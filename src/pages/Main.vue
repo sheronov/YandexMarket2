@@ -2,7 +2,8 @@
   <v-main>
     <component-header/>
     <v-alert v-if="!$xmlLoaded" type="warning" dense>
-      Не найден класс <b>XmlWriter</b>. Возможно, отключён php модуль <i>libxml</i> или php запущен с флагом <i>--disable-xmlwriter</i>.
+      <b>XmlWriter</b> {{ $t('class not found in the system') }}.
+      <span v-html="$t('Perhaps the php module <i>libxml</i> is disabled or php is started with the flag <i>--disable-xmlwriter</i>')" />
     </v-alert>
     <div class="yandexmarket-view mb-4">
       <router-view></router-view>

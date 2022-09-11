@@ -19,6 +19,7 @@ window.onload = function () {
         lang: {}
     } : {});
 
+
     axios.defaults.baseURL = ym2Config.apiUrl || '/assets/components/yandexmarket2/connector.php';
     axios.defaults.headers.common['modAuth'] = ym2Config.modAuth;
     if (process.env.NODE_ENV !== 'production' && process.env.VUE_APP_COOKIE) {
@@ -36,7 +37,15 @@ window.onload = function () {
 
     Vue.prototype.$xmlLoaded = ym2Config.xmlLoaded;
     Vue.prototype.$isMODX3 = ym2Config.isMODX3;
-    Vue.prototype.$t = (key) => ym2Config.lang && ym2Config.lang[key] || key;
+    Vue.prototype.$t = (key, params = {}) => {
+        let text = ym2Config.lang[key] || key;
+        if (Object.keys(params).length) {
+            for (const name in params) {
+                text = text.replace(new RegExp('{' + name + '}','g'), params[name]);
+            }
+        }
+        return text;
+    }
 
     new Vue({
         vuetify,

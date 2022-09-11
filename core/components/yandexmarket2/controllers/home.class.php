@@ -31,7 +31,7 @@ class YandexMarket2HomeManagerController extends YandexMarket2HomeManagerControl
 
     public function getLanguageTopics(): array
     {
-        return ['yandexmarket2:default'];
+        return ['yandexmarket2:vuetify'];
     }
 
     public function getPageTitle(): string
@@ -56,7 +56,7 @@ class YandexMarket2HomeManagerController extends YandexMarket2HomeManagerControl
             'sentry'    => $this->sentryDsn,
             'xmlLoaded' => $this->xmlLoaded,
             'isMODX3'   => $this->isMODX3,
-            'lang'      => []
+            'lang'      => $this->modx->lexicon->fetch('yandexmarket2_vuetify_', true)
         ]);
         $this->addHtml('<script type="text/javascript">window.ym2Config = '.$ym2ConfigJson.'</script>');
         //  lang: {$this->lexicons} // TODO: добавить лексиконы для фронта

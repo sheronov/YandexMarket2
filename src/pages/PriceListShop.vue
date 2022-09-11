@@ -1,7 +1,8 @@
 <template>
   <div class="yandexmarket-pricelist-settings">
-    <h4>Настройки основных полей магазина</h4>
-    <p class="mb-2">Обязательные поля отмечены звёздочкой. Не забывайте сохранять изменения.</p>
+    <h4>{{ $t('Shop main fields settings') }}</h4>
+    <p class="mb-2">{{ $t('Required fields are marked with an asterisk.') }}
+      {{ $t('Do not forget to save your changes.') }}</p>
     <v-expansion-panels v-model="openedFields" multiple class="pb-2" key="offers" v-if="shopField">
       <pricelist-field
           :item="shopField"
@@ -13,7 +14,8 @@
           :available-types="availableTypes('shop',pricelist)"
       />
     </v-expansion-panels>
-    <p>Пустые поля не попадут в выгрузку. Сохранение каждого поля появляется после изменений.</p>
+    <p>{{ $t('Empty fields will not be included in the file.') }}
+      {{ $t('The save changes button appears after you start editing.') }}</p>
   </div>
 </template>
 
