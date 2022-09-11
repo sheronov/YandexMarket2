@@ -36,12 +36,13 @@ $_lang = array_merge($_lang ?? [], [
     'ym2_field_type_11' => 'значение из столбца',
     'ym2_field_type_12' => 'столбец в CDATA (с html тегами)',
     'ym2_field_type_13' => 'изображения товара',
-    'ym2_field_type_14' => 'прозрачная обёртка для категорий',
-    'ym2_field_type_15' => 'прозрачная обёртка для товаров',
+    'ym2_field_type_14' => 'обёртка для категорий',
+    'ym2_field_type_15' => 'обёртка для товаров',
     'ym2_field_type_19' => 'сырой XML (без обработки)',
     'ym2_field_type_20' => 'только атрибуты (пустой элемент)',
 
     'ym2_marketplace_yandex.market' => 'Яндекс Маркет',
     'ym2_marketplace_google.rss20' => 'Google RSS 2.0 (Merchant center, FB)',
+
     'ym2_msoptionsprice_options' => 'Массив опций со значениями'
 ]);
