@@ -1,0 +1,77 @@
+Changelog for YandexMarket2.
+
+1.4.1-beta (09/12/2022)
+==============
+- All texts are included in lexicons
+- Full localization for English
+
+1.4.0-beta (09/10/2022)
+==============
+- A single version of the component immediately under MODX 2.x and MODX 3
+
+~~2.0.0-beta (08/28/2022)~~
+==============
+- MODX 3 version
+
+1.3.3-beta (08/27/2022)
+==============
+- fixed work under PHP 8.x
+
+1.3.2-beta (08/01/2022)
+==============
+- now the file is generated with a temporary name and will be renamed after completion (improvements for robots)
+- fixed Google RSS 2.0 format (price and availability). For FB, availability should be changed to "in stock"
+- settings for file paths, site addresses are displayed (so that it is the same with cron)
+- fixed work under MySQL 8
+
+1.3.1-beta (04/12/2022)
+==============
+- fixed datetime bugs for MariaDB
+
+1.3.0-beta (10/25/2021)
+==============
+- integration with msOptionsPrice2 for unloading modifications
+- fix bugs and errors
+- server pagination and sorting of price lists
+
+1.2.0-beta (06/26/2021)
+==============
+- added Google RSS 2.0 provider for uploading to Google Merchant (purchases) and Facebook
+- added 3 types for fields (raw XML, transparent wrappers for offers and categories)
+- now code processing is possible without pdoTools using MODX syntax
+
+1.1.1-beta (05/29/2021)
+==============
+- now you can upload any xPDOObject as a product
+- fixed bug with picture field
+
+1.1.0-beta (05/22/2021)
+==============
+- Lots of improvements and bug fixes
+- added system settings debug_mode, prepare_arrays, reduce_queries, strict_sql
+- now logging unloading in realtime (more details in debug_mode = 1)
+- the number of SQL queries has been greatly reduced (for a super effect, set reduce_queries = 1)
+- improved change tracking for price list generation
+- added recursive selection of categories in the tree (must have for large structures)
+- added the ability to select parent values ​​and TV fields for products
+- added ym2OnOffersQuery, ym2OnCategoriesQuery events to change requests for products and categories
+- also added events for adding values ​​to a product or category, before and after generating a price list
+
+1.0.3-beta (04/07/2021)
+==============
+- Fixed bug with ms2 galleries
+- Fixed updating and deleting a component
+
+1.0.2-beta (03/18/2021)
+==============
+- Removed object warnings when viewing the action log
+
+1.0.1-beta (03/17/2021)
+==============
+- Added default file generation mode
+- Minor fixes in the interface
+
+1.0.0-beta
+==============
+- A completely new version of the component for uploading price lists to Yandex Market and more
+- More details in the description on ModStore https://modstore.pro/packages/import-and-export/yandcexmarket2
