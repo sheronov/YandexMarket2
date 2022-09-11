@@ -163,7 +163,7 @@ export default {
         {text: this.$t('Pricelist type'), value: 'type', sortable: true},
         {text: this.$t('Filename'), value: 'file', sortable: true},
         {text: this.$t('Generation type'), value: 'generate_mode', sortable: true},
-        {text: this.$t('Generated on'), value: 'generated_on', sortable: true},
+        {text: this.$t('Generated at'), value: 'generated_on', sortable: true},
         {text: this.$t('Active'), value: 'active', sortable: true},
         {text: this.$t('Actions'), value: 'actions', sortable: false, align: 'end'}
       ],

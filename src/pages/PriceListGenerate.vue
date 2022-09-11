@@ -1,7 +1,7 @@
 <template>
   <v-row class="yandexmarket-pricelist-generate">
     <v-col cols="12" md="6">
-      <h4>{{ $t('Main parameters of price list generation') }}</h4>
+      <h4>{{ $t('Main parameters of pricelist generation') }}</h4>
       <p class="mb-2">{{ $t('All fields are required') }}</p>
       <v-select
           filled
