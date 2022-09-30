@@ -17,6 +17,8 @@ namespace YandexMarket\Models;
  */
 class Field extends BaseObject
 {
+    use Handlerable;
+
     //любое значение может быть записано в value и дополнительно обработано в handler
     const TYPE_TEXT       = 0; //текстовое значение (не будет как-либо обрабатываться)
     const TYPE_ROOT       = 1; //корневой элемент

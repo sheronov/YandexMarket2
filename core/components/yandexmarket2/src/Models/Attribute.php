@@ -13,6 +13,8 @@ namespace YandexMarket\Models;
  */
 class Attribute extends BaseObject
 {
+    use Handlerable;
+
     const TYPE_TEXT  = 0;
     const TYPE_VALUE = 1;
 

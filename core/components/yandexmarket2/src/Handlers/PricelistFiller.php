@@ -58,16 +58,7 @@ class PricelistFiller
                 $field->properties = $properties;
             }
             if ($parent && $value = $this->marketplace->defaultValues()[$parent->type][$name] ?? null) {
-                if (is_array($value) && array_values($value) !== $value) {
-                    if (isset($value['handler'])) {
-                        $field->handler = $value['handler'];
-                    }
-                    if (isset($value['value'])) {
-                        $field->value = is_array($value['value']) ? json_encode($value['value']) : $value['value'];
-                    }
-                } else {
-                    $field->value = is_array($value) ? json_encode($value) : $value;
-                }
+                $field->setDefaultValue($value);
             }
             $field->save();
 
@@ -80,8 +71,8 @@ class PricelistFiller
             })) {
                 foreach ($attributes as $attrName => $attrData) {
                     $attribute = $field->newAttribute($attrName);
-                    if (isset($this->marketplace->defaultAttributes()[$field->type][$attrName])) {
-                        $attribute->value = $this->marketplace->defaultAttributes()[$field->type][$attrName];
+                    if ($value = $this->marketplace->defaultAttributes()[$field->type][$attrName] ?? null) {
+                        $attribute->setDefaultValue($value);
                     }
                     $attribute->type = $attrData['type'] ?? Attribute::TYPE_DEFAULT;
                     $attribute->properties = $attrData;

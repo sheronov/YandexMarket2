@@ -359,7 +359,7 @@ class YandexMarket extends Marketplace
             Field::TYPE_ROOT     => [
                 'date' => [
                     'value'   => $this->getOption('root_attr_date', 'Pricelist.generated_on'),
-                    'handler' => '{$input | date: "Y-m-d\TH:i:sP"}'
+                    'handler' => $this->getOption('root_attr_date_handler', '{$input | date: "Y-m-d\TH:i:sP"}')
                 ]
             ],
             Field::TYPE_OFFER    => [
