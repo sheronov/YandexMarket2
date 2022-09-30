@@ -1,5 +1,9 @@
 Changelog for YandexMarket2.
 
+1.4.2-beta (01.10.2022)
+==============
+- Fixed date format of date attribute in yml_catalog element for new requirements
+
 1.4.1-beta (09/12/2022)
 ==============
 - All texts are included in lexicons
