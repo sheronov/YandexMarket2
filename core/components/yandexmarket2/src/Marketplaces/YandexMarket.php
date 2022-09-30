@@ -4,6 +4,7 @@ namespace YandexMarket\Marketplaces;
 
 use YandexMarket\Models\Attribute;
 use YandexMarket\Models\Field;
+use YandexMarket\Service;
 
 class YandexMarket extends Marketplace
 {
@@ -33,7 +34,7 @@ class YandexMarket extends Marketplace
                 'attributes' => [
                     'date' => [
                         'type'     => Attribute::TYPE_VALUE,
-                        'required' => true,
+                        'required' => true
                     ]
                 ],
                 'fields'     => [
@@ -310,6 +311,65 @@ class YandexMarket extends Marketplace
                 'type'     => Field::TYPE_VALUE,
                 'optional' => true
             ],
+        ];
+    }
+
+    public function defaultValues(): array
+    {
+        $values = [
+            Field::TYPE_SHOP       => [
+                'name'                  => $this->getOption('shop_name', $this->modx->getOption('site_name')),
+                'url'                   => $this->getOption('shop_url',
+                    $this->modx->getOption('yandexmarket2_site_url', null, $this->modx->getOption('site_url'), true)),
+                'platform'              => $this->getOption('shop_platform', 'MODX Revolution'),
+                'version'               => $this->getOption('shop_version', $this->modx->getOption('settings_version')),
+                'currencies'            => [
+                    'value' => explode(',', $this->getOption('shop_currencies', 'RUB'))
+                ],
+                'enable_auto_discounts' => $this->getOption('shop_enable_auto_discounts', true) ? 'true' : 'false'
+            ],
+            Field::TYPE_OFFER      => [
+                'name'        => $this->getOption('offer_name', 'pagetitle'),
+                'url'         => $this->getOption('offer_url', 'Offer.url'), // Offer собирающий класс
+                'price'       => $this->getOption('offer_price', 'Offer.price'), // Offer собирающий класс
+                'currencyId'  => $this->getOption('offer_currency_id', 'RUB'),
+                'categoryId'  => $this->getOption('offer_category_id', 'parent'),
+                'delivery'    => $this->getOption('offer_delivery', 'true'),
+                'pickup'      => $this->getOption('offer_pickup', 'true'),
+                'description' => $this->getOption('offer_description', 'introtext'),
+            ],
+            Field::TYPE_CATEGORIES => [
+                'category' => $this->getOption('categories_category', 'pagetitle')
+            ]
+        ];
+
+        if ($this->getOption('ms2gallery_sync_ms2', false, '')) {
+            // интеграция ms2Gallery с ms2
+            $values[Field::TYPE_OFFER]['picture'] = 'ms2Gallery.image';
+        } elseif (Service::hasMiniShop2()) {
+            $values[Field::TYPE_OFFER]['picture'] = 'msGallery.image';
+        }
+
+        return $values;
+    }
+
+    public function defaultAttributes(): array
+    {
+        return [
+            Field::TYPE_ROOT     => [
+                'date' => [
+                    'value'   => $this->getOption('root_attr_date', 'Pricelist.generated_on'),
+                    'handler' => '{$input | date: "Y-m-d\TH:i:sP"}'
+                ]
+            ],
+            Field::TYPE_OFFER    => [
+                'id'   => $this->getOption('offer_attr_id', 'id'),
+                'type' => $this->getOption('offer_attr_type', self::TYPE_SIMPLE)
+            ],
+            Field::TYPE_CATEGORY => [
+                'id'       => $this->getOption('category_attr_id', 'id'),
+                'parentId' => $this->getOption('category_attr_parent_id', 'parent')
+            ]
         ];
     }
 
