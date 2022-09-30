@@ -54,7 +54,7 @@ foreach ($modx->getIterator($q->getClass(), $q) as $ymPricelist) {
         $pricelist->need_generate = true;
     } elseif ($minutes = $pricelist->generate_interval) {
         $lastDate = (new DateTimeImmutable())->sub(DateInterval::createFromDateString($minutes.' minutes'));
-        $generatedDate = $pricelist->generated_on instanceof DateTimeImmutable
+        $generatedDate = $pricelist->generated_on instanceof DateTimeInterface
             ? $pricelist->generated_on
             : DateTime::createFromFormat('Y-m-d H:i:s', $pricelist->generated_on);
         if ($lastDate > $generatedDate) {
@@ -65,6 +65,7 @@ foreach ($modx->getIterator($q->getClass(), $q) as $ymPricelist) {
         echo "Skipped pricelist id = {$pricelist->id}\n";
         continue;
     }
+    echo "Writing pricelist id = {$pricelist->id}\n";
 
     $generator = new FileGenerator(new QueryService($pricelist, $modx));
     try {
