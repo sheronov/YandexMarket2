@@ -95,7 +95,10 @@ class Pricelist extends BaseObject
     /** Дёргаем обновление объекта */
     public function touch()
     {
-        $this->object->touch();
+        if ($this->object && $this->object->get('active')) {
+            $this->object->set('need_generate', true);
+            $this->object->save();
+        }
     }
 
     /**
