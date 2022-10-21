@@ -1,5 +1,9 @@
 Changelog for YandexMarket2.
 
+1.4.3-beta (21.10.2022)
+==============
+- Fixed error when product saving
+
 1.4.2-beta (01.10.2022)
 ==============
 - Fixed date format of date attribute in yml_catalog element for new requirements
