@@ -2,4 +2,4 @@
 
 class ymFieldsRemoveProcessor extends \YandexMarket\Processors\Fields\Remove {}
 
-return ymFieldsemoveProcessor::class;
+return ymFieldsRemoveProcessor::class;

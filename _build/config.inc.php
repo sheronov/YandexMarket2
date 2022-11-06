@@ -12,7 +12,7 @@ return [
     'name'        => 'YandexMarket2',
     'name_lower'  => 'yandexmarket2',
     'modstore_id' => 2,
-    'version'     => '1.4.3',
+    'version'     => '1.4.4',
     'release'     => 'beta',
     // Install package to site right after build
     'install'     => true,
