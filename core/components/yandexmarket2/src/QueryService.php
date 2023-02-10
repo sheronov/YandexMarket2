@@ -301,7 +301,8 @@ class QueryService
     protected function getOffersQuery()
     {
         $categoriesQuery = $this->getCategoriesQuery();
-        if (!$this->categoriesQuery->isUsesOtherQuery()) {
+        // to avoid recursion and doubled conditions
+        if (!$this->categoriesQuery->isUsesOtherQuery() && !$this->offersQuery->isUsesOtherQuery()) {
             $this->offersQuery->setCategoriesQuery($categoriesQuery);
         }
         return $this->offersQuery->getQuery();

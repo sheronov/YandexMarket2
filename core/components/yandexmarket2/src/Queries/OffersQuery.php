@@ -22,8 +22,17 @@ class OffersQuery extends ObjectsQuery
         $categoriesQuery->query['columns'] = '';
         $categoriesQuery->select(sprintf("DISTINCT `%s`.`id`", $query->getAlias()));
         $categoriesQuery->prepare();
-        $this->query->where(sprintf("`%s`.`%s` IN (%s)", $this->query->getAlias(), $this->offerParentField,
-            $categoriesQuery->toSQL(true)));
+        $categoriesSQL = $categoriesQuery->toSQL(true);
+        $conditions = [
+            sprintf("`%s`.`%s` IN (%s)", $this->query->getAlias(), $this->offerParentField, $categoriesSQL)
+        ];
+        if (Service::hasMiniShop2()) {
+            $this->query->leftJoin('msCategoryMember', 'msCategoryMember',
+                sprintf("`%s`.`id` = `msCategoryMember`.`product_id`", $this->query->getAlias()));
+            $conditions[] = sprintf("`msCategoryMember`.`category_id` IN (%s)", $categoriesSQL);
+            // $this->addColumnsToGroupBy('`msCategoryMember`.`category_id`'); // it will duplicate offers
+        }
+        $this->query->where('(' . implode(' OR ', $conditions) . ')');
         $this->modx->log(Service::LOG_LEVEL_INFO,
             sprintf($this->modx->lexicon('ym2_debug_add_categories_condition'), $this->offerParentField), '',
             'YandexMarket2');

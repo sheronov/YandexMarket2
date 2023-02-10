@@ -1,5 +1,9 @@
 Changelog for YandexMarket2.
 
+1.4.5-beta (10.02.2023)
+==============
+- The products inside miniShop2 additional categories will be shown in price lists
+
 1.4.4-beta (06.11.2022)
 ==============
 - Fixed error when field deleting
