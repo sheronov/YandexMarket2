@@ -231,6 +231,7 @@ class Service
             'header' => $this->modx->lexicon('ym2_category_fields'),
             'groups' => ['offers'],
             'fields' => [
+                ['value' => 'msCategory.id', 'text' => $this->modx->lexicon('ym2_mscategory_id')],
                 ['value' => 'Category.pagetitle', 'text' => $this->modx->lexicon('ym2_category_pagetitle')],
                 ['value' => 'Category.name', 'text' => $this->modx->lexicon('ym2_category_name')]
             ]

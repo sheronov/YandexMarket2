@@ -30,6 +30,7 @@ class OffersQuery extends ObjectsQuery
             $this->query->leftJoin('msCategoryMember', 'msCategoryMember',
                 sprintf("`%s`.`id` = `msCategoryMember`.`product_id`", $this->query->getAlias()));
             $conditions[] = sprintf("`msCategoryMember`.`category_id` IN (%s)", $categoriesSQL);
+            $this->join['msCategoryMember'] = true;
             // $this->addColumnsToGroupBy('`msCategoryMember`.`category_id`'); // it will duplicate offers
         }
         $this->query->where('(' . implode(' OR ', $conditions) . ')');

@@ -400,9 +400,18 @@ abstract class ObjectsQuery
             case 'msop2':
             case 'modification':
             case 'msopmodification':
-                // TODO: вообще к этому моменту приджойнено, но вполне может быть неактивна настрока
+                // вообще к этому моменту приджойнено, но вполне может быть неактивна настройка
                 if (empty($this->join['Modification'])) {
                     $this->modx->log(Service::LOG_LEVEL_ERROR, $this->modx->lexicon('ym2_debug_msop2_modification'), '', 'YandexMarket2');
+                }
+                break;
+            case 'mscategory':
+            case 'msproductcategory':
+            case 'mscategorymember':
+                if (!isset($this->join['msCategoryMember'])) {
+                    $this->query->leftJoin('msCategoryMember', 'msCategoryMember',
+                        sprintf("`%s`.`id` = `msCategoryMember`.`product_id`", $this->query->getAlias()));
+                    $this->join['msCategoryMember'] = true;
                 }
                 break;
             case 'offer':
@@ -436,6 +445,11 @@ abstract class ObjectsQuery
     {
         if ($conditions = $this->getConditions()) {
             foreach ($conditions as $condition) {
+                if (!array_key_exists($condition->operator, Condition::OPERATOR_SYMBOLS)) {
+                    $this->modx->log(Service::LOG_LEVEL_WARN, $this->modx->lexicon('ym2_debug_unknown_operator'), '', 'YandexMarket2');
+                    continue;
+                }
+
                 if (mb_strpos($condition->column, '.') !== false) {
                     list($class, $key) = explode('.', $condition->column, 2);
                     switch (mb_strtolower($class)) {
@@ -461,6 +475,20 @@ abstract class ObjectsQuery
                         case 'msgallery':
                             $column = sprintf('msGallery-%s.%s', $key, $key === 'image' ? 'url' : $key);
                             break;
+                        case 'mscategory':
+                        case 'msproductcategory':
+                        case 'mscategorymember':
+                            $column = 'msCategoryMember.category_id';
+                            $orCondition = sprintf('OR:%s.%s', $this->query->getClass(), $this->offerParentField);
+                            $orAddon = $condition->addonToWhere();
+                            if (empty($orAddon)) {
+                                $orAddon = ':=';
+                            }
+                            $this->query->where([
+                                $column.$condition->addonToWhere() => $condition->valueToWhere(),
+                                $orCondition.$orAddon => $condition->valueToWhere()
+                            ]);
+                            continue 2;
                         case 'msop2':
                         case 'modification':
                         case 'msopmodification':
@@ -473,33 +501,9 @@ abstract class ObjectsQuery
                     $column = $condition->column;
                 }
 
-                if (!array_key_exists($condition->operator, Condition::OPERATOR_SYMBOLS)) {
-                    $this->modx->log(Service::LOG_LEVEL_WARN, $this->modx->lexicon('ym2_debug_unknown_operator'), '', 'YandexMarket2');
-                    continue;
-                }
-
-                $operator = Condition::OPERATOR_SYMBOLS[$condition->operator];
-
-                switch ($condition->operator) {
-                    case 'exists in':
-                    case 'not exists in':
-                        $value = json_decode($condition->value, true, 512, JSON_UNESCAPED_UNICODE);
-                        break;
-                    case 'is null':
-                    case 'is not null':
-                        $operator = $condition->operator === 'is null' ? 'IS' : 'IS NOT';
-                        $value = null;
-                        break;
-                    default:
-                        $value = $condition->value;
-                        break;
-                }
-                if ($operator === null) {
-                    $operator = '';
-                } else {
-                    $operator = ':'.$operator;
-                }
-                $this->query->where([$column.$operator => $value]);
+                $this->query->where([
+                    $column.$condition->addonToWhere() => $condition->valueToWhere()
+                ]);
             }
         }
     }

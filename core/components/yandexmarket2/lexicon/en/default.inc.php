@@ -53,6 +53,7 @@ $_lang = array_merge($_lang ?? [], [
     'ym2_minishop2_options'          => 'miniShop2 options',
     'ym2_minishop2_vendor'           => 'miniShop2 vendor',
     'ym2_tv_fields'                  => 'Additional fields (TV)',
+    'ym2_mscategory_id'              => 'MS2 multi-categories for conditions',
     'ym2_category_fields'            => 'Parent category fields (standard)',
     'ym2_category_pagetitle'         => 'Parent category title',
     'ym2_category_name'              => 'Format for any other parent field',

@@ -53,6 +53,7 @@ $_lang = array_merge($_lang ?? [], [
     'ym2_minishop2_options'          => 'Опции miniShop2',
     'ym2_minishop2_vendor'           => 'Производитель miniShop2',
     'ym2_tv_fields'                  => 'Дополнительные поля (TV)',
+    'ym2_mscategory_id'              => 'Мультикатегории товара ms2 (для условий)',
     'ym2_category_fields'            => 'Поля родительской категории (стандартные)',
     'ym2_category_pagetitle'         => 'Заголовок родительской категории',
     'ym2_category_name'              => 'Формат под любое другое поле родителя',

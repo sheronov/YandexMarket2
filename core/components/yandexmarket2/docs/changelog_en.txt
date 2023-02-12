@@ -1,8 +1,9 @@
 Changelog for YandexMarket2.
 
-1.4.5-beta (10.02.2023)
+1.4.5-beta (13.02.2023)
 ==============
-- The products inside miniShop2 additional categories will be shown in price lists
+- The products inside miniShop2 multicategories will be shown in price lists
+- Added msCategory.id field for reduce products list (it includes multicategories also)
 
 1.4.4-beta (06.11.2022)
 ==============

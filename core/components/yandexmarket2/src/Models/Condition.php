@@ -58,4 +58,36 @@ class Condition extends BaseObject
         return $data;
     }
 
+    public function valueToWhere () {
+        switch ($this->operator) {
+            case 'exists in':
+            case 'not exists in':
+                return json_decode($this->value, true, 512, JSON_UNESCAPED_UNICODE);
+            case 'is null':
+            case 'is not null':
+                return null;
+            default:
+                return $this->value;
+        }
+    }
+
+    public function addonToWhere (): string
+    {
+        $operator = self::OPERATOR_SYMBOLS[$this->operator];
+
+        switch ($this->operator) {
+            case 'is null':
+            case 'is not null':
+                $operator = $this->operator === 'is null' ? 'IS' : 'IS NOT';
+                break;
+        }
+        if ($operator === null) {
+            $operator = '';
+        } else {
+            $operator = ':'.$operator;
+        }
+
+        return $operator;
+    }
+
 }
