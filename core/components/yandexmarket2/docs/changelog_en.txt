@@ -1,5 +1,9 @@
 Changelog for YandexMarket2.
 
+1.5.0-beta (29.10.2023)
+==============
+- Now the component is free and open source
+
 1.4.5-beta (13.02.2023)
 ==============
 - The products inside miniShop2 multicategories will be shown in price lists

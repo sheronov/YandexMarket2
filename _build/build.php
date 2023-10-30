@@ -39,7 +39,6 @@ if (!MODX3) {
     require_once MODX_CORE_PATH.'xpdo/transport/xpdoscriptvehicle.class.php';
     require_once MODX_CORE_PATH.'xpdo/transport/xpdoobjectvehicle.class.php';
 }
-require_once __DIR__.'/helpers/encryptedvehicle.class.php';
 
 if (!defined('LOG_LEVEL_INFO')) {
     define('LOG_LEVEL_INFO', MODX3 ? xPDO3::LOG_LEVEL_INFO : xPDO::LOG_LEVEL_INFO);
@@ -108,12 +107,9 @@ class YandexMarket2Package
      */
     protected function initialize()
     {
-        $this->defineEncodeKey();
-
         $this->builder = MODX3 ? new modPackageBuilder3($this->modx) : new modPackageBuilder($this->modx);
         $this->builder->createPackage($this->config['name_lower'], $this->config['version'], $this->config['release']);
 
-        $this->addEncryptionHelpers();
         // $this->addSchemeFile();
 
         $this->builder->registerNamespace($this->config['name_lower'], false, true,
@@ -124,9 +120,6 @@ class YandexMarket2Package
         $this->category = $this->modx->newObject(MODX3 ? modCategory3::class : modCategory::class);
         $this->category->set('category', $this->config['name']);
         $this->category_attributes = [
-            'vehicle_class'                                                                                      => EncryptedVehicle::class,
-            'vehicle_package'                                                                                    => '',
-            MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'category',
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => false,
             MODX3 ? xPDOTransport3::UPDATE_OBJECT : xPDOTransport::UPDATE_OBJECT                                 => true,
@@ -134,97 +127,6 @@ class YandexMarket2Package
             MODX3 ? xPDOTransport3::RELATED_OBJECT_ATTRIBUTES : xPDOTransport::RELATED_OBJECT_ATTRIBUTES         => [],
         ];
         $this->modx->log(LOG_LEVEL_INFO, 'Created main Category.');
-    }
-
-    protected function addEncryptionHelpers()
-    {
-        $this->builder->package->put(MODX3 ? new xPDOFileVehicle3() : new xPDOFileVehicle(), [
-            'vehicle_class'                                                          => MODX3 ? xPDOFileVehicle3::class : xPDOFileVehicle::class,
-            'vehicle_package'                                                        => '',
-            'namespace'                                                              => 'yandexmarket2',
-            MODX3 ? xPDOTransport3::UNINSTALL_FILES : xPDOTransport::UNINSTALL_FILES => false,
-            'object'                                                                 => [
-                'source' => $this->config['helpers'].'encryptedvehicle.class.php',
-                'target' => "return MODX_CORE_PATH . 'components/yandexmarket2/';",
-            ]
-        ]);
-
-        $this->builder->package->put(MODX3 ? new xPDOScriptVehicle3() : new xPDOScriptVehicle(), [
-            'vehicle_class'   => MODX3 ? xPDOScriptVehicle3::class : xPDOScriptVehicle::class,
-            'vehicle_package' => '',
-            'namespace'       => 'yandexmarket2',
-            'object'          => [
-                'source' => $this->config['helpers'].'encryption.php'
-            ]
-        ]);
-
-        // $this->builder->package->put([
-        //     'source' => $this->config['core'],
-        //     'target' => "return MODX_CORE_PATH . 'components/';",
-        // ], [
-        //     'vehicle_class' => 'xPDOFileVehicle',
-        //     'resolve'       => [
-        //         [
-        //             'type'   => 'php',
-        //             'source' => $this->config['resolvers'].'encryption.php',
-        //         ],
-        //     ],
-        // ]);
-        $this->modx->log(LOG_LEVEL_INFO, 'Initialized encryption');
-    }
-
-    protected function defineEncodeKey(): string
-    {
-        $key = '';
-        /** @var modTransportProvider|modTransportProvider3 $provider */
-        if ($provider = $this->modx->getObject(MODX3 ? modTransportProvider3::class : 'transport.modTransportProvider',
-            $this->config['modstore_id'])) {
-            $provider->xpdo->setOption('contentType', 'default');
-            $modxVersion = $this->modx->getVersionData();
-
-            $params = [
-                'package'            => $this->config['name_lower'],
-                'version'            => $this->config['version'].'-'.$this->config['release'],
-                'username'           => $provider->username,
-                'api_key'            => $provider->api_key,
-                'vehicle_version'    => '2.0.0',
-                'database'           => $this->modx->config['dbtype'],
-                'revolution_version' => $modxVersion['code_name'].'-'.$modxVersion['full_version'],
-                'supports'           => $modxVersion['code_name'].'-'.$modxVersion['full_version'],
-                'http_host'          => $this->modx->getOption('http_host'),
-                'php_version'        => XPDO_PHP_VERSION,
-                'language'           => $this->modx->getOption('manager_language'),
-            ];
-
-            /** @var modRest|modRest3 $rest */
-            $rest = $this->modx->getService('modRest', MODX3 ? modRest3::class : 'rest.modRest', '', [
-                'baseUrl'        => rtrim($provider->get('service_url'), '/'),
-                'suppressSuffix' => true,
-                'timeout'        => 10,
-                'connectTimeout' => 10,
-                'format'         => 'xml',
-            ]);
-
-            $response = $rest->post('package/encode', $params);
-            if ($response->responseError) {
-                $this->modx->log(LOG_LEVEL_ERROR, $response->responseError);
-            } else {
-                $data = $response->process();
-                if (!empty($data['key'])) {
-                    $key = $data['key'];
-                    $this->modx->log(LOG_LEVEL_INFO, 'Received key from modstore: '.$key);
-                } elseif (!empty($data->message)) {
-                    $this->modx->log(LOG_LEVEL_ERROR, $data->message);
-                }
-            }
-        }
-
-        if (!empty($key)) {
-            define('PKG_ENCODE_KEY', $key);
-        } else {
-            $this->modx->log(LOG_LEVEL_INFO, 'Problem with getting encode key from modstore');
-        }
-        return $key;
     }
 
     /**
@@ -322,9 +224,6 @@ class YandexMarket2Package
             return;
         }
         $attributes = [
-            'vehicle_class'                                                                                      => EncryptedVehicle::class,
-            'vehicle_package'                                                                                    => '',
-            MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'key',
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => true,
             MODX3 ? xPDOTransport3::UPDATE_OBJECT : xPDOTransport::UPDATE_OBJECT                                 => !empty($this->config['update']['settings']),
@@ -354,9 +253,6 @@ class YandexMarket2Package
             return;
         }
         $attributes = [
-            'vehicle_class'                                                                                      => EncryptedVehicle::class,
-            'vehicle_package'                                                                                    => '',
-            MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => true,
             MODX3 ? xPDOTransport3::UPDATE_OBJECT : xPDOTransport::UPDATE_OBJECT                                 => !empty($this->config['update']['menus']),
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'text',
@@ -394,9 +290,6 @@ class YandexMarket2Package
             return;
         }
         $this->category_attributes[MODX3 ? xPDOTransport3::RELATED_OBJECT_ATTRIBUTES : xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Plugins'] = [
-            'vehicle_class'                                                                                      => EncryptedVehicle::class,
-            'vehicle_package'                                                                                    => '',
-            MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'name',
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => false,
             MODX3 ? xPDOTransport3::UPDATE_OBJECT : xPDOTransport::UPDATE_OBJECT                                 => !empty($this->config['update']['plugins']),
@@ -454,9 +347,6 @@ class YandexMarket2Package
         }
 
         $attributes = [
-            'vehicle_class'                                                                                      => EncryptedVehicle::class,
-            'vehicle_package'                                                                                    => '',
-            MODX3 ? xPDOTransport3::ABORT_INSTALL_ON_VEHICLE_FAIL : xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL => true,
             MODX3 ? xPDOTransport3::PRESERVE_KEYS : xPDOTransport::PRESERVE_KEYS                                 => true,
             MODX3 ? xPDOTransport3::UPDATE_OBJECT : xPDOTransport::UPDATE_OBJECT                                 => !empty($this->config['update']['events']),
             MODX3 ? xPDOTransport3::UNIQUE_KEY : xPDOTransport::UNIQUE_KEY                                       => 'name',
@@ -581,19 +471,6 @@ class YandexMarket2Package
         }
 
         $this->builder->putVehicle($vehicle);
-
-        //encryption resolver
-        $guid = md5(uniqid(mt_rand(), true));
-        $this->builder->package->put(MODX3 ? new xPDOScriptVehicle3() : new xPDOScriptVehicle(), [
-            'vehicle_class'   => MODX3 ? xPDOScriptVehicle3::class : xPDOScriptVehicle::class,
-            'vehicle_package' => '',
-            'namespace'       => 'yandexmarket2',
-            'guid'            => $guid,
-            'native_key'      => $guid,
-            'object'          => [
-                'source' => $this->config['helpers'].'encryption.php',
-            ]
-        ]);
 
         $this->builder->setPackageAttributes([
             'changelog' => file_get_contents($this->config['core'].'docs/changelog.txt'),
